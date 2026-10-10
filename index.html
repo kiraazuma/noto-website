@@ -11,8 +11,26 @@
 <meta name="description" content="出張輪島朝市 in 一橋祭 — 2026.11.21–23 一橋大学 国立西キャンパス。能登の「いま」を東京へ。輪島朝市の出張販売・特別講演・復興応援フリーペーパー。">
 <meta name="theme-color" content="#FCFAEF">
 <link rel="stylesheet" href="styles/site.css">
+<script type="importmap">
+{ "imports": { "three": "./vendor/three/three.module.js" } }
+</script>
+<!-- fetch the opening's scripts and data in parallel, not one after another (the opening starts sooner) -->
+<link rel="modulepreload" href="scripts/main.js">
+<link rel="modulepreload" href="scripts/hero.js">
+<link rel="modulepreload" href="scripts/field.js">
+<link rel="modulepreload" href="vendor/three/three.module.js">
+<link rel="modulepreload" href="vendor/three/three.core.js">
+<noscript><style>body.intro #page{visibility:visible!important;animation:none!important}</style></noscript>
+<script>
+  // Safety net: if a script fails to load or throws before the page has started, show the page instead of leaving it
+  // hidden behind the opening.
+  addEventListener('error', function (e) {
+    var t = e.target, isScript = t && t.tagName === 'SCRIPT', isJs = e instanceof ErrorEvent;
+    if ((isScript || isJs) && !(document.body && document.body.classList.contains('booted'))) document.documentElement.classList.add('fallback');
+  }, true);
+</script>
 </head>
-<body>
+<body class="intro">
 
 <div id="stage" role="img" aria-label="NOTO meets HITOTSUBASHI">
   <h1 class="sr">NOTO meets HITOTSUBASHI — 出張輪島朝市 in 一橋祭 2026.11.21–23 一橋大学 国立キャンパス</h1>
@@ -163,9 +181,6 @@
   </footer>
 </main>
 
-<script type="importmap">
-{ "imports": { "three": "./vendor/three/three.module.js" } }
-</script>
 <script type="module" src="scripts/main.js"></script>
 </body>
 </html>

@@ -76,7 +76,13 @@ a{color:inherit}
 
 /* ---------------------------------------------------------------- EVENT SUMMARY: an ordinary section, the first one on the page
    1 出張輪島朝市 in 一橋祭 / 2 the date / 3 the three programmes; type only, set inside the 1600 x 900 frame */
-body.intro #page{visibility:hidden}
+/* the page below the opening is hidden from the very first paint (body carries .intro in the HTML), so nothing but the
+   opening is ever seen before the scripts run. Safety net: if the scripts never start (an error, a blocked file), the
+   page still appears (at once on a script error, after 25 s otherwise); main.js marks the body .booted as soon as it runs, which cancels that timer. */
+body.intro #page{visibility:hidden;animation:page-failsafe 0s linear 25s forwards}
+body.booted #page{animation:none}
+.fallback body.intro #page{visibility:visible;animation:none}
+@keyframes page-failsafe{to{visibility:visible}}
 #summary{position:relative;height:var(--vh);min-height:calc(900*var(--p));background:var(--paper);overflow:hidden}
 /* grid: free space above (1fr) | title + date | the gap to the band | band | free space below (1.55fr: the block sits
    a little above centre, as at the 1440 / 1600 reference) — INDEX in the corner */

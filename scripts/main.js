@@ -83,7 +83,7 @@ const sumParts = $$('#summary .sp').map((el, k) => ({ el, d: k * 5, k: '' }));
 const D_END = D_WIN + 15 + WIN + 5;
 STOPS.push(D_END);
 PHONE.addEventListener?.('change', () => { setTimings(); STOPS.push(D_END); });
-document.body.classList.add('intro');
+document.body.classList.add('intro', 'booted');
 bindField((x, y) => { const v = hero.view(); return [(x - v.ox) / v.s, (y - v.oy) / v.s]; });
 
 const openingDone = () => hero.time() > hero.T.end + 0.1;

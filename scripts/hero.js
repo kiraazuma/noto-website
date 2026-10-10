@@ -95,7 +95,10 @@ let OBJECT = { cx: 738, cy: 450, h: 852, rot: 0 };   // centred vertically: equa
 // not a scaled copy. Same faces, same horizontal ratios as the desktop type (NOTO 75 %, HITOTSUBASHI 54 %: the
 // brand's condensed voice, no extra squeeze), the same sculpture, the same light. Built from width (the type spans
 // the screen) and pinned to the top / bottom edges, so a shorter Safari viewport only tightens the middle.
+// Opening bands (desktop): the same rule as the phone — three words of ONE glyph height filling the viewport — with a
+// slight crop past the side edges (crop: share of the width per side).
 const DESK = { name: 'desk', W: 1600, H: 900, OPEN, REST, INTRO, OBJECT: { ...OBJECT }, info: ['date', 'title'], midLine: true,
+  BANDS: { gap: 0.012, gapMin: 6, crop: 0.012 },
   ANCHOR: { noto: [-1, -1], notoO: [-1, -1], hito: [1, 1], hitoO: [1, 1], date: [-1, 0], title: [1, 0], meets: [0, 0] } };
 const MW = 390, MH = 844;
 const MOB = { name: 'mob', W: MW, H: MH, info: ['titleA', 'titleB', 'date'], midLine: false, infoOnTop: true,
@@ -130,8 +133,8 @@ const MOB = { name: 'mob', W: MW, H: MH, info: ['titleA', 'titleB', 'date'], mid
   // continuously, from `ref` (design px of height) down, and never more than the given share of their own height,
   // so both stay whole words. Their width never changes. The title moves with NOTO, the date with HITOTSUBASHI.
   // Opening (phone): the three words stacked as three bands of ONE glyph height, each squeezed to the screen width
-  // (see openingBands). gap: share of the screen height between bands (at least gapMin); side: inset from the edges.
-  BANDS: { gap: 0.009, gapMin: 4, side: 0 },
+  // (see openingBands). gap: share of the screen height between bands (at least gapMin); crop: past the side edges.
+  BANDS: { gap: 0.009, gapMin: 4, crop: 0 },
   SQZ: { ref: 680, kT: 0.4, maxT: 0.16, kB: 0.2, maxB: 0.14, top: ['noto', 'titleA', 'titleB'], bot: ['hito', 'date'] },
   ANCHOR: { noto: [-1, -1], notoO: [-1, -1], hito: [1, 1], hitoO: [1, 1], titleA: [-1, -1], titleB: [-1, -1], date: [1, 1], meets: [0, 0] } };
 let LAY = DESK;
@@ -236,10 +239,20 @@ async function loadTex(url, { premultiply = false, mip = false } = {}) {
   Object.assign(t, { flipY: false, colorSpace: THREE.NoColorSpace, premultiplyAlpha: false, generateMipmaps: mip, minFilter: mip ? THREE.LinearMipmapLinearFilter : THREE.LinearFilter, magFilter: THREE.LinearFilter, anisotropy: 8 });
   t.needsUpdate = true; return t;
 }
-const [tBase, tSdf, tDisp, tThick, tHigh] = await Promise.all([
+// The glass maps (~4 MB) load in the background: the opening (DOM type) never waits for them. Until they are in, the
+// sculpture is simply not drawn; the opening holds on its full three-word frame (see heroStep) for at most HOLD_MAX s,
+// so on a slow network the glass still condenses in its proper moment instead of popping in later.
+const blankTex = () => { const t = new THREE.DataTexture(new Uint8Array(4), 1, 1); t.needsUpdate = true; return t; };
+let tBase = blankTex(), tSdf = blankTex(), tDisp = blankTex(), tThick = blankTex(), tHigh = blankTex();
+let texReady = false, texFailed = false;
+const HOLD_MAX = 6;
+const texLoad = Promise.all([
   loadTex('assets/object-base.png', { premultiply: true, mip: true }), loadTex('assets/object-sdf.png'),
   loadTex('assets/object-displacement.png'), loadTex('assets/object-thickness.png'), loadTex('assets/object-highlight.png', { mip: true }),
-]);
+]).then(([a, b, c, d, e]) => {
+  Object.assign(U.tBase, { value: a }); U.tSdf.value = b; U.tDisp.value = c; U.tThick.value = d; U.tHigh.value = e;
+  texReady = true; quad.visible = true;
+}, () => { texReady = true; texFailed = true; });       // no glass rather than a stalled page
 const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: false, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance' });
 renderer.setClearColor(0x000000, 0); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.NoToneMapping;
 const scene = new THREE.Scene(), camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -377,7 +390,7 @@ function setQuad(b) {
   const y0 = 1 - (v.oy + (b[1] - g) * v.s) / v.vh * 2, y1 = 1 - (v.oy + (b[3] + g) * v.s) / v.vh * 2;
   const a = quadPos.array; a.set([x0, y1, 0, x1, y1, 0, x0, y0, 0, x0, y0, 0, x1, y1, 0, x1, y0, 0]); quadPos.needsUpdate = true;   // counter-clockwise (front-facing)
 }
-quad.frustumCulled = false; scene.add(quad);
+quad.frustumCulled = false; quad.visible = false; scene.add(quad);
 // The sculpture as a rigid plane in space: in-plane turn rz, turn in depth ax (about x) / ay (about y), uniform scale sc,
 // offset (dx, dy), seen through a long lens (focal F). Gives a real perspective shift without deforming the outline.
 const F = 2600;                                   // design px: lens length -> a visible but gentle keystone when it tips
@@ -530,7 +543,7 @@ function layout() {
     SQ.t = Math.min(Z.maxT * hn, Z.kT * short); SQ.b = Math.min(Z.maxB * hh, Z.kB * short);
     computeIntroMaps(); lastApplied = -1;                                       // the opening letters land on the moved words
     solveMobileObject();
-  } else { SQ.t = SQ.b = 0; }
+  } else { SQ.t = SQ.b = 0; if (LAY.BANDS && items.noto) { computeIntroMaps(); lastApplied = -1; } }
   // the only allocations: drawing buffer + optical copy, at DPR
   renderer.setPixelRatio(DPR); renderer.setSize(vw, vh, false);
   optical.width = Math.round(vw * DPR); optical.height = Math.round(vh * DPR);
@@ -566,7 +579,7 @@ let introMaps = {};
 function openingBands() {
   const Z = LAY.BANDS, top = -AY, bot = H + AY, Hr = bot - top;
   const g = Math.max(Z.gapMin, Z.gap * Hr), h = (Hr - 2 * g) / 3;
-  const l = -AX + Z.side, r = W + AX - Z.side;
+  const Ws = W + 2 * AX, l = -AX - Ws * Z.crop, r = W + AX + Ws * Z.crop;
   return { noto: [l, r, top, top + h], meets: [l, r, top + h + g, top + 2 * h + g], hito: [l, r, bot - h, bot], h, gap: g };
 }
 function computeIntroMaps() {
@@ -689,7 +702,13 @@ function prewarm() {
 }
 let t0 = performance.now(), manualT = 0, opticalDirty = true;
 const heroTime = (now) => MANUAL ? manualT : (now - t0) / 1000;
+let holdFrom = -1;
 function heroStep(now, dt, draw = true) {
+  // the glass maps are still loading: the opening rests on its full frame (all three words) until they arrive
+  if (!texReady && !MANUAL && started0) {
+    const tt = heroTime(now);
+    if (tt > T.hold) { if (holdFrom < 0) holdFrom = now; if (now - holdFrom < HOLD_MAX * 1000) t0 = now - T.hold * 1000; }
+  }
   const t = heroTime(now);
   // (lastApplied is set first: the refracted copy's redraw check must see the time being applied, not the previous one)
   const tc = Math.min(t, T.end); if (tc !== lastApplied) { lastApplied = tc; applyTimeline(tc); }
@@ -710,7 +729,8 @@ function heroStep(now, dt, draw = true) {
   replay.classList.toggle('on', t > T.end && ctl.exit.noto === 0 && ctl.pre < 0.05);
   return t;
 }
-function start(skipIntro) { t0 = performance.now() - (skipIntro ? (T.end + 0.1) * 1000 : 0); manualT = skipIntro ? T.end + 0.1 : 0; replay.classList.remove('on'); lastApplied = -1; }
+let started0 = false;
+function start(skipIntro) { started0 = true; t0 = performance.now() - (skipIntro ? (T.end + 0.1) * 1000 : 0); manualT = skipIntro ? T.end + 0.1 : 0; replay.classList.remove('on'); lastApplied = -1; }
 replay.addEventListener('click', () => start(false));
 
 /* ------------------------------------------------------------------ boot */
@@ -760,7 +780,7 @@ else addEventListener('resize', scheduleLayout, { passive: true });
 start(REDUCED || qs.has('skip'));
 
 export const hero = {
-  step: heroStep, start, T, items, MANUAL, REDUCED, setQuality, prewarm, layoutName: () => LAY.name,
+  step: heroStep, start, T, items, ready: texLoad, MANUAL, REDUCED, setQuality, prewarm, layoutName: () => LAY.name,
   // called by the page while the stage is hidden: the one moment a decided resolution change may be applied
   hiddenTick: () => { if (pendingDPR && pendingDPR < DPR) { DPR = pendingDPR; pendingDPR = 0; layout(); } },
   res: () => ({ DPR, PR, quality, decided, pendingDPR }),
