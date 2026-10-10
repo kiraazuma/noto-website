@@ -1,0 +1,10 @@
+{
+  "name": "noto-website",
+  "private": true,
+  "description": "出張輪島朝市 in 一橋祭 — NOTO meets HITOTSUBASHI",
+  "type": "module",
+  "scripts": {
+    "dev": "node tools/serve.mjs 5173",
+    "start": "node tools/serve.mjs 5173"
+  }
+}

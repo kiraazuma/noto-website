@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>出張輪島朝市 in 一橋祭 — NOTO meets HITOTSUBASHI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,700..900&family=Noto+Sans+JP:wght@500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Murecho:wght@900&display=swap&text=9%E3%80%81%E3%80%82%E3%80%85%E3%81%84%E3%81%8B%E3%81%8C%E3%81%8D%E3%81%8F%E3%81%97%E3%81%99%E3%81%9A%E3%81%9D%E3%81%9F%E3%81%A1%E3%81%A3%E3%81%A4%E3%81%A6%E3%81%A7%E3%81%AE%E3%81%AF%E3%82%82%E3%82%89%E3%82%8B%E3%82%8C%E3%82%92%E3%82%B9%E3%83%8B%E3%83%A5%E3%83%BC%E4%BA%AC%E4%BC%9A%E4%BD%95%E5%B0%91%E5%B3%B6%E6%97%A5%E6%9A%AE%E6%9C%88%E6%9D%B1%E6%A9%9F%E6%B8%9B%E7%99%BB%E7%9B%B4%E7%A7%81%E7%AB%8B%E7%B6%9A%E8%83%BD%E8%A6%8B%E8%A8%AA%E8%BC%AA%E9%81%A0%E9%9B%A2">
+<meta name="description" content="出張輪島朝市 in 一橋祭 — 2026.11.21–23 一橋大学 国立西キャンパス。能登の「いま」を東京へ。輪島朝市の出張販売・特別講演・復興応援フリーペーパー。">
+<meta name="theme-color" content="#FCFAEF">
+<link rel="stylesheet" href="styles/site.css">
+</head>
+<body>
+
+<div id="stage" role="img" aria-label="NOTO meets HITOTSUBASHI">
+  <h1 class="sr">NOTO meets HITOTSUBASHI — 出張輪島朝市 in 一橋祭 2026.11.21–23 一橋大学 国立キャンパス</h1>
+  <div id="design" aria-hidden="true"><div id="typo"></div></div>
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div id="hinfo" aria-hidden="true"></div>
+  <div id="flash" aria-hidden="true"></div>
+</div>
+<div id="veil" aria-hidden="true"></div>
+<!-- EDIT: Statement（3つの文章。.l.d = PC の改行、.l.m = スマホの改行。文字を増やしたら HANDOFF.md §4） -->
+<section id="statement" aria-label="この企画について" aria-live="polite">
+  <!-- each statement has a desktop setting (.d) and a phone setting (.m): the same words, broken for the narrow screen -->
+  <p class="st"><span class="l d">東京で能登のニュースを見る機会は、</span><span class="l d">少しずつ減っている。</span><span class="l m">東京で能登の</span><span class="l m">ニュースを見る機会は、</span><span class="l m">少しずつ減っている。</span></p>
+  <p class="st"><span class="l d">それでも能登では、</span><span class="l d">暮らしを立て直す日々が続いている。</span><span class="l m">それでも能登では、</span><span class="l m">暮らしを立て直す</span><span class="l m">日々が続いている。</span></p>
+  <p class="st"><span class="l d">9月、私たちは輪島を訪れた。</span><span class="l d">遠く離れた東京で、</span><span class="l d">何ができるのか。</span><span class="l m">9月、私たちは</span><span class="l m">輪島を訪れた。</span><span class="l m">遠く離れた東京で、</span><span class="l m">何ができるのか。</span></p>
+</section>
+<button id="replay" type="button" aria-label="オープニングをもう一度再生">↺</button>
+
+<main id="page">
+
+  <!-- EVENT SUMMARY -->
+  <!-- EDIT: Event Summary（タイトル・日付・3企画・スマホだけの会場行 .s-meta） -->
+  <section id="summary" aria-label="一橋祭で行うこと">
+    <div class="fr">
+      <h2 class="sp s-anchor">出張輪島朝市<br><span class="in">in</span>一橋祭</h2>
+      <p class="sp s-date" style="margin:0">2026.11.21–23</p>
+      <ul class="sp s-band" aria-label="企画"><li><i>01</i><b>出張輪島朝市</b></li><li class="sl" aria-hidden="true"></li><li><i>02</i><b>特別講演</b></li><li class="sl" aria-hidden="true"></li><li><i>03</i><b>復興応援フリーペーパー</b></li></ul>
+      <a class="sp s-cue" href="#index" aria-label="INDEXへ移動">INDEX<b aria-hidden="true">↓</b></a>
+      <p class="sp s-meta">一橋大学 国立西キャンパス<br>JR国立駅 南口から徒歩約10分　<b>入場無料</b></p>
+    </div>
+  </section>
+
+  <!-- ACCORDION INDEX -->
+  <section id="index" aria-label="INDEX">
+    <div class="ihead"><span class="meta">INDEX</span><div class="rl"></div></div>
+
+    <!-- EDIT: 01 朝市 -->
+    <div class="item deep" id="asaichi">
+      <button class="row" type="button" aria-expanded="false" aria-controls="p-asaichi"><span class="meta num">01</span><i class="mk"></i><span class="jw"><span class="c1">朝</span><span class="c2">市</span></span><span class="info">輪島塗・干物・あなご焼き・海藻<b>→</b></span><span class="en">ASAICHI</span><span class="cl">CLOSE<b>↑</b></span><div class="rl"></div><i class="rx"></i><i class="seg"></i></button>
+      <div class="panel" id="p-asaichi" role="region" aria-label="朝市"><div class="pin">
+        <div class="c-l">
+          <div class="L fig">1000+</div>
+          <p class="M" style="margin-top:calc(26*var(--p))">平安時代から千年以上<br>続くとされる輪島朝市。</p>
+          <p class="S" style="margin-top:calc(14*var(--p))">2024年元日の大地震と大規模火災によって、街の一角は更地となりました。それでも「ここがあるから乗り越えられる」と、全国各地でテントを張って始まったのが「出張輪島朝市」です。</p>
+        </div>
+        <div class="c-r">
+          <p class="lab">At Hitotsubashi-sai<b>一橋祭で</b></p>
+          <div class="L date">2026.11.21–23</div>
+          <p class="S" style="margin-top:calc(12*var(--p))">一橋大学 国立西キャンパス　屋外特設テント</p>
+          <p class="lab" style="margin-top:calc(36*var(--p))">On sale<b>並ぶもの</b></p>
+          <ul class="goods">
+            <li><div class="rl"></div><span class="g">輪島塗</span><span class="k">お箸・漆器</span></li>
+            <li><div class="rl"></div><span class="g">干物</span><span class="k">名産乾物</span></li>
+            <li><div class="rl"></div><span class="g">あなご焼き</span><span class="k">名産乾物</span></li>
+            <li><div class="rl"></div><span class="g">海藻</span><span class="k">名産乾物</span></li>
+          </ul>
+        </div>
+      </div></div>
+      <div class="rl bot"></div>
+    </div>
+
+    <!-- EDIT: 02 催し -->
+    <div class="item" id="program">
+      <button class="row" type="button" aria-expanded="false" aria-controls="p-program"><span class="meta num">02</span><i class="mk"></i><span class="jw"><span class="c1">催</span><span class="c2">し</span></span><span class="info">朝市　／　特別講演会　／　フリーペーパー<b>→</b></span><span class="en">PROGRAM</span><span class="cl">CLOSE<b>↑</b></span><div class="rl"></div><i class="rx"></i><i class="seg"></i></button>
+      <div class="panel" id="p-program" role="region" aria-label="催し"><div class="pin">
+        <div class="c-f prog3">
+          <div><div class="rl"></div><span class="no">01</span><span class="t">出張輪島朝市</span><span class="st">本場の味と技</span><span class="d">国立西キャンパス<br>名産海産物、輪島塗の直売<br>現地の方が販売にいらっしゃいます</span></div>
+          <div><div class="rl"></div><span class="no">02</span><span class="t">特別講演会</span><span class="st">現地の高校生が伝える能登のいま</span><span class="d">登壇：輪島高校3年 中村輝人さん<br>実体験の証言・活動報告・参加者との質疑応答</span></div>
+          <div><div class="rl"></div><span class="no">03</span><span class="t">復興応援フリーペーパー</span><span class="st">学生が見つめた能登のいま</span><span class="d">発行：能登を応援する一橋有志の会<br>朝市ブース・講演会会場にて無料配架</span></div>
+        </div>
+      </div></div>
+      <div class="rl bot"></div>
+    </div>
+
+    <!-- EDIT: 03 能登 -->
+    <div class="item deep" id="noto">
+      <button class="row" type="button" aria-expanded="false" aria-controls="p-noto"><span class="meta num">03</span><i class="mk"></i><span class="jw"><span class="c1">能</span><span class="c2">登</span></span><span class="info">報道が減っても、現場の歩みは続く<b>→</b></span><span class="en">NOTO</span><span class="cl">CLOSE<b>↑</b></span><div class="rl"></div><i class="rx"></i><i class="seg"></i></button>
+      <div class="panel" id="p-noto" role="region" aria-label="能登"><div class="pin">
+        <div class="c-l"><p class="lab">Current reality<b>朝市と能登</b></p><p class="big">報道が減っても、<br>現場の歩みは続く。</p></div>
+        <div class="c-r" style="padding-top:calc(26*var(--p))"><p class="S">東京ではニュースで見かける回数が減っても、現地では解体やインフラ復旧、生活再建に向けた泥臭い日々が続いています。私たちが9月の取材で肌で感じたのは、「忘れ去られることへの怖さ」と「前を向く人たちの底力」でした。</p></div>
+      </div></div>
+      <div class="rl bot"></div>
+    </div>
+
+    <!-- EDIT: 04 応援 -->
+    <div class="item" id="support">
+      <button class="row" type="button" aria-expanded="false" aria-controls="p-support"><span class="meta num">04</span><i class="mk"></i><span class="jw"><span class="c1">応</span><span class="c2">援</span></span><span class="info">クラウドファンディング　／　協賛<b>→</b></span><span class="en">SUPPORT</span><span class="cl">CLOSE<b>↑</b></span><div class="rl"></div><i class="rx"></i><i class="seg"></i></button>
+      <div class="panel" id="p-support" role="region" aria-label="応援"><div class="pin">
+        <div class="c-l">
+          <p class="lab">Crowdfunding<b>CAMPFIREにて挑戦中</b></p>
+          <p class="M">能登の声を東京へ届けるため、<br>クラウドファンディングに挑戦しています。</p>
+          <p class="cta-na">CAMPFIRE 支援ページ<small>URL未設定</small></p>
+        </div>
+        <div class="c-r">
+          <p class="lab">Use of funds<b>支援金の使い道</b></p>
+          <ul class="list uses last">
+            <li><div class="rl"></div><span class="no">01</span><span><b>朝市の誘致・運営費</b>輪島からの出店者の交通・宿泊費、機材・保冷輸送の実費</span></li>
+            <li><div class="rl"></div><span class="no">02</span><span><b>高校生講演会の開催費</b>中村さんの渡航滞在費、音響・配信機材、記録用資材</span></li>
+            <li><div class="rl"></div><span class="no">03</span><span><b>フリーペーパー印刷費</b>9月現地取材の制作費と、来場者へ無料配布するための印刷代</span></li>
+          </ul>
+        </div>
+        <div class="c-f">
+          <p class="lab">Sponsorship<b>企業・団体協賛</b></p>
+          <div class="tiers"><div class="rl"></div>
+            <div><span class="t">BRONZE</span><span class="L">¥10,000</span><span class="u">1口</span></div>
+            <div><span class="t">SILVER</span><span class="L">¥20,000</span><span class="u">1口</span></div>
+            <div><span class="t">GOLD</span><span class="L">¥50,000</span><span class="u">1口</span></div>
+            <div><span class="t">PLATINUM</span><span class="L">¥100,000</span><span class="u">1口・特別協賛</span></div>
+            <p class="S note">企業・団体協賛を募集しています。協賛趣意書・請求書払いのご相談は随時承っております。</p>
+          </div>
+        </div>
+      </div></div>
+      <div class="rl bot"></div>
+    </div>
+
+    <!-- EDIT: 05 案内（開催情報） -->
+    <div class="item deep" id="info">
+      <button class="row" type="button" aria-expanded="false" aria-controls="p-info"><span class="meta num">05</span><i class="mk"></i><span class="jw"><span class="c1">案</span><span class="c2">内</span></span><span class="info">国立西キャンパス　／　入場無料<b>→</b></span><span class="en">INFO</span><span class="cl">CLOSE<b>↑</b></span><div class="rl"></div><i class="rx"></i><i class="seg"></i></button>
+      <div class="panel" id="p-info" role="region" aria-label="案内"><div class="pin">
+        <div class="c-f table2">
+          <ul class="list table last">
+            <li><div class="rl"></div><span class="k">日程</span><span class="v">2026.11.21–23<small>一橋祭 会期中・3日間</small></span></li>
+            <li><div class="rl"></div><span class="k">会場</span><span class="v">一橋大学 国立西キャンパス<small>屋外広場・教室（東京都国立市中2-1）</small></span></li>
+            <li><div class="rl"></div><span class="k">アクセス</span><span class="v">JR中央線 国立駅 南口から徒歩約10分<small>大学通りをまっすぐ</small></span></li>
+          </ul>
+          <ul class="list table last">
+            <li><div class="rl"></div><span class="k">入場</span><span class="v">無料<small>どなたでも自由にご来場いただけます</small></span></li>
+            <li><div class="rl"></div><span class="k">主催</span><span class="v">能登を応援する一橋有志の会</span></li>
+            <li><div class="rl"></div><span class="k">特別協力</span><span class="v">輪島朝市を応援する会</span></li>
+          </ul>
+        </div>
+        <div class="end" aria-hidden="true"><span id="endmark">NOTO meets HITOTSUBASHI</span></div>
+      </div></div>
+      <div class="rl bot"></div>
+    </div>
+  </section>
+
+  <!-- EDIT: フッター（外部リンク・SNS。一覧は LINKS.md） -->
+  <footer id="foot">
+    <div class="fcols">
+      <div class="fcol site"><h4>SITE</h4><ul><li><a href="#asaichi">朝市</a></li><li><a href="#program">催し</a></li><li><a href="#noto">能登</a></li><li><a href="#support">応援</a></li><li><a href="#info">案内</a></li></ul></div>
+      <div class="fcol"><h4>RELATED</h4><ul><li><a class="ext" href="https://wajima-asaichi.info/" target="_blank" rel="noopener noreferrer">輪島朝市公式<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li><li><a class="ext" href="https://s-wajima-asaichi.com/" target="_blank" rel="noopener noreferrer">輪島朝市を応援する会<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li><li><a class="ext" href="https://wajima2024.stores.jp/" target="_blank" rel="noopener noreferrer">公式オンラインストア<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li></ul></div>
+      <div class="fcol"><h4>SUPPORT</h4><ul><li><span class="na">クラウドファンディング<small>URL未設定</small></span></li><li><a href="#support">企業・団体協賛</a></li></ul></div>
+      <div class="fcol"><h4>SOCIAL</h4><ul><li><a class="ext" href="https://x.com/hit_asaichi" target="_blank" rel="noopener noreferrer"><b class="h">X</b>@hit_asaichi<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li><li><a class="ext" href="https://www.instagram.com/hit_asaichi" target="_blank" rel="noopener noreferrer"><b class="h">Instagram</b>@hit_asaichi<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li></ul></div>
+      <a class="totop" href="#summary" id="totop" aria-label="ページの先頭へ戻る">TOP<b aria-hidden="true">↑</b></a>
+    </div>
+    <div class="fbar"><div class="rl"></div><span>出張輪島朝市 in 一橋祭　主催：能登を応援する一橋有志の会</span><span>© 2026 能登を応援する一橋有志の会</span></div>
+  </footer>
+</main>
+
+<script type="importmap">
+{ "imports": { "three": "./vendor/three/three.module.js" } }
+</script>
+<script type="module" src="scripts/main.js"></script>
+</body>
+</html>

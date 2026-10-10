@@ -1,0 +1,401 @@
+/* base (the same defaults the page was designed and tested with) */
+:root{box-sizing:border-box}
+body{font-size:14px}
+img{max-width:100%}
+[hidden]:not([hidden=until-found i]){display:none!important}
+
+/* Poster -> digital sculpture -> minimal editorial interface.
+   The hero is the back plane. A deep-cobalt statement sheet is laid over it; the INDEX and the sections follow on paper.
+   After the hero: few elements, extreme scale, one focal point per view, motion only on state changes.
+   --p = one px of the 1600 x 900 poster frame. */
+:root{
+  --paper:#FCFAEF; --cobalt:#0130E2; --orange:#FD5500; --deep:#0A219C;
+  --ivory:#FCFAEF; --mist:rgba(252,250,239,.6); --line-d:rgba(252,250,239,.38);
+  --lat:"Archivo",system-ui,sans-serif; --jp:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1); --ease-s:cubic-bezier(.65,0,.35,1);
+  /* Desktop responsive units (all CSS, no JS):
+     --p  one px of the 1600 x 900 reference, fluid with the smaller of width / height, floored and capped
+     --t  the same for small text, never below 0.86 px per reference px (labels / body stay readable on laptops) */
+  --p:clamp(0.6px, min(calc(100vw / 1600), calc(100vh / 900)), 1.3px);
+  --t:max(var(--p), 0.86px);
+  --vh:100vh;
+  color-scheme:light;
+  scrollbar-width:thin; scrollbar-color:var(--cobalt) transparent;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);font-family:var(--jp);color:var(--cobalt);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------------------------------------------------------------- hero: the back plane (fixed) */
+#stage{position:fixed;inset:0;overflow:hidden;background:var(--paper);z-index:1;transform-origin:50% 50%;will-change:transform,filter}
+#design,#hinfo{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0}
+#hinfo{pointer-events:none}
+#typo .g,#hinfo .g{position:absolute;left:0;top:0;width:0;height:0;transform-origin:0 0;will-change:transform,opacity}
+#typo .t,#hinfo .t{position:absolute;width:0;height:0;transform-origin:0 0}
+#typo .t>span,#hinfo .t>span{position:absolute;left:0;white-space:pre}
+#gl{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+#replay{position:fixed;right:24px;top:24px;width:40px;height:40px;border:1px solid var(--cobalt);background:var(--paper);color:var(--cobalt);
+  font:600 18px/1 var(--lat);cursor:pointer;opacity:0;transition:opacity .5s var(--ease);display:grid;place-items:center;z-index:5;pointer-events:none}
+#replay.on{opacity:1;pointer-events:auto}
+#replay:hover,#replay:focus-visible{background:var(--cobalt);color:var(--paper);outline:none}
+#replay:focus-visible{box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--orange)}
+
+/* ---------------------------------------------------------------- page */
+#page{position:relative;z-index:2}
+.rl{position:absolute;left:calc(56*var(--p));right:0;height:1px;background:currentColor}
+.rl.top{top:0}.rl.bot{bottom:0}
+
+/* ---------------------------------------------------------------- statement: the hero's second state
+   back    the hero scene, defocused and slightly closer (larger), type gone, the sculpture as light and silhouette
+   middle  deep-cobalt air over the whole viewport: tint + falloff toward the edges + a faint grain
+   front   one statement, set as a composed block of display type (Murecho Black, 92% width, tight tracking),
+           lines of different lengths stepped across the centre; only the type is in focus */
+#veil{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0;
+  background:radial-gradient(85% 75% at 46% 48%,rgba(10,40,182,.66) 0%,rgba(7,30,152,.80) 48%,rgba(4,17,96,.92) 82%,rgba(2,10,62,.96) 100%)}
+
+#statement{position:fixed;inset:0;z-index:3;pointer-events:none;color:var(--ivory)}
+/* one rule for every statement: same optical centre (a little above the geometric one), same size, weight, measure,
+   leading and tracking; three balanced lines; trailing punctuation hangs outside so the words themselves are centred */
+#statement .st{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);margin:0;opacity:0;white-space:nowrap;text-align:center;
+  font-family:"Murecho",var(--jp);font-weight:900;font-size:clamp(52px,calc(80*var(--p)),96px);line-height:1.22}
+#statement .l{display:block;transform-origin:50% 50%;transform:scaleX(.94);letter-spacing:-.03em;opacity:0}
+#statement .l.m{display:none}
+#statement.anim .l{will-change:opacity,filter}
+#veil{will-change:opacity}
+#summary.anim .sp{will-change:opacity,filter}
+#page.anim{will-change:opacity}
+#statement .o{color:var(--orange)}
+#statement .pp{margin-right:-.42em}
+#statement .pp.hang{margin-right:-1em}
+.meta{font:700 calc(15*var(--t))/1 var(--lat);letter-spacing:.02em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.orange{color:var(--orange)}
+
+
+/* ---------------------------------------------------------------- EVENT SUMMARY: an ordinary section, the first one on the page
+   1 出張輪島朝市 in 一橋祭 / 2 the date / 3 the three programmes; type only, set inside the 1600 x 900 frame */
+body.intro #page{visibility:hidden}
+#summary{position:relative;height:var(--vh);min-height:calc(900*var(--p));background:var(--paper);overflow:hidden}
+/* grid: free space above (1fr) | title + date | the gap to the band | band | free space below (1.55fr: the block sits
+   a little above centre, as at the 1440 / 1600 reference) — INDEX in the corner */
+#summary .fr{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr) auto;
+  grid-template-rows:1fr auto calc(130*var(--p)) auto 1.55fr;padding:0 calc(56*var(--p)) 0 calc(50*var(--p))}
+#summary .sp{position:relative}
+/* title: one block of two lines (tight leading, "in" set smaller and tighter so it sits in the Japanese line) */
+.s-anchor{grid-area:2/1/3/2;align-self:end;margin:0;font:900 calc(184*var(--p))/.96 var(--jp);letter-spacing:-.03em;white-space:nowrap}
+.s-anchor .in{font-family:var(--lat);font-weight:800;font-stretch:72%;font-size:.8em;letter-spacing:-.03em;margin-right:.1em}
+/* date: second; its baseline on the title's last line */
+.s-date{grid-area:2/2/3/3;align-self:end;margin:0 0 calc(-17*var(--p)) calc(40*var(--p));font:900 calc(96*var(--p))/1 var(--lat);font-stretch:68%;color:var(--orange);letter-spacing:-.01em;white-space:nowrap}
+/* the three programmes: one typographic band, full measure, between two rules; orange slashes; small numbers */
+.s-band{grid-area:4/1/5/3;margin:0 0 0 calc(6*var(--p));padding:calc(26*var(--p)) 0 calc(30*var(--p));list-style:none;
+  display:flex;justify-content:space-between;align-items:center;gap:calc(24*var(--p))}
+.s-band::before,.s-band::after{content:"";position:absolute;left:0;right:0;height:1px;background:currentColor}
+.s-band::before{top:0}.s-band::after{bottom:0}
+.s-band li{display:flex;align-items:flex-start;white-space:nowrap}
+.s-band i{font:700 calc(12*var(--t))/1 var(--lat);font-style:normal;letter-spacing:.08em;margin:calc(4*var(--p)) calc(12*var(--p)) 0 0;font-variant-numeric:tabular-nums}
+.s-band b{font:900 calc(60*var(--p))/1 var(--jp);letter-spacing:-.02em}
+.s-band .sl{flex:none;width:1px;height:calc(64*var(--p));background:var(--orange);transform:rotate(22deg)}
+/* INDEX cue: last, small, in the bottom-right corner */
+#summary .s-cue{position:absolute;right:calc(56*var(--p));bottom:calc(30*var(--p));text-decoration:none;display:inline-flex;gap:calc(8*var(--p));align-items:center;
+  font:700 calc(11*var(--t))/1 var(--lat);letter-spacing:.16em}
+.s-cue b{color:var(--orange);font-weight:900}
+.s-meta{display:none}
+
+/* ---------------------------------------------------------------- INDEX: navigation and content container in one
+   closed: five rows, the composition centred in the viewport.  open: the row itself grows and holds its content;
+   the others stay below as closed rows.  one open at a time. */
+#index{position:relative;background:var(--paper);min-height:var(--vh);padding:max(0px,calc((var(--vh) - 684*var(--p)) / 2 - 12*var(--p))) 0 0}
+.ihead{position:relative;height:calc(44*var(--p));display:flex;align-items:center;padding:0 calc(56*var(--p))}
+.ihead .rl{bottom:0}
+.item{position:relative;isolation:isolate}
+.item::before{content:"";position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity .62s var(--ease-s) .04s;pointer-events:none}
+.item.deep::before{background:var(--deep)}.item.cob::before{background:var(--cobalt)}
+.item.open::before{opacity:1}
+.item:is(.deep,.cob){transition:color .5s var(--ease-s)}
+.item.anim .pin{will-change:opacity,transform}
+.item>.rl.bot{bottom:0;opacity:0;transition:opacity .5s var(--ease)}
+.item.open>.rl.bot{opacity:1}
+.row{position:relative;display:block;width:100%;height:calc(128*var(--p));overflow:hidden;color:inherit;background:none;border:0;padding:0;margin:0;
+  text-align:left;font:inherit;cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent}
+.row .num{position:absolute;left:calc(56*var(--p));top:calc(20*var(--p));transition:color .45s var(--ease)}
+.row .mk{position:absolute;left:calc(86*var(--p));top:calc(18*var(--p));width:calc(9*var(--p));height:calc(9*var(--p));background:var(--orange);transform:scale(0);transition:transform .45s var(--ease)}
+.jw{position:absolute;white-space:nowrap;font-family:var(--jp);font-weight:900;line-height:1;transform-origin:0 0;margin:0}
+.jw span{display:inline-block}
+.row .jw{left:calc(190*var(--p));top:calc(11*var(--p));font-size:calc(108*var(--p));letter-spacing:-.02em}
+.row .c2{transition:transform .7s var(--ease)}
+.row .jw{transition:transform .7s var(--ease)}
+.row .info{position:absolute;left:calc(342*var(--p));top:calc(88*var(--p));font:700 calc(15*var(--t))/1.2 var(--jp);letter-spacing:.06em;white-space:nowrap;
+  clip-path:inset(-4px 100% -4px 0);transition:clip-path .55s var(--ease)}
+.row .info b{font:900 calc(15*var(--t))/1 var(--lat);color:var(--orange);margin-left:calc(12*var(--p))}
+.row .en{position:absolute;right:calc(56*var(--p));top:calc(92*var(--p));font:700 calc(15*var(--t))/1 var(--lat);letter-spacing:.08em}
+.row .cl{position:absolute;right:calc(56*var(--p));top:calc(20*var(--p));font:700 calc(12*var(--t))/1 var(--lat);letter-spacing:.16em;opacity:0;
+  transform:translate3d(0,calc(-6*var(--p)),0);transition:opacity .5s var(--ease),transform .55s var(--ease),color .45s var(--ease)}
+.row .cl b{color:var(--orange);margin-left:calc(8*var(--p))}
+.row .rl{bottom:0}
+.row .rx{position:absolute;left:0;right:0;bottom:0;height:2px;margin-bottom:-.5px;background:currentColor;transform:scaleX(0);transform-origin:0 50%;transition:transform .6s var(--ease)}
+.row .seg{position:absolute;left:calc(298*var(--p));bottom:0;height:2px;margin-bottom:-.5px;width:calc(560*var(--p));background:var(--orange);
+  transform:scaleX(0);transform-origin:0 50%;transition:transform .6s var(--ease)}
+/* closed row, B state (hover / focus) */
+.item:not(.open):not(.calm)>.row:is(:hover,:focus-visible,.on) .c2{transform:translateX(calc(560*var(--p)))}
+.item:not(.open):not(.calm)>.row:is(:hover,:focus-visible,.on) .info{clip-path:inset(-4px 0 -4px 0);transition-delay:.12s}
+.item:not(.open):not(.calm)>.row:is(:hover,:focus-visible,.on) .num{color:var(--orange)}
+.item:not(.open):not(.calm)>.row:is(:hover,:focus-visible,.on) .rx{transform:none}
+.item:not(.open):not(.calm)>.row:is(:hover,:focus-visible,.on) .seg{transform:scaleX(1)}
+/* open row: the current location. orange number and mark, the rule full-bleed and doubled, the orange segment under
+   the word, the English label opened out, CLOSE in the corner */
+.item.open>.row .num{color:var(--orange)}
+.item.open>.row .mk{transform:none}
+.item.open>.row .rx{transform:none}
+.item.open>.row .jw{transform:translate3d(0,calc(-4*var(--p)),0)}
+.item.open>.row .seg{left:calc(190*var(--p));width:calc(214*var(--p));transform:scaleX(1);transition-delay:.1s}
+.item.open>.row .cl{opacity:1;transform:none;transition-delay:.15s,.15s,0s}
+.item.open>.row:is(:hover,:focus-visible) .cl{color:var(--orange)}
+.item:is(.deep,.cob).open{color:var(--ivory)}
+.item:is(.deep,.cob) .pin .rl,.item:is(.deep,.cob)>.rl.bot{color:var(--line-d)}
+.item:is(.deep,.cob) .list.last li:last-child{border-color:var(--line-d)}
+
+/* the content inside a row: grid  margin(=row word start) | left 520 | gutter | right | margin
+   one lead (a figure or a sentence) on the left, the facts on the right; nothing stretched */
+.panel{height:0;overflow:hidden}
+.item.open>.panel{height:auto}
+.pin{display:grid;grid-template-columns:calc(190*var(--p)) calc(520*var(--p)) calc(80*var(--p)) 1fr calc(56*var(--p));
+  row-gap:calc(36*var(--p));padding:calc(44*var(--p)) 0 calc(64*var(--p));align-items:start}
+.c-l{grid-column:2/3}.c-r{grid-column:4/5}.c-f{grid-column:2/5}
+/* type scale: XL figures / L dates / M leads / S text / labels */
+.L{font:900 calc(80*var(--p))/.92 var(--lat);font-stretch:68%;letter-spacing:-.015em;white-space:nowrap}
+.M{font:900 calc(26*var(--p))/1.5 var(--jp);letter-spacing:.02em;margin:0}
+.S{font:500 calc(15*var(--t))/1.95 var(--jp);letter-spacing:.04em;margin:0}
+.lab{font:700 calc(12*var(--t))/1.3 var(--lat);letter-spacing:.16em;text-transform:uppercase;margin:0 0 calc(14*var(--p))}
+.lab b{font:700 calc(12*var(--t))/1.3 var(--jp);letter-spacing:.08em;margin-left:calc(10*var(--p));opacity:.7}
+.list{list-style:none;margin:0;padding:0}
+.list li{position:relative;display:grid;align-items:baseline;padding:calc(15*var(--p)) 0}
+.list li .rl{left:0;top:0}
+.list.last li:last-child{border-bottom:1px solid currentColor}
+/* 01 朝市 (cobalt) */
+#asaichi .fig{font-size:calc(132*var(--p));line-height:.86}
+#asaichi .goods{display:grid;grid-template-columns:1fr 1fr;column-gap:calc(32*var(--p));list-style:none;margin:0;padding:0}
+#asaichi .goods li{position:relative;padding:calc(14*var(--p)) 0 calc(16*var(--p));display:flex;justify-content:space-between;align-items:baseline}
+#asaichi .goods li .rl{left:0;top:0}
+#asaichi .goods .g{font:900 calc(30*var(--p))/1.1 var(--jp);letter-spacing:.01em}
+#asaichi .goods .k{font:700 calc(12*var(--t))/1 var(--jp);letter-spacing:.08em;opacity:.7}
+#asaichi .date{font-size:calc(72*var(--p))}
+/* 02 催し */
+.prog3{display:grid;grid-template-columns:repeat(3,1fr);column-gap:calc(40*var(--p))}
+.prog3>div{position:relative;padding-top:calc(20*var(--p));display:flex;flex-direction:column}
+.prog3>div>.rl{left:0;top:0}
+.prog3 .no{font:900 calc(64*var(--p))/.9 var(--lat);font-stretch:68%}
+.prog3 .t{font:900 calc(30*var(--p))/1.3 var(--jp);letter-spacing:.01em;margin-top:calc(22*var(--p))}
+.prog3 .st{font:700 calc(15*var(--t))/1.6 var(--jp);letter-spacing:.04em;margin-top:calc(4*var(--p))}
+.prog3 .d{font:500 calc(14*var(--t))/1.85 var(--jp);letter-spacing:.04em;margin-top:calc(14*var(--p));opacity:.8}
+/* 03 能登 (deep) */
+#support .M{font-size:calc(24*var(--p))}
+#noto .big{font:900 calc(48*var(--p))/1.3 var(--jp);letter-spacing:-.01em;margin:0}
+#noto .S{font-size:calc(16*var(--t));line-height:2.05}
+/* 04 応援 */
+.uses li{grid-template-columns:calc(40*var(--p)) 1fr;padding:calc(13*var(--p)) 0}
+.uses .no{font:700 calc(12*var(--t))/1.8 var(--lat);letter-spacing:.06em}
+.uses b{font:900 calc(17*var(--t))/1.6 var(--jp);display:block}
+.uses span{font:500 calc(14*var(--t))/1.7 var(--jp);letter-spacing:.03em}
+/* not a link yet: plain text, no arrow, no pointer (the CAMPFIRE URL is not confirmed) */
+.cta-na{display:flex;gap:calc(12*var(--p));align-items:baseline;margin:calc(24*var(--p)) 0 0;font:700 calc(15*var(--t))/1 var(--jp);opacity:.6;cursor:default}
+.cta-na small{font:700 calc(10*var(--t))/1 var(--lat);letter-spacing:.1em}
+.tiers{display:grid;grid-template-columns:repeat(4,1fr);position:relative;padding-top:calc(16*var(--p))}
+.tiers>.rl{left:0;top:0}
+.tiers div{display:grid;gap:calc(8*var(--p))}
+.tiers .t{font:700 calc(11*var(--t))/1 var(--lat);letter-spacing:.16em}
+.tiers .L{font-size:calc(56*var(--p))}
+.tiers .u{font:700 calc(12*var(--t))/1 var(--jp);letter-spacing:.06em;opacity:.75}
+.tiers .note{grid-column:1/-1;margin-top:calc(16*var(--p))}
+/* 05 案内 (deep) */
+.table2{display:grid;grid-template-columns:1fr 1fr;column-gap:calc(80*var(--p))}
+.table li{grid-template-columns:calc(116*var(--p)) 1fr;padding:calc(16*var(--p)) 0}
+.table .k{font:700 calc(13*var(--t))/1.7 var(--jp);letter-spacing:.1em;opacity:.65}
+.table .v{font:900 calc(20*var(--p))/1.5 var(--jp);letter-spacing:.02em}
+.table .v small{display:block;font:500 calc(14*var(--t))/1.6 var(--jp);letter-spacing:.03em;opacity:.7}
+#info .pin{padding-bottom:0}
+#info.open>.rl.bot{opacity:0}
+/* the closing line forms the bottom edge of 案内: one line across the full width (a hair of air at each side), the feet sunk below the edge */
+.end{grid-column:1/-1;position:relative;overflow:hidden;margin-top:calc(80*var(--p));padding:0;color:var(--ivory)}
+#endmark{display:block;width:max-content;font-family:var(--lat);font-weight:900;font-stretch:62.5%;letter-spacing:-.04em;word-spacing:.06em;line-height:1;white-space:nowrap}
+
+/* ---------------------------------------------------------------- footer: utility */
+#foot{background:var(--paper);color:var(--cobalt);padding:calc(48*var(--p)) clamp(32px,calc(56*var(--p)),72px) calc(30*var(--p));position:relative}
+.fcols{display:grid;grid-template-columns:repeat(4,minmax(168px,360px)) 1fr;column-gap:clamp(20px,2.4vw,48px);align-items:start}
+.fcols .totop{justify-self:end}
+.fcol h4{margin:0 0 calc(18*var(--p));font:700 calc(11*var(--t))/1 var(--lat);letter-spacing:.18em;opacity:.55}
+.fcol ul{list-style:none;margin:0;padding:0;display:grid;gap:calc(9*var(--p))}
+.fcol.site ul{grid-template-columns:repeat(5,auto);justify-content:start;column-gap:calc(22*var(--p))}
+.fcol a,.fcol span{white-space:nowrap;font:700 calc(14*var(--t))/1.4 var(--jp);letter-spacing:.04em;text-decoration:none}
+.fcol .na{opacity:.5;cursor:default}
+.fcol small{font:700 calc(9*var(--t))/1 var(--lat);letter-spacing:.12em;margin-left:calc(8*var(--p))}
+.fcol .h{font:700 calc(12*var(--t))/1 var(--lat);letter-spacing:.04em;opacity:.6;margin-right:calc(10*var(--p))}
+.fcol .ar{font:900 calc(11*var(--t))/1 var(--lat);font-style:normal;color:var(--orange);margin-left:calc(6*var(--p))}
+.totop{align-self:start;font:700 calc(11*var(--t))/1 var(--lat);letter-spacing:.18em;text-decoration:none;display:inline-flex;gap:calc(8*var(--p));opacity:.7}
+.totop b{color:var(--orange)}
+.totop:hover,.totop:focus-visible{opacity:1}
+.fbar{position:relative;display:flex;justify-content:space-between;margin-top:calc(44*var(--p));padding-top:calc(16*var(--p));font:500 calc(11*var(--t))/1.4 var(--jp);letter-spacing:.06em;opacity:.6}
+.fbar .rl{left:0;top:0}
+
+/* ---------------------------------------------------------------- links: one language (text, orange rule, arrow)
+   hover: an orange rule under the text.  keyboard focus: a thicker orange rule + orange text (never the browser ring
+   alone, never removed without a replacement).  tap targets are padded to ~44 px without moving the layout. */
+.fcol a,.totop,.s-cue{position:relative;color:inherit;text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  text-decoration-line:underline;text-decoration-color:transparent;text-decoration-thickness:1px;text-underline-offset:.32em;
+  transition:text-decoration-color .45s var(--ease),color .45s var(--ease)}
+.fcol a{display:inline-block;padding:11px 0;margin:-11px 0}
+.fcol.site a{padding:11px 8px;margin:-11px -8px}
+.totop,.s-cue{padding:14px;margin:-14px}
+.fcol a:hover,.totop:hover,.s-cue:hover{text-decoration-color:var(--orange)}
+.fcol a:focus-visible,.totop:focus-visible,.s-cue:focus-visible{outline:none;color:var(--orange);text-decoration-color:var(--orange);text-decoration-thickness:2px}
+.row:focus-visible{outline:none}
+.row:focus-visible .rx{transform:none;background:var(--orange)}
+.row:focus-visible .num{color:var(--orange)}
+.item:is(.deep,.cob).open>.row:focus-visible .rx{background:var(--orange)}
+:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+
+/* ---------------------------------------------------------------- PHONE + PORTRAIT TABLET (portrait, < 1024 px)
+   The whole page recomposed for a tall screen (not the desktop scaled down). Scoped to this query, so the desktop
+   styles above are untouched (landscape and >= 1024 px never see any of it). The hero canvas composition for phones
+   is in hero.js (MOB, < 700 px); portrait tablets keep the desktop hero.
+   Units: --u = one px of a 390 px-wide phone (fluid, capped for tablets); --pad = the page's side margin.
+   Heights: 100svh (the height with Safari's bars shown — it does not change when they slide away). */
+@media (max-width: 1023px) and (orientation: portrait) {
+  :root { --p: calc(100vw / 1600); --t: var(--p); --vh: 100svh;
+    --u: min(calc(100vw / 390), 1.7px); --pad: calc(20 * var(--u)); }
+  html, body { overflow-x: clip; }
+  #stage, #veil, #statement { bottom: auto; height: 100svh; }
+  #replay { top: calc(14px + env(safe-area-inset-top)); right: 14px; }
+  .rl { left: var(--pad); }
+
+  /* statements: the same face and weight, 3-4 short lines (the .m setting), one shared optical centre */
+  #statement .l.d { display: none; }
+  #statement .l.m { display: block; }
+  #statement .st { top: 46%; font-size: clamp(24px, 8.1vw, 44px); line-height: 1.42; }
+
+  /* EVENT SUMMARY — a poster page: title / date as one block in the upper half, the facts under it, the three
+     programmes as a ruled list, INDEX in the corner. Left-aligned on the margin, nothing centred. */
+  #summary { height: auto; min-height: 100svh; }
+  #summary .fr { position: relative; inset: auto; min-height: 100svh; display: grid; grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 1.1fr auto auto auto 1.5fr; column-gap: 0;
+    padding: calc(40 * var(--u) + env(safe-area-inset-top)) var(--pad) calc(76 * var(--u) + env(safe-area-inset-bottom)); }
+  .s-anchor { grid-area: 2/1/3/2; align-self: end; font-size: calc(57.5 * var(--u)); line-height: 1.02; letter-spacing: -.045em; }
+  .s-anchor .in { font-size: .78em; margin-right: .12em; }
+  .s-date { grid-area: 3/1/4/2; align-self: start; margin: 0; padding-top: calc(14 * var(--u)); font-size: calc(69 * var(--u)); line-height: .9; letter-spacing: -.015em; }
+  .s-meta { display: block; grid-area: 4/1/5/2; margin: calc(14 * var(--u)) 0 0; font: 700 max(12.5px, calc(13.5 * var(--u)))/1.55 var(--jp); letter-spacing: .04em; }
+  .s-meta b { color: var(--orange); font-weight: 900; }
+  .s-band { grid-area: 5/1/6/2; align-self: start; margin: calc(30 * var(--u)) 0 0; padding: 0; display: block; }
+  .s-band::before { top: 0; } .s-band::after { bottom: 0; }
+  .s-band li { position: relative; display: flex; align-items: baseline; padding: calc(13 * var(--u)) 0 calc(14 * var(--u)); }
+  .s-band li + li:not(.sl)::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: currentColor; opacity: .35; }
+  .s-band .sl { display: none; }
+  .s-band i { font-size: max(10px, calc(11 * var(--u))); margin: 0 calc(10 * var(--u)) 0 0; min-width: calc(22 * var(--u)); }
+  .s-band i::after { content: "/"; color: var(--orange); margin-left: calc(6 * var(--u)); }
+  .s-band b { font-size: calc(23 * var(--u)); }
+  #summary .s-cue { right: var(--pad); bottom: calc(24 * var(--u) + env(safe-area-inset-bottom)); font-size: max(11px, calc(12 * var(--u))); gap: 8px; }
+
+  /* INDEX — the same rows of big words; on a phone the row's one-line description is always shown (no hover),
+     set small on one line under the word */
+  #index { min-height: 0; padding: calc(56 * var(--u)) 0 0; }
+  .ihead { height: calc(44 * var(--u)); padding: 0 var(--pad); }
+  .ihead .meta { font-size: max(11px, calc(12 * var(--u))); }
+  .row { height: calc(118 * var(--u)); min-height: 72px; }
+  .row .num { left: var(--pad); top: calc(18 * var(--u)); font-size: max(11px, calc(12 * var(--u))); }
+  .row .mk { left: calc(var(--pad) + 24 * var(--u)); top: calc(19 * var(--u)); width: calc(7 * var(--u)); height: calc(7 * var(--u)); }
+  .row .jw { left: calc(var(--pad) + 46 * var(--u)); top: calc(12 * var(--u)); font-size: calc(62 * var(--u)); }
+  .row .en { right: var(--pad); top: calc(20 * var(--u)); font-size: max(10.5px, calc(11.5 * var(--u))); transition: opacity .4s var(--ease); }
+  .row .cl { right: var(--pad); top: calc(20 * var(--u)); font-size: max(10.5px, calc(11.5 * var(--u))); }
+  .item.open > .row .en { opacity: 0; }
+  .row .info { clip-path: none; left: calc(var(--pad) + 46 * var(--u)); right: auto; top: auto; bottom: calc(16 * var(--u));
+    white-space: nowrap; font-size: max(11px, calc(12 * var(--u))); line-height: 1.3; letter-spacing: .04em; transition: opacity .4s var(--ease); }
+  .row .info b { font-size: inherit; margin-left: .4em; }
+  .item.open > .row .info { opacity: 0; }
+  .row .seg { left: calc(var(--pad) + 46 * var(--u)); width: calc(132 * var(--u)); }
+  .item.open > .row .seg { left: calc(var(--pad) + 46 * var(--u)); width: calc(132 * var(--u)); }
+  .item.open > .row .jw { transform: none; }
+  .item:not(.open):not(.calm) > .row:is(:hover, :focus-visible, .on) .c2 { transform: none; }
+  .item:not(.open):not(.calm) > .row:is(:hover, :focus-visible, .on) .info { clip-path: none; }
+
+  /* the content inside a row: one column on the margin, lead first, facts after */
+  .pin { display: block; padding: calc(30 * var(--u)) var(--pad) calc(48 * var(--u)); }
+  .pin > * + * { margin-top: calc(36 * var(--u)); }
+  .c-l, .c-r, .c-f { grid-column: auto; }
+  .c-r[style] { padding-top: 0 !important; }
+  .pin p[style*="margin-top"] { margin-top: calc(18 * var(--u)) !important; }
+  .L { font-size: calc(60 * var(--u)); }
+  .M { font-size: calc(19 * var(--u)); line-height: 1.62; }
+  .S { font-size: max(13.5px, calc(14.5 * var(--u))); line-height: 1.9; }
+  .lab { font-size: max(10.5px, calc(11 * var(--u))); margin-bottom: calc(12 * var(--u)); }
+  .lab b { font-size: max(10.5px, calc(11 * var(--u))); margin-left: 8px; }
+  .list li { padding: calc(13 * var(--u)) 0; }
+  #asaichi .fig { font-size: calc(104 * var(--u)); }
+  #asaichi .date { font-size: calc(58 * var(--u)); }
+  #asaichi .goods { column-gap: calc(18 * var(--u)); }
+  #asaichi .goods li { padding: calc(12 * var(--u)) 0 calc(13 * var(--u)); }
+  #asaichi .goods .g { font-size: calc(22 * var(--u)); }
+  #asaichi .goods .k { font-size: max(10.5px, calc(11 * var(--u))); }
+  .prog3 { display: block; }
+  .prog3 > div { padding: calc(18 * var(--u)) 0 calc(24 * var(--u)); }
+  .prog3 .no { font-size: calc(46 * var(--u)); }
+  .prog3 .t { font-size: calc(23 * var(--u)); margin-top: calc(12 * var(--u)); }
+  .prog3 .st { font-size: max(13px, calc(14 * var(--u))); }
+  .prog3 .d { font-size: max(13px, calc(13.5 * var(--u))); margin-top: calc(8 * var(--u)); }
+  #noto .big { font-size: calc(33 * var(--u)); }
+  #noto .S { font-size: max(14px, calc(15 * var(--u))); }
+  #support .M { font-size: calc(18.5 * var(--u)); }
+  .uses li { grid-template-columns: calc(32 * var(--u)) 1fr; }
+  .uses .no { font-size: max(10.5px, calc(11 * var(--u))); }
+  .uses b { font-size: max(14px, calc(15.5 * var(--u))); }
+  .uses span { font-size: max(13px, calc(13.5 * var(--u))); }
+  .cta-na { font-size: max(13.5px, calc(14 * var(--u))); margin-top: calc(18 * var(--u)); }
+  .cta-na small { font-size: 10px; }
+  .tiers { grid-template-columns: 1fr 1fr; row-gap: calc(20 * var(--u)); padding-top: calc(16 * var(--u)); }
+  .tiers div { gap: 6px; }
+  .tiers .t { font-size: max(10px, calc(10.5 * var(--u))); }
+  .tiers .L { font-size: calc(42 * var(--u)); }
+  .tiers .u { font-size: max(11px, calc(11.5 * var(--u))); }
+  .tiers .note { margin-top: calc(4 * var(--u)); }
+  .table2 { display: block; }
+  .table2 > .table + .table li:first-child { border-top: 0; }
+  .table li { grid-template-columns: calc(78 * var(--u)) 1fr; padding: calc(14 * var(--u)) 0; }
+  .table .k { font-size: max(11.5px, calc(12 * var(--u))); }
+  .table .v { font-size: calc(17.5 * var(--u)); }
+  .table .v small { font-size: max(12.5px, calc(13 * var(--u))); }
+  .end { margin-top: calc(48 * var(--u)); }
+
+  /* FOOTER — utility, readable sizes, every link a 44 px target, clear of the home indicator */
+  #foot { padding: calc(44 * var(--u)) var(--pad) calc(22px + env(safe-area-inset-bottom)); }
+  .fcols { grid-template-columns: minmax(0, 1fr); column-gap: calc(16 * var(--u)); row-gap: calc(26 * var(--u)); }
+  .fcol.site, .fcols > .fcol:nth-child(2) { grid-column: 1 / -1; }
+  .fcols .totop { grid-column: 1 / -1; justify-self: end; }
+  .fcol h4 { font-size: 10.5px; margin-bottom: 4px; }
+  .fcol ul { gap: 0; }
+  .fcol.site ul { grid-template-columns: repeat(5, auto); column-gap: calc(14 * var(--u)); justify-content: start; }
+  .fcol a, .fcol span { font-size: 14px; }
+  .fcol a, .fcol.site a { display: inline-flex; align-items: center; min-height: 44px; padding: 0; margin: 0; }
+  .fcol.site a { min-width: 44px; }
+  .fcol .na { display: inline-flex; align-items: center; min-height: 44px; }
+  .fcol small { font-size: 9px; }
+  .fcol .h { font-size: 11.5px; }
+  .fcol .ar { font-size: 11px; }
+  .totop, #summary .s-cue { padding: 17px 14px; margin: -17px -14px; }
+  .totop { font-size: 11px; }
+  .fbar { flex-direction: column; gap: 4px; margin-top: calc(24 * var(--u)); padding-top: 14px; font-size: 10.5px; }
+}
+
+/* phones held sideways get the desktop composition; nothing may push the page wider than the screen */
+@media (max-width: 1023px) and (orientation: landscape) and (max-height: 540px) {
+  html, body { overflow-x: clip; }
+  #replay { top: calc(14px + env(safe-area-inset-top)); right: calc(14px + env(safe-area-inset-right)); }
+}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------------------------------------------------------------- CAMPFIRE link (ready for when the URL is decided; see LINKS.md) */
+.cta-link{display:inline-flex;gap:calc(12*var(--p));align-items:baseline;margin:calc(24*var(--p)) 0 0;font:700 calc(15*var(--t))/1 var(--jp);color:inherit;
+  text-decoration:underline;text-decoration-color:transparent;text-underline-offset:.32em;transition:text-decoration-color .45s var(--ease);padding:11px 0;margin-bottom:-11px}
+.cta-link b{color:var(--orange);font-weight:900}
+.cta-link:hover,.cta-link:focus-visible{text-decoration-color:var(--orange);outline:none}
+@media (max-width: 1023px) and (orientation: portrait) { .cta-link { font-size: max(13.5px, calc(14 * var(--u))); } }
+
