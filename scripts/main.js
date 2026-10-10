@@ -23,6 +23,7 @@ function bezier(x1, y1, x2, y2) {
 }
 const E = bezier(0.22, 1, 0.36, 1);                 // the house curve
 const ES = bezier(0.65, 0, 0.35, 1);                // its symmetric partner, only for colour / ground cross-fades
+const SINE = x => 0.5 - 0.5 * Math.cos(Math.PI * x);   // the statements' fades: gentle at both ends, no steep middle
 const seg = (t, a, d) => clamp01((t - a) / d);
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const MANUAL = hero.MANUAL, REDUCED = hero.REDUCED;
@@ -51,38 +52,45 @@ scrollTo(0, 0);
 
 /* ---------------------------------------------------------------- intro: hero -> statements -> EVENT SUMMARY
    Scroll-driven and pinned: the viewport stays put while the scroll distance moves one progress value d (in vh of
-   scroll) through the sequence. Nothing plays on a clock; stop scrolling and the scene stays where it is.
-     raw wheel / touch / key delta -> target d (clamped per gesture) -> damped d -> visual state (a pure function of d)
-   Distance map (vh of scroll, ~555 vh in all):
-     0 - 75     hero -> atmosphere: the hero type thins, the veil comes in, the sculpture defocuses and recedes
-     66 - 186   statement 1   (in 20% | FULLY VISIBLE 55% | out 25%)       each statement 120 vh
-     16 blank   only the blurred sculpture
-     202 - 322  statement 2 ...  338 - 458  statement 3
-     458 - 556  the sculpture alone, the veil thins to ivory, the ground closes, the summary comes into focus (~100 vh)
+   scroll) through the sequence. Scrolling and the automatic advance drive the SAME target (dT); the scene is always a
+   pure function of the rendered value d, which follows dT.
+     wheel / touch / key delta  ─┐
+     auto-advance (idle)        ─┴─> target dT (clamped per gesture) -> d (damped + speed-limited) -> visual state
+   Distance map (vh of scroll; desktop / phone):
+     0 - 50          hero -> atmosphere: the hero type thins, the veil comes in, the sculpture defocuses and recedes
+     each statement  fade in 32 / 26 | FULLY VISIBLE 44 / 51 | fade out 40 / 32   (116 / 109 vh), 4 vh apart
+     after the last  the sculpture alone, the veil thins to ivory, the ground closes, the summary comes into focus (84 vh)
+     in all          ~490 / ~469 vh (was 556)
    One gesture (wheel / trackpad events less than 260 ms apart, momentum included) can only travel to the next
-   resting point — the middle of the next statement's hold, or the end — so a strong flick never skips a statement. */
+   resting point — the middle of the next statement's hold, or the end — so a strong flick never skips a statement.
+   Left alone inside the statements for AUTO.idle s, the sequence advances by itself to the next resting point at
+   AUTO.speed; any input takes over at once from wherever it is. Never with prefers-reduced-motion. */
 const stage = $('#stage'), veil = $('#veil'), page = $('#page'), replay = $('#replay'), indexEl = $('#index'), stmt = $('#statement'), summary = $('#summary');
 let locked = true;                 // opening, accordion motion
 let mode = 'hero';                 // hero | intro | main
 let d = 0, dT = 0;                 // rendered / target progress (vh of scroll)
 for (const l of $$('#statement .l')) l.innerHTML = l.innerHTML.replace(/([、。])(?=([\s\S])?)/g, (m, c, nx) => `<span class="pp${nx ? '' : ' hang'}">${c}</span>`);
 const ST = $$('#statement .st').map(el => ({ el, lines: $$('.l', el), last: '' }));
-const S_A = 66, S_L = 120, S_BLANK = 16;
-// Phones / portrait tablets read the statements longer: the same 120 vh each, but in 16% | FULLY VISIBLE 64% | out 20%
-// (desktop: 20 | 55 | 25). Same total distance, so nothing after the statements moves.
+const S_A = 50, S_BLANK = 4, K_IN = S_A / 66;            // K_IN: the hero -> statement transition, scaled with S_A
+// fade in | hold | fade out, vh. Phones / portrait tablets keep a slightly longer hold (shorter screen, larger type).
+const SEG = { desk: [32, 44, 40], phone: [26, 51, 32] };
+const AUTO = { idle: 2.5, speed: 45 };                   // s without input before advancing; vh / s while advancing
+const V_MAX = 150, V_FADE = 70;                          // vh / s: the scene's top speed, and its top speed inside a fade
 const PHONE = matchMedia('(max-width: 1023px) and (orientation: portrait)');
 const STOPS = [];
+let D_OBJ, D_IV, IV, D_COV, COV, D_WIN, WIN, D_END;
+const sumParts = $$('#summary .sp').map((el, k) => ({ el, d: k * 5, k: '' }));
 function setTimings() {
-  const [fi, fo] = PHONE.matches ? [0.16, 0.8] : [0.2, 0.75];
-  ST.forEach((s, i) => { s.a = S_A + i * (S_L + S_BLANK); s.inEnd = s.a + fi * S_L; s.outStart = s.a + fo * S_L; s.outEnd = s.a + S_L; s._k = null; });
-  STOPS.length = 0; STOPS.push(0, ...ST.map(s => (s.inEnd + s.outStart) / 2));
+  const [fi, fh, fo] = PHONE.matches ? SEG.phone : SEG.desk, L = fi + fh + fo;
+  ST.forEach((s, i) => { s.a = S_A + i * (L + S_BLANK); s.inEnd = s.a + fi; s.outStart = s.inEnd + fh; s.outEnd = s.a + L; s._k = null; });
+  D_OBJ = ST[ST.length - 1].outEnd; D_IV = D_OBJ + 12; IV = 30; D_COV = D_IV + 10; COV = 30; D_WIN = D_IV + 28; WIN = 28;
+  D_END = D_WIN + 12 + WIN + 4;
+  STOPS.length = 0; STOPS.push(0, ...ST.map(s => (s.inEnd + s.outStart) / 2), D_END);
 }
 setTimings();
-const D_OBJ = ST[ST.length - 1].outEnd, D_IV = D_OBJ + 16, IV = 34, D_COV = D_IV + 12, COV = 34, D_WIN = D_IV + 32, WIN = 30;
-const sumParts = $$('#summary .sp').map((el, k) => ({ el, d: k * 5, k: '' }));
-const D_END = D_WIN + 15 + WIN + 5;
-STOPS.push(D_END);
-PHONE.addEventListener?.('change', () => { setTimings(); STOPS.push(D_END); });
+PHONE.addEventListener?.('change', () => { const f = D_END ? d / D_END : 0; setTimings(); if (mode === 'intro') d = dT = f * D_END; });
+let idleT = 0, autoTo = null, touching = false;
+const stopAuto = () => { idleT = 0; autoTo = null; };
 document.body.classList.add('intro', 'booted');
 bindField((x, y) => { const v = hero.view(); return [(x - v.ox) / v.s, (y - v.oy) / v.s]; });
 
@@ -93,6 +101,7 @@ let gesture = null;
 // a scroll delta (px) moves the target; within one gesture it may not pass the next resting point
 function input(px, fresh = false) {
   if (!openingDone() || locked || !px) return;
+  stopAuto();                                                  // the hand always wins over the auto-advance
   if (mode === 'main') {
     if (!(scrollY <= 0 && px < 0)) return;
     mode = 'intro'; d = dT = D_END; ST_TW = null;              // back up into the sequence from the top of the page
@@ -110,8 +119,9 @@ const wheelOf = (e) => e.deltaY * (e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? 
 const onWheelHold = (e) => { e.preventDefault(); input(wheelOf(e)); };
 let touchY = null;
 const onTouchHold = (e) => { e.preventDefault(); const y = e.touches[0].clientY; if (touchY != null) input((touchY - y) * 2.2); touchY = y; };
-addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; gesture = null; }, { passive: true });
-addEventListener('touchend', () => { touchY = null; }, { passive: true });
+addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; gesture = null; touching = true; stopAuto(); }, { passive: true });
+addEventListener('touchend', () => { touchY = null; touching = false; idleT = 0; }, { passive: true });
+addEventListener('touchcancel', () => { touchY = null; touching = false; idleT = 0; }, { passive: true });
 // the ordinary page (not holding): a pull down at the very top travels back up into the sequence, as the wheel does
 addEventListener('touchmove', (e) => { if (holding) return; const y = e.touches[0].clientY; if (touchY != null && scrollY <= 0 && y > touchY) input((touchY - y) * 2.2); touchY = y; }, { passive: true });
 addEventListener('wheel', (e) => { ST_TW = null; if (!holding) input(wheelOf(e)); }, { passive: true });
@@ -139,7 +149,20 @@ function updateIntro(dt) {
   if (mode === 'intro') {
     // (real elapsed time, so a slow frame does not make the scene trail further behind the scroll)
     const ddt = MANUAL ? dt : Math.max(dt, rawDt);
-    d = REDUCED ? dT : d + (dT - d) * (1 - Math.exp(-ddt * 7));
+    // auto-advance: only inside the statements, only after AUTO.idle s without input, never under reduced motion.
+    // It moves the same target a hand would, so taking over (or handing back) never jumps.
+    idleT += dt;
+    const inStatements = dT >= ST[0].a && dT < D_END;
+    if (!REDUCED && !touching && !A && inStatements && (autoTo != null || idleT >= AUTO.idle)) {
+      if (autoTo == null) autoTo = nextStop(dT);
+      dT = Math.min(autoTo, dT + AUTO.speed * dt);
+      if (dT >= autoTo) { autoTo = null; idleT = 0; }         // arrived: read, then go on
+    } else if (!inStatements) autoTo = null;
+    // the scene follows the target a little behind it (~0.14 s), and never faster than V_MAX (V_FADE while a statement
+    // fades): a hard flick still shows each fade for ~0.4 s, while ordinary scrolling (slower) is followed directly
+    const step = REDUCED ? dT - d : (dT - d) * (1 - Math.exp(-ddt * 7));
+    const vmax = ST.some(s => (d > s.a - 1 && d < s.inEnd + 1) || (d > s.outStart - 1 && d < s.outEnd + 1)) ? V_FADE : V_MAX;
+    d += REDUCED ? step : clamp(step, -vmax * ddt, vmax * ddt);
     if (Math.abs(dT - d) < 0.02) d = dT;
     if (d >= D_END - 0.02 && dT >= D_END) { mode = 'main'; d = dT = D_END; scrollTo({ top: 0, behavior: 'instant' }); }
     else if (d <= 0.02 && dT <= 0) { mode = 'hero'; d = dT = 0; }
@@ -147,13 +170,14 @@ function updateIntro(dt) {
   let typeF, fog, veilO, pageO, texts, ivory = 0, parts = null;
   if (mode === 'hero') { typeF = 0; fog = 0; veilO = 0; pageO = 0; texts = null; }
   else if (mode === 'intro') {
-    typeF = E(seg(d, 0, 45));                                   // 1  the hero type thins
-    fog = E(seg(d, 12, 63));                                    // 2  defocus + recede
+    typeF = E(seg(d, 0, 45 * K_IN));                            // 1  the hero type thins
+    fog = E(seg(d, 12 * K_IN, 63 * K_IN));                      // 2  defocus + recede
     ivory = ES(seg(d, D_IV, IV));                               //    (later) the veil thins to warm ivory
-    veilO = E(seg(d, 18, 60)) * (1 - ivory);                    // 3  the cobalt veil
+    veilO = E(seg(d, 18 * K_IN, 60 * K_IN)) * (1 - ivory);      // 3  the cobalt veil
     pageO = ES(seg(d, D_COV, COV));                             //    the page's ivory ground closes over the sculpture
     parts = sumParts.map(p => E(seg(d, D_WIN + p.d, WIN)));
-    texts = ST.map(s => ({ line: E(seg(d, s.a, s.inEnd - s.a)), out: E(seg(d, s.outStart, s.outEnd - s.outStart)) }));
+    // fades: a symmetric ease (no sudden jump to 0 or 1 at either end), so a fade reads as a fade
+    texts = ST.map(s => ({ line: SINE(seg(d, s.a, s.inEnd - s.a)), out: SINE(seg(d, s.outStart, s.outEnd - s.outStart)) }));
   } else { typeF = 1; fog = 1; veilO = 0; pageO = 1; texts = null; }
   const main = mode === 'main';
   if (main && wasMain) return;                                     // the page is an ordinary page now: nothing to drive
