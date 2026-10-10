@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Typographic object — generator</title>
+<!-- Builds scripts/typo/layout.json from scripts/typo/config.js + words.js and the Hero outline (assets/assets.json).
+     Open through the local server (npm run dev → http://localhost:5173/tools/typo-generate.html), check the preview,
+     then "Download layout.json" and put it in scripts/typo/. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,700..900&family=Noto+Sans+JP:wght@500;700;900&family=Noto+Serif+JP:wght@600;900&display=swap">
+<style>
+  body { margin: 0; background: #FCFAEF; font: 13px system-ui, sans-serif; color: #0130E2; }
+  header { position: sticky; top: 0; display: flex; gap: 16px; align-items: center; padding: 10px 16px; background: #FCFAEFee; z-index: 2; }
+  #stage { width: min(96vw, 900px); margin: 0 auto 40px; }
+  #stage svg { width: 100%; height: auto; display: block; }
+  .tx-hit { fill: transparent; }
+  .tx-a .tx-t { fill: var(--tone); }
+  textarea { width: 100%; height: 120px; font: 11px ui-monospace, monospace; }
+</style>
+</head>
+<body>
+<header><b>Typographic object</b><span id="stat">building…</span><button id="dl">Download layout.json</button></header>
+<div id="stage"></div>
+<textarea id="out" spellcheck="false"></textarea>
+<script type="module">
+  import { generate } from '../scripts/typo/generate.js';
+  import { renderSVG } from '../scripts/typo/render.js';
+  import { CONFIG } from '../scripts/typo/config.js';
+  import { SECTIONS } from '../scripts/typo/words.js';
+  const meta = await (await fetch('../assets/assets.json')).json();
+  // the glass's thickness map (visual depth only — not terrain data): 16-bit in R/G
+  const img = new Image(); img.src = '../assets/object-thickness.png'; await img.decode();
+  const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+  const px = g.getImageData(0, 0, c.width, c.height).data;
+  const thickness = (x, y) => { const i = (Math.min(c.height - 1, Math.max(0, y | 0)) * c.width + Math.min(c.width - 1, Math.max(0, x | 0))) * 4; return (px[i] * 256 + px[i + 1]) / 65535; };
+  // every face the layout uses must be loaded before measuring
+  const sample = Object.values(SECTIONS).flatMap(s => [s.anchor, ...s.mid, ...s.small, ...s.kana]).join('');
+  await Promise.all(Object.values(CONFIG.fonts).map(f => document.fonts.load(`${f.weight} 100px ${f.family}`, sample)));
+  await document.fonts.ready;
+  const t0 = performance.now();
+  const layout = await generate({ config: CONFIG, sections: SECTIONS, contour: meta.contour, thickness });
+  layout.view = [0, 0, 1180, 1475];
+  const labels = Object.fromEntries(Object.entries(SECTIONS).map(([id, s]) => [id, `${s.anchor}（${s.en}）を開く`]));
+  document.getElementById('stage').innerHTML = renderSVG(layout, { fonts: CONFIG.fonts, tones: CONFIG.tones, labels });
+  const json = JSON.stringify(layout);
+  document.getElementById('out').value = json;
+  document.getElementById('stat').textContent = `${layout.items.length} lines · ${Math.round(performance.now() - t0)} ms`;
+  document.getElementById('dl').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' })); a.download = 'layout.json'; a.click(); };
+  window.__layout = layout;
+</script>
+</body>
+</html>

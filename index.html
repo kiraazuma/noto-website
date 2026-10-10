@@ -8,9 +8,17 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,700..900&family=Noto+Sans+JP:wght@500;700;900&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Murecho:wght@900&display=swap&text=9%E3%80%81%E3%80%82%E3%80%85%E3%81%84%E3%81%8B%E3%81%8C%E3%81%8D%E3%81%8F%E3%81%97%E3%81%99%E3%81%9A%E3%81%9D%E3%81%9F%E3%81%A1%E3%81%A3%E3%81%A4%E3%81%A6%E3%81%A7%E3%81%AE%E3%81%AF%E3%82%82%E3%82%89%E3%82%8B%E3%82%8C%E3%82%92%E3%82%B9%E3%83%8B%E3%83%A5%E3%83%BC%E4%BA%AC%E4%BC%9A%E4%BD%95%E5%B0%91%E5%B3%B6%E6%97%A5%E6%9A%AE%E6%9C%88%E6%9D%B1%E6%A9%9F%E6%B8%9B%E7%99%BB%E7%9B%B4%E7%A7%81%E7%AB%8B%E7%B6%9A%E8%83%BD%E8%A6%8B%E8%A8%AA%E8%BC%AA%E9%81%A0%E9%9B%A2">
+<!-- INDEX as a typographic object: the mincho face, only the characters the object uses (list = scripts/typo/layout.json) -->
+<link rel="stylesheet" id="tx-serif" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;900&display=swap&text=%20JR%E3%81%82%E3%81%84%E3%81%88%E3%81%93%E3%81%97%E3%81%98%E3%81%A8%E3%81%AA%E3%81%AE%E3%81%BE%E3%82%8F%E3%82%93%E4%B8%AD%E5%82%AC%E5%86%85%E5%91%B3%E5%9B%BD%E5%A0%B4%E5%A1%97%E5%A4%AE%E5%B3%B6%E5%B9%B2%E6%8A%80%E6%9C%AC%E6%A1%88%E7%89%A9%E7%AB%8B%E7%B7%9A%E8%BC%AA%E9%A7%85">
 <meta name="description" content="出張輪島朝市 in 一橋祭 — 2026.11.21–23 一橋大学 国立西キャンパス。能登の「いま」を東京へ。輪島朝市の出張販売・特別講演・復興応援フリーペーパー。">
 <meta name="theme-color" content="#FCFAEF">
 <link rel="stylesheet" href="styles/site.css">
+<script>
+  // EDIT: INDEX の表示方式（切替スイッチ）。'typo' = 文字の造形（新） / 'classic' = 従来の Event Summary + アコーディオン INDEX。
+  // URL に ?index=classic / ?index=typo を付けると、その表示で開けます（確認用）。
+  var INDEX_MODE = 'typo';
+  (function () { var m = INDEX_MODE; try { var q = new URLSearchParams(location.search).get('index'); if (q === 'typo' || q === 'classic') m = q; } catch (e) {} document.documentElement.setAttribute('data-index', m); })();
+</script>
 <script type="importmap">
 { "imports": { "three": "./vendor/three/three.module.js" } }
 </script>
@@ -60,6 +68,12 @@
       <ul class="sp s-band" aria-label="企画"><li><i>01</i><b>出張輪島朝市</b></li><li class="sl" aria-hidden="true"></li><li><i>02</i><b>特別講演</b></li><li class="sl" aria-hidden="true"></li><li><i>03</i><b>復興応援フリーペーパー</b></li></ul>
       <a class="sp s-cue" href="#index" aria-label="INDEXへ移動">INDEX<b aria-hidden="true">↓</b></a>
       <p class="sp s-meta">一橋大学 国立西キャンパス<br>JR国立駅 南口から徒歩約10分　<b>入場無料</b></p>
+    </div>
+    <!-- EDIT: INDEX（文字の造形）。造形そのものは scripts/typo/（config.js = 配置の指示、words.js = 使う言葉）→ tools/typo-generate.html で layout.json を作り直す -->
+    <div class="tx">
+      <h2 class="sp tx-title">出張輪島朝市<span class="in">in</span>一橋祭</h2>
+      <nav class="sp tx-stage" aria-label="INDEX"></nav>
+      <p class="sp tx-meta"><span class="d">2026.11.21–23</span><span>入場無料</span><span>一橋大学 国立西キャンパス</span></p>
     </div>
   </section>
 

@@ -79,7 +79,10 @@ const V_MAX = 150, V_FADE = 70;                          // vh / s: the scene's 
 const PHONE = matchMedia('(max-width: 1023px) and (orientation: portrait)');
 const STOPS = [];
 let D_OBJ, D_IV, IV, D_COV, COV, D_WIN, WIN, D_END;
-const sumParts = $$('#summary .sp').map((el, k) => ({ el, d: k * 5, k: '' }));
+// INDEX display mode (index.html: INDEX_MODE / ?index=): 'typo' = the typographic object, 'classic' = summary + rows
+const TYPO = document.documentElement.dataset.index === 'typo';
+let TX = null;
+const sumParts = $$(TYPO ? '#summary .tx .sp' : '#summary .fr .sp').map((el, k) => ({ el, d: k * 5, k: '' }));
 function setTimings() {
   const [fi, fh, fo] = PHONE.matches ? SEG.phone : SEG.desk, L = fi + fh + fo;
   ST.forEach((s, i) => { s.a = S_A + i * (L + S_BLANK); s.inEnd = s.a + fi; s.outStart = s.inEnd + fh; s.outEnd = s.a + L; s._k = null; });
@@ -288,6 +291,7 @@ function toggle(x, opts = {}) {
   if (A || locked) { queued = A && A.to === x ? null : x; return; }
   const from = OPEN, to = OPEN === x ? null : x;
   if (!from && !to) return;
+  if (TYPO && to) to.el.classList.add('tx-on');                // typo mode: only the item being read is in the page
   // --- all reads, once
   const s0 = scrollY, docH0 = root.scrollHeight;
   const hTo = to ? to.pin.offsetHeight : 0, hFrom = from ? from.panel.offsetHeight : 0;
@@ -297,7 +301,7 @@ function toggle(x, opts = {}) {
   const docHF = docH0 - hFrom + hTo;
   let endScroll, toTopF = 0;
   if (to) { toTopF = toTop0 - (fromAbove ? hFrom : 0); endScroll = clamp(toTopF, 0, docHF - VH); }
-  else endScroll = clamp(opts.endScroll != null ? opts.endScroll : ixTop, 0, docHF - VH);
+  else endScroll = clamp(opts.endScroll != null ? opts.endScroll : TYPO ? docTop(summary) : ixTop, 0, docHF - VH);
   const tOpen = to ? (from ? SW : 0) : 0;
   A = { from, to, hTo, hFrom, s0, docH0, toTop0, fromAbove, endScroll, endView: to ? toTopF - endScroll : 0, tOpen, t: 0, sNow: s0, v0: null, opened: false, closed: false,
     hd: opts.hd || CLS.hd, instant: !!opts.instant || REDUCED,
@@ -347,6 +351,11 @@ function updateAcc(dt) {
     page.style.paddingBottom = '';
     scrollTo({ top: A.endScroll, behavior: 'instant' });
     OPEN = to; A = null; locked = false;
+    if (TYPO) {
+      items.forEach(it => { if (it !== OPEN) it.el.classList.remove('tx-on'); });
+      // closed from inside the item: the keyboard focus goes back to its word in the object
+      if (from && !to && from.el.contains(document.activeElement) && TX) TX.anchor(from.id)?.focus({ preventScroll: true });
+    }
     if (OPEN && OPEN.id === 'info') fitEnd();
     setHash(OPEN ? OPEN.id : '');
     if (queued) { const q = queued; queued = null; toggle(q); }
@@ -366,6 +375,7 @@ function navigateTo(x) {
   if (mode !== 'main') return;
   if (A) { queued = x; return; }
   if (OPEN === x) { scrollToY(docTop(x.row)); return; }
+  if (TYPO) { toggle(x); return; }                             // the item opens right below the object and comes up
   const r = x.row.getBoundingClientRect().top;
   if (r > -VH * 0.1 && r < VH * 0.75) toggle(x);
   else scrollToY(docTop(x.row) - VH * 0.3, 0.95, () => toggle(x));
@@ -385,7 +395,10 @@ document.addEventListener('click', (e) => {
   if (x) { navigateTo(x); return; }
   const t = document.getElementById(id); if (t) scrollToY(docTop(t));
 });
-addEventListener('keydown', (e) => { if (e.key === 'Escape' && OPEN && !A && mode === 'main') { const r = OPEN.row; toggle(OPEN); r.focus({ preventScroll: true }); } });
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && OPEN && !A && mode === 'main') { const r = TYPO && TX ? TX.anchor(OPEN.id) || OPEN.row : OPEN.row; toggle(OPEN); r.focus({ preventScroll: true }); } });
+// typo mode: draw the object (if it cannot be drawn, fall back to the classic summary + INDEX)
+if (TYPO) import('./typo/typo-index.js').then(m => m.mountTypo($('#summary .tx'))).then(t => { TX = t; })
+  .catch(err => { console.error(err); document.documentElement.dataset.index = 'classic'; sumParts.forEach(p => { p.el.style.opacity = ''; p.el.style.filter = ''; }); });
 // deep link (#noto ...): skip the opening and the statements, go straight to the INDEX with that row open
 const DEEP = byId(location.hash.slice(1)) || null;
 

@@ -405,3 +405,40 @@ body.booted #page{animation:none}
 .cta-link:hover,.cta-link:focus-visible{text-decoration-color:var(--orange);outline:none}
 @media (max-width: 1023px) and (orientation: portrait) { .cta-link { font-size: max(13.5px, calc(14 * var(--u))); } }
 
+
+/* ---------------------------------------------------------------- INDEX AS A TYPOGRAPHIC OBJECT (html[data-index="typo"])
+   The summary page becomes the Hero's glass silhouette rebuilt from the INDEX's own words (scripts/typo/). The five
+   large words open their INDEX item; only the item being read is in the page (main.js .tx-on). Switch: index.html
+   INDEX_MODE ('typo' / 'classic') or ?index=classic. In classic mode nothing here applies. */
+.tx{display:none}
+[data-index=typo] #summary .fr{display:none}
+[data-index=typo] #summary .tx{display:block;position:absolute;inset:0}
+/* the object: as large as the screen allows, centred */
+#summary .tx-stage{position:absolute;left:50%;top:50%;margin:0;transform:translate(-50%,-50%);
+  width:min(calc(100vw - 2*24*var(--p)),calc((var(--vh) - 24*var(--p)) * 1260 / 1555))}
+.tx-svg{display:block;width:100%;height:auto;overflow:visible}
+.tx-body{pointer-events:none}
+.tx-hit{fill:transparent}
+.tx-a{cursor:pointer;outline:none}
+.tx-a .tx-t{fill:var(--tone);transition:fill .35s var(--ease)}
+.tx-a:hover .tx-t{fill:var(--deep)}
+.tx-a.is-open .tx-t{fill:var(--orange)}
+.tx-a:focus-visible .tx-hit{stroke:var(--deep);stroke-width:3;stroke-dasharray:6 5}
+/* top left: the event; bottom right: date / admission / venue. Small, exact, out of the object's way */
+#summary .tx-title{position:absolute;left:calc(50*var(--p));top:calc(44*var(--p));margin:0;z-index:1;
+  font:900 calc(40*var(--p))/1.02 var(--jp);letter-spacing:-.03em;white-space:nowrap}
+.tx-title .in{font-family:var(--lat);font-weight:800;font-stretch:72%;font-size:.8em;margin:0 .14em 0 .1em}
+#summary .tx-meta{position:absolute;right:calc(56*var(--p));bottom:calc(40*var(--p));margin:0;z-index:1;display:flex;flex-direction:column;align-items:flex-end;
+  gap:calc(6*var(--p));font:700 calc(15*var(--t))/1.3 var(--jp);letter-spacing:.04em;text-align:right}
+.tx-meta .d{font:900 calc(46*var(--p))/1 var(--lat);font-stretch:68%;letter-spacing:-.01em;margin-bottom:calc(4*var(--p))}
+/* the INDEX itself: no list of rows; the open item (and one closing / opening) only */
+[data-index=typo] #index{min-height:0;padding:0}
+[data-index=typo] #index .ihead{display:none}
+[data-index=typo] #index .item:not(.tx-on):not(.open):not(.anim){display:none}
+@media (max-width: 1023px) and (orientation: portrait) {
+  [data-index=typo] #summary { height: 100svh; min-height: calc(560 * var(--u)); }
+  #summary .tx-stage { width: min(116vw, calc((100svh - 150 * var(--u)) * 1260 / 1555)); top: 51%; }
+  #summary .tx-title { left: var(--pad); top: calc(26 * var(--u) + env(safe-area-inset-top)); font-size: calc(24 * var(--u)); }
+  #summary .tx-meta { right: var(--pad); bottom: calc(24 * var(--u) + env(safe-area-inset-bottom)); gap: 2px; font-size: max(11.5px, calc(12.5 * var(--u))); }
+  .tx-meta .d { font-size: calc(34 * var(--u)); margin-bottom: 4px; }
+}
