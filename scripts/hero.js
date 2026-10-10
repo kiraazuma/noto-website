@@ -121,11 +121,12 @@ const MOB = { name: 'mob', W: MW, H: MH, info: ['titleA', 'titleB', 'date'], mid
   // (see solveMobileObject). OBJECT here is only the starting value; FIT holds the composition's rules.
   OBJECT: { cx: MW / 2, cy: 548, h: 486, rot: 0 },
   FIT: {
-    hMax: 486,     // the largest the glass may be (design px tall, 0.79 : 1): set by the width, never by spare height
+    hMax: 640,     // the largest the glass may be (design px tall): the band between the words decides, not the width
+    bleed: 0.12,   // the glass may run past each side edge by this share of its own width (head / tail cut, shape kept)
     hMin: 300,     // below this the band is too short to compose; the glass stops shrinking (orange stays above it)
     ovT: 30,       // the head reaches this far up into NOTO's letters ...
     ovB: 34,       // ... and the tail this far down into HITOTSUBASHI's (the poster's two contacts)
-    gap: 12,       // clear space kept between the glass and every orange line
+    gap: 8,        // clear space kept between the glass and every orange line
     edge: 6,       // the glass is never cut by the screen edges
   },
   // Short screens (iPhone SE in Safari: 375 x ~550): before the glass has to shrink, the two words give up some of
@@ -135,7 +136,7 @@ const MOB = { name: 'mob', W: MW, H: MH, info: ['titleA', 'titleB', 'date'], mid
   // Opening (phone): the three words stacked as three bands of ONE glyph height, each squeezed to the screen width
   // (see openingBands). gap: share of the screen height between bands (at least gapMin); crop: past the side edges.
   BANDS: { gap: 0.009, gapMin: 4, crop: 0 },
-  SQZ: { ref: 680, kT: 0.4, maxT: 0.16, kB: 0.2, maxB: 0.14, top: ['noto', 'titleA', 'titleB'], bot: ['hito', 'date'] },
+  SQZ: { ref: 760, kT: 0.45, maxT: 0.2, kB: 0.25, maxB: 0.16, top: ['noto', 'titleA', 'titleB'], bot: ['hito', 'date'] },
   ANCHOR: { noto: [-1, -1], notoO: [-1, -1], hito: [1, 1], hitoO: [1, 1], titleA: [-1, -1], titleB: [-1, -1], date: [1, 1], meets: [0, 0] } };
 let LAY = DESK;
 const pickLayout = (vw, vh) => (vw < 700 && vh > vw ? MOB : DESK);
@@ -193,13 +194,16 @@ const PRE = { noto: [-16, -14], hito: [16, 4], date: [-12, -6], title: [12, -6] 
 // touches in the poster: NOTO top-left, HITOTSUBASHI bottom-right (its last I keeps the same ~95% at every size),
 // the date left / title right on the centre line, the object centred. AX / AY = slack between frame and viewport.
 let AX = 0, AY = 0, objK = 1;
-const SQ = { t: 0, b: 0 };                         // phone, short screens: NOTO lifted by t, HITOTSUBASHI sunk by b
+const SQ = { t: 0, b: 0 };
+const EXTRA = {};                                  // per-item offsets of the orange info (desktop held upright, see layout)
+let bleedX = 0;                                    // design px the glass may run past the side edges (phone)                         // phone, short screens: NOTO lifted by t, HITOTSUBASHI sunk by b
 const sqOf = (n) => !LAY.SQZ ? 0 : LAY.SQZ.top.includes(n) ? -SQ.t : LAY.SQZ.bot.includes(n) ? SQ.b : 0;
 function writeItems() {
   for (const n in items) {
     const { el, m, o } = items[n];
     const an = LAY.ANCHOR[n] || [0, 0];
-    let ox = an[0] * AX, oy = an[1] * AY + sqOf(n);
+    const ex = EXTRA[n];
+    let ox = an[0] * AX + (ex ? ex[0] : 0), oy = an[1] * AY + sqOf(n) + (ex ? ex[1] : 0);
     if (EXIT[n]) { const e = ctl.exit[n], p = PRE[n]; ox += p[0] * ctl.pre + EXIT[n][0] * e; oy += p[1] * ctl.pre + EXIT[n][1] * e; }
     items[n].off = [ox, oy];
     el.style.transform = `matrix(${m[0]},${m[1]},${m[2]},${m[3]},${m[4] + ox},${m[5] + oy})`; el.style.opacity = o * (1 - ctl.typeFade);
@@ -417,7 +421,7 @@ function placeObject(dx = 0, dy = 0, rz = 0, ax = 0, ay = 0, sc = objK) {
   let y0 = 1e9, y1 = -1e9, x0 = 1e9, x1 = -1e9;
   for (let i = 0; i < CONTOUR.length; i += 2) { const [X, Y] = project(h.Hm, CONTOUR[i][0], CONTOUR[i][1]); y0 = Math.min(y0, Y); y1 = Math.max(y1, Y); x0 = Math.min(x0, X); x1 = Math.max(x1, X); }
   const m = 6; let fy = 0, fx = 0;
-  const T0 = -AY + m, B0 = H + AY - m, L0 = -AX + m, R0 = W + AX - m;      // the viewport, in design px
+  const T0 = -AY + m, B0 = H + AY - m, L0 = -AX + m - bleedX, R0 = W + AX - m + bleedX;   // the viewport (+ allowed side bleed), design px
   if (y0 < T0) fy = T0 - y0; else if (y1 > B0) fy = B0 - y1;
   if (x0 < L0) fx = L0 - x0; else if (x1 > R0) fx = R0 - x1;
   if (fx || fy) { h = homography(dx + fx, dy + fy, rz, ax, ay, sc); y0 += fy; y1 += fy; x0 += fx; x1 += fx; }
@@ -489,7 +493,8 @@ function solveMobileObject() {
     const k = h / BBH, cy = cyOf(k);
     if (cy + (CB[1] - BC[1]) * k < T0 - 1e-6 || cy + (CB[3] - BC[1]) * k > B0 + 1e-6) return null;   // never cut
     const P0 = CONTOUR.map(([x, y]) => [(x - BC[0]) * k, (y - BC[1]) * k]);
-    const lo = left - (CB[0] - BC[0]) * k, hi = right - (CB[2] - BC[0]) * k;
+    const bl = (F.bleed || 0) * cw * k;                                  // allowed run-out past each side edge
+    const lo = left - bl - (CB[0] - BC[0]) * k, hi = right + bl - (CB[2] - BC[0]) * k;
     if (lo > hi + 1e-6) return null;
     const pref = Math.max(lo, Math.min(hi, (left + right) / 2 - (ccx - BC[0]) * k));   // the outline's box centred
     const n = Math.ceil(Math.max(pref - lo, hi - pref) / 0.5);
@@ -515,8 +520,52 @@ function solveMobileObject() {
     sol = { cx: Math.max(lo, Math.min(hi, pref)), cy: cyOf(k), h };
   }
   OBJECT.cx = sol.cx; OBJECT.cy = sol.cy; OBJECT.h = sol.h;
+  bleedX = (F.bleed || 0) * cw * sol.h / BBH + F.edge;
   U.uAnchor.value.set(OBJECT.cx, OBJECT.cy);
   mobFit = { ...sol, band: [nb, ht], mid, opt: sol.cy + (OPT[1] - BC[1]) * sol.h / BBH, yT, yB, hUp, saT, saB, sq: { ...SQ } };
+}
+
+/* ------------------------------------------------------------------ desktop: the glass's size from the screen height */
+// The type scales with the smaller side (s); the glass does not have to. On screens narrower than 16:9 (4:3 laptops,
+// tablets held upright) s is set by the width and used to shrink the glass with it. Now the glass is at least
+// DESK_FILL of the viewport height (16:9 desktops are already larger and stay as they are), as long as it keeps
+// clear of the orange info; otherwise it grows only as far as that allows.
+const DESK_FILL = { wide: 0.86, narrow: 0.86, upright: 0.8, gap: 10 };
+function sizeDeskObject(vh) {
+  const s = view.s, base = objK, upright = view.vh > view.vw, narrow = view.vw / view.vh < 1.45;
+  OBJECT.cx = LAY.OBJECT.cx; OBJECT.cy = LAY.OBJECT.cy;
+  const target = (upright ? DESK_FILL.upright : narrow ? DESK_FILL.narrow : DESK_FILL.wide) * vh / (OBJECT.h * s);
+  if (target <= base) return;
+  const g = DESK_FILL.gap / s;
+  const rects = LAY.info.filter(n => items[n]).map(n => { const it = items[n], a = LAY.ANCHOR[n] || [0, 0], e = EXTRA[n] || [0, 0], b = it.ts.ink;
+    const ox = a[0] * AX + e[0], oy = a[1] * AY + e[1]; return [b[0] + ox - g, b[1] + oy - g, b[2] + ox + g, b[3] + oy + g]; });
+  // a size is possible if, at some horizontal position (nearest the composed one first), the outline stays on screen
+  // and clear of the orange lines; returns that position
+  const place = (sc) => { const k = OBJECT.h / BBH * sc, cy = OBJECT.cy;
+    const P0 = CONTOUR.map(([x, y]) => [(x - BC[0]) * k, cy + (y - BC[1]) * k]);
+    const ys = P0.map(q => q[1]); if (Math.min(...ys) < -AY + 6 || Math.max(...ys) > H + AY - 6) return null;
+    const xs = P0.map(q => q[0]), lo = -AX + 6 - Math.min(...xs), hi = W + AX - 6 - Math.max(...xs), c0 = LAY.OBJECT.cx;
+    const ok = (cx) => cx >= lo && cx <= hi && !rects.some(r => polyHits(P0, [r[0] - cx, r[1], r[2] - cx, r[3]]));
+    for (let i = 0; i <= 160; i++) { for (const sg of i ? [1, -1] : [1]) { const cx = c0 + sg * i * 4; if (ok(cx)) return cx; } }
+    return null; };
+  let cx = place(target);
+  if (cx != null) { objK = target; OBJECT.cx = cx; return; }
+  let lo = base, hi = target, best = place(base);
+  if (best == null) return;
+  for (let i = 0; i < 16; i++) { const m = (lo + hi) / 2, c = place(m); if (c != null) { lo = m; best = c; } else hi = m; }
+  objK = lo; OBJECT.cx = best;
+}
+// Desktop composition on a narrow screen (4:3 / 5:4 laptops, tablets): the orange line no longer fits beside a glass of
+// that size, so —
+// as on the phone — the title hangs under NOTO on the left and the date stands on HITOTSUBASHI on the right.
+function deskInfo(vw, vh) {
+  for (const k of Object.keys(EXTRA)) delete EXTRA[k];
+  if (!(vw / vh < 1.45) || !items.title || !items.date || !items.noto || !items.hito) return;
+  const m = 24 / view.s, gap = 26 / view.s;
+  const notoB = items.noto.ts.ink[3] - AY, hitoT = items.hito.ts.ink[1] + AY;
+  const t = items.title.ts.ink, d = items.date.ts.ink;          // title anchor [1, 0], date anchor [-1, 0]
+  EXTRA.title = [(-AX + m) - (t[0] + AX), (notoB + gap) - t[1]];
+  EXTRA.date = [(W + AX - m) - (d[2] - AX), (hitoT - gap) - d[3]];
 }
 
 /* ------------------------------------------------------------------ layout */
@@ -536,6 +585,7 @@ function layout() {
   // the object follows the smaller side; where there is height to spare (16:10, 4:3) it may grow up to 4% beyond the
   // type, never past ~95% of the viewport height and never into the orange line
   objK = LAY === MOB ? 1 : Math.max(1, Math.min(1.04, (vh / H) / s));
+  if (LAY === DESK) { bleedX = 0; deskInfo(vw, vh); }
   design.style.transform = hinfo.style.transform = `translate(${view.ox}px, ${view.oy}px) scale(${s})`;
   if (LAY === MOB && items.noto) {
     const Z = LAY.SQZ, short = Math.max(0, Z.ref - (H + 2 * AY));                // H + 2·AY = the region height, design px
@@ -543,7 +593,7 @@ function layout() {
     SQ.t = Math.min(Z.maxT * hn, Z.kT * short); SQ.b = Math.min(Z.maxB * hh, Z.kB * short);
     computeIntroMaps(); lastApplied = -1;                                       // the opening letters land on the moved words
     solveMobileObject();
-  } else { SQ.t = SQ.b = 0; if (LAY.BANDS && items.noto) { computeIntroMaps(); lastApplied = -1; } }
+  } else { SQ.t = SQ.b = 0; if (LAY.BANDS && items.noto) { computeIntroMaps(); lastApplied = -1; } if (items.noto) sizeDeskObject(vh); }
   // the only allocations: drawing buffer + optical copy, at DPR
   renderer.setPixelRatio(DPR); renderer.setSize(vw, vh, false);
   optical.width = Math.round(vw * DPR); optical.height = Math.round(vh * DPR);
