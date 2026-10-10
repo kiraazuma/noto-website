@@ -44,7 +44,8 @@ Node.js がない場合：このフォルダで `python3 -m http.server 5173` �
 静的ファイルだけなので、どのホスティングでもリポジトリの中身をそのまま置けば動きます。
 
 - **GitHub Pages**：リポジトリの Settings → Pages → Source を「Deploy from a branch」、Branch を `main` / `/ (root)` にして保存。数分で `https://<ユーザー名>.github.io/noto-website/` で公開されます（`.nojekyll` 同梱済み）
-- **Netlify / Vercel / Cloudflare Pages**：このリポジトリを連携し、ビルドコマンドなし・公開フォルダはルート（`/`）
+- **Netlify（非公開リポジトリのまま無料で使える）**：Netlify にこのリポジトリを連携するだけ。設定は同梱の `netlify.toml`（ビルドなし・ルートを公開）が自動で使われます。`main` に push するたびに自動で更新
+- **Vercel / Cloudflare Pages**：このリポジトリを連携し、ビルドコマンドなし・公開フォルダはルート（`/`）
 
 ## 編集するときによく触る場所
 
@@ -80,5 +81,6 @@ noto-website/
 ├─ tools/serve.mjs    ← 手元確認用サーバー（npm run dev）
 ├─ docs/screenshots/  ← 見た目の基準画像
 ├─ package.json
+├─ netlify.toml       ← Netlify 用の設定（ビルドなし）
 └─ .nojekyll          ← GitHub Pages 用
 ```
