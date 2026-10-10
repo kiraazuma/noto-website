@@ -29,17 +29,12 @@
   import { CONFIG } from '../scripts/typo/config.js';
   import { SECTIONS } from '../scripts/typo/words.js';
   const meta = await (await fetch('../assets/assets.json')).json();
-  // the glass's thickness map (visual depth only — not terrain data): 16-bit in R/G
-  const img = new Image(); img.src = '../assets/object-thickness.png'; await img.decode();
-  const c = document.createElement('canvas'); c.width = img.width; c.height = img.height; const g = c.getContext('2d'); g.drawImage(img, 0, 0);
-  const px = g.getImageData(0, 0, c.width, c.height).data;
-  const thickness = (x, y) => { const i = (Math.min(c.height - 1, Math.max(0, y | 0)) * c.width + Math.min(c.width - 1, Math.max(0, x | 0))) * 4; return (px[i] * 256 + px[i + 1]) / 65535; };
   // every face the layout uses must be loaded before measuring
   const sample = Object.values(SECTIONS).flatMap(s => [s.anchor, ...s.mid, ...s.small, ...s.kana]).join('');
   await Promise.all(Object.values(CONFIG.fonts).map(f => document.fonts.load(`${f.weight} 100px ${f.family}`, sample)));
   await document.fonts.ready;
   const t0 = performance.now();
-  const layout = await generate({ config: CONFIG, sections: SECTIONS, contour: meta.contour, thickness });
+  const layout = await generate({ config: CONFIG, sections: SECTIONS, contour: meta.contour });
   layout.view = [0, 0, 1180, 1475];
   const labels = Object.fromEntries(Object.entries(SECTIONS).map(([id, s]) => [id, `${s.anchor}（${s.en}）を開く`]));
   document.getElementById('stage').innerHTML = renderSVG(layout, { fonts: CONFIG.fonts, tones: CONFIG.tones, labels });

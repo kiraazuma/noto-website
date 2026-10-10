@@ -29,7 +29,7 @@ export const CONFIG = {
   anchors: [
     { id: 'asaichi', text: '朝市', c: [812, 222], a: -23, size: 184, sx: 1.12, font: 'sans9' },
     { id: 'noto', text: '能登', c: [688, 714], a: 0, size: 160, sx: 1, v: true, font: 'sans9' },
-    { id: 'program', text: '催し', c: [916, 632], a: 0, size: 92, sx: 1, v: true, font: 'serif9' },
+    { id: 'program', text: '催し', c: [916, 632], a: 0, size: 100, sx: 1, v: true, font: 'serif9' },
     { id: 'support', text: '応援', c: [598, 1012], a: -50, size: 134, sx: 1.08, font: 'sans9' },
     { id: 'info', text: '案内', c: [262, 1196], a: -13, size: 112, sx: 1.18, font: 'serif9' },
   ],

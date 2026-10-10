@@ -40,6 +40,18 @@ INDEX の5行は、そのまま**内容の入れ物**です。
 - 05 案内を開くと、最下部に大きな `NOTO meets HITOTSUBASHI` が出ます
 - スマホでは、各行の一言説明（PC ではマウスを乗せた時に出るもの）を常に表示します
 
+## 2b. INDEX の表示方式（実験：文字の造形）
+
+ブランチ `experiment/typographic-index` のみ。Event Summary と INDEX を、Hero のガラスと同じ輪郭を INDEX の言葉で組んだ「文字の造形」に置き換えたもの。
+
+- **切替**：`index.html` の `var INDEX_MODE = 'typo';` を `'classic'` にすると従来の Event Summary + アコーディオン INDEX に戻る。URL に `?index=classic` / `?index=typo` を付けてもその場で切り替えて確認できる。classic のときは従来と完全に同じ表示・動作。
+- **仕組み**：造形は `scripts/typo/layout.json`（固定データ）を描くだけなので、何度読み込んでも同じ形。
+  - `scripts/typo/config.js`：配置の指示（5語の位置・大きさ・角度、部位ごとの帯の向きとリズム、余白、外周の文字、書体の混ぜ方）
+  - `scripts/typo/words.js`：使う言葉（INDEX 本文から抜き出したもの＋かな／カナ表記のみ。新しい情報は足さない）
+  - 作り直し：`npm run dev` → `http://localhost:5173/tools/typo-generate.html` を開き、「Download layout.json」で `scripts/typo/layout.json` を置き換える。明朝体は使う文字だけ読み込むので、`index.html` の `id="tx-serif"` の `text=` も更新する。
+- **操作**：大きい5語（朝市・催し・能登・応援・案内）はリンク。クリック／タップ／Enter で、その項目の既存の内容が造形の下に開き、そこまで移動する。CLOSE・Esc で造形に戻る。選ばれている語だけオレンジ。フッターの SITE リンク・`#noto` などの直リンクも同じように開く。
+- 色は青の濃淡のみ（階層で決まる。ガラスの厚みや標高データは使っていない）。
+
 ## 3. 色
 
 `styles/site.css` の先頭 `:root` で定義しています。

@@ -15,7 +15,7 @@
 //   { k: 'h', text, font, size, m: [a,b,c,d,e,f], xs: [char x…], y: baseline, tone, anchor? }   a line of type
 //   { k: 'v', text, font, size, pts: [[x, y]…], tone, anchor? }                                 upright, stacked
 //   { k: 'p', text, font, size, pts: [[x, y]…], rot: [deg…], tone }                             along a path
-export async function generate({ config: C, sections, contour, thickness }) {
+export async function generate({ config: C, sections, contour }) {
   const STAT = { coastTry: 0, coastOff: 0, coastOut: 0, coastInk: 0 };
   const R = mulberry32(C.seed);
   const cell = C.cell, GW = Math.ceil(1180 / cell), GH = Math.ceil(1475 / cell);
@@ -29,7 +29,6 @@ export async function generate({ config: C, sections, contour, thickness }) {
   }
   const at = (x, y) => { const i = Math.floor(x / cell), j = Math.floor(y / cell); return i < 0 || j < 0 || i >= GW || j >= GH ? -1 : j * GW + i; };
   const free = (x, y) => { const k = at(x, y); return k >= 0 && inside[k] && !ink[k] && !blocked[k]; };
-  const thick = (x, y) => thickness ? thickness(x, y) : 0.5;
 
   // ---------------------------------------------------------------- measuring
   const cv = document.createElement('canvas').getContext('2d'), mcache = new Map();
@@ -108,8 +107,10 @@ export async function generate({ config: C, sections, contour, thickness }) {
     items.push({ k: 'v', text, font: fk, size: +size.toFixed(2), pts, ...extra });
     return [...text].length * size;
   }
-  const toneFor = (cls, x, y) => { const tk = thick(x, y);
-    return cls === 'big' ? (tk > 0.5 ? 'deep' : 'cobalt') : cls === 'mid' ? (tk > 0.45 ? 'deep' : 'cobalt') : cls === 'small' ? (tk > 0.4 ? 'cobalt' : 'mid') : (tk > 0.4 ? 'mid' : 'soft'); };
+  // tone follows the hierarchy only (no shading from the glass: it is not terrain data): headings deep, phrases deep /
+  // cobalt, running text cobalt / mid, the finest grain mid / soft — the anchors stay the brightest blue
+  const toneFor = (cls, x, y, t = '') => { const k = hash(t + cls) % 3;
+    return cls === 'big' ? 'deep' : cls === 'mid' ? (k ? 'deep' : 'cobalt') : cls === 'small' ? (k ? 'cobalt' : 'mid') : (k ? 'mid' : 'soft'); };
 
   // ================================================================ A  anchors
   for (const a of C.anchors) {
@@ -150,7 +151,7 @@ export async function generate({ config: C, sections, contour, thickness }) {
         flush(); const size = K.sizes[segIndex % K.sizes.length] * (0.9 + 0.2 * R()); segIndex++;
         const len = K.stretch[0] + R() * (K.stretch[1] - K.stretch[0]); segEnd = s + len;
         const smp = sample(s), reg = C.regions[regionAt(smp.p[0], smp.p[1])];
-        run = { text: '', pts: [], rot: [], size, fk: K.font || (size >= 22 ? 'sans9' : 'sans7'), sec: reg.pool, tone: size >= 24 ? 'deep' : size >= 16 ? 'cobalt' : 'mid' };
+        run = { text: '', pts: [], rot: [], size, fk: K.font || (size >= 22 ? 'sans9' : 'sans7'), sec: reg.pool, tone: size >= 24 ? 'deep' : 'cobalt' };
       }
       const st = streams[run.sec], ch = st.chars[st.pos % st.chars.length]; st.pos++;
       const w = Math.max(run.size * 0.5, width(ch, run.fk, run.size)) * K.track;
@@ -196,7 +197,7 @@ export async function generate({ config: C, sections, contour, thickness }) {
       for (let j = GH - 1; j >= 0; j--) for (let i = GW - 1; i >= 0; i--) { const k = j * GW + i; if (!D[k]) continue;
         let d = D[k]; if (i < GW - 1) d = Math.min(d, D[k + 1] + 1); if (j < GH - 1) { d = Math.min(d, D[k + GW] + 1); if (i < GW - 1) d = Math.min(d, D[k + GW + 1] + 1.414); if (i) d = Math.min(d, D[k + GW - 1] + 1.414); } D[k] = d;
         if (d > best) { best = d; bk = k; } }
-      const r = best * cell; if (r * 2 < P.min) break;
+      const r = best * cell; STAT.pocketIt = it; STAT.pocketR = +r.toFixed(1); if (r * 2 < P.min) break;
       const x = ((bk % GW) + 0.5) * cell, y = (Math.floor(bk / GW) + 0.5) * cell, reg = C.regions[label[bk]] || C.regions[0];
       let done = false;
       for (let h = Math.min(P.max, r * 2 * 0.86); h >= P.min && !done; h *= 0.8) {
@@ -213,12 +214,13 @@ export async function generate({ config: C, sections, contour, thickness }) {
           const sx = Math.min(1.5, Math.max(0.7, L / w.W0)), len = w.W0 * sx, a0 = u0 + pad + (L - len) / 2;
           const o = [x + e1[0] * a0 - e2[0] * h / 2, y + e1[1] * a0 - e2[1] * h / 2];
           used.set(w.t, (used.get(w.t) || 0) + 1);
-          const tone = toneFor(cls, x, y);
+          const tone = toneFor(cls, x, y, w.t);
           if (R() < (C.flip || 0.12) && cls === 'small') lineH(w.t, w.fk, h, [o[0] + e1[0] * len + e2[0] * h, o[1] + e1[1] * len + e2[1] * h], ang + Math.PI, sx, h, { tone });
           else lineH(w.t, w.fk, h, o, ang, sx, h, { tone });
           done = true; break;
         }
       }
+      if (done) STAT.pocketDone = (STAT.pocketDone || 0) + 1; else STAT.pocketFail = (STAT.pocketFail || 0) + 1;
       if (!done) { const rr = Math.max(1, Math.round(best * 0.7)), bi = bk % GW, bj = Math.floor(bk / GW);
         for (let j = -rr; j <= rr; j++) for (let i = -rr; i <= rr; i++) { const ii = bi + i, jj = bj + j; if (ii >= 0 && jj >= 0 && ii < GW && jj < GH && i * i + j * j <= rr * rr) tried[jj * GW + ii] = 1; } }
     }
@@ -295,7 +297,7 @@ export async function generate({ config: C, sections, contour, thickness }) {
         used.set(w.t, (used.get(w.t) || 0) + 1);
         const len = w.W0 * sx, o = pt(x, v);
         const mid = [o[0] + e1[0] * len / 2 + e2[0] * h / 2, o[1] + e1[1] * len / 2 + e2[1] * h / 2];
-        const tone = toneFor(cls, mid[0], mid[1]);
+        const tone = toneFor(cls, mid[0], mid[1], w.t);
         if (reg.v && !latin(w.t) && cls !== 'grain' && cls !== 'small') {        // vertical writing, upright
           const n = [...w.t].length, size = Math.min(h, len / n); lineV(w.t, w.fk, size, o, ang, { tone });
         } else if ((cls === 'small' || cls === 'grain') && R() < (C.flip || 0.12)) {    // some lines upside down

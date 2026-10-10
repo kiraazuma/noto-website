@@ -25,10 +25,11 @@ export function renderSVG(layout, { fonts, tones, labels = {}, pad = 40 } = {}) 
       let hit;
       if (it.k === 'h') {
         const n = it.xs.length, len = it.xs[n - 1] + (it.xs[n - 1] - (it.xs[n - 2] ?? 0) || it.size);
-        hit = `<rect class="tx-hit" transform="matrix(${it.m.join(' ')})" x="${-it.size * 0.06}" y="${-it.size * 0.06}" width="${len + it.size * 0.12}" height="${it.size * 1.12}"/>`;
+        hit = `<rect class="tx-hit" transform="matrix(${it.m.join(' ')})" x="${-it.size * 0.12}" y="${-it.size * 0.12}" width="${len + it.size * 0.24}" height="${it.size * 1.24}"/>`;
       } else {
         const xs = it.pts.map(p => p[0]), ys = it.pts.map(p => p[1]), s = it.size / 2;
-        hit = `<rect class="tx-hit" x="${Math.min(...xs) - s * 1.1}" y="${Math.min(...ys) - s * 1.1}" width="${Math.max(...xs) - Math.min(...xs) + s * 2.2}" height="${Math.max(...ys) - Math.min(...ys) + s * 2.2}"/>`;
+        const px = Math.max(s * 1.24, it.size * 0.8);             // narrow vertical words get a wider target
+        hit = `<rect class="tx-hit" x="${Math.min(...xs) - px}" y="${Math.min(...ys) - s * 1.24}" width="${Math.max(...xs) - Math.min(...xs) + px * 2}" height="${Math.max(...ys) - Math.min(...ys) + s * 2.48}"/>`;
       }
       const lab = labels[it.anchor] || it.text;
       anchors.push(`<a class="tx-a" href="#${it.anchor}" data-id="${it.anchor}" aria-label="${esc(lab)}" style="--tone:${tones[it.tone]}">${hit}${el}</a>`);
