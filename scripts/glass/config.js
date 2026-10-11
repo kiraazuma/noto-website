@@ -4,10 +4,10 @@ export const GLASS = {
   font: 'noto',                    // assets/glass/glyphs.json: noto (Noto Sans JP Black) | mplus | zen | dela  (?gxfont=)
   tracking: -0.07,                 // between the two characters of a word (em)
 
-  // ---- the glass tube (scripts/glass/tube.js; font units, 1000 = 1 em): every stroke gets a round cross-section.
-  // round: corner radius; maxHalf: the widest stroke half width counted; flat: depth of the tube (1 = a full circle);
-  // unitsPerPx / grid: raster and mesh resolution (smaller = finer and heavier)
-  tube: { round: 34, maxHalf: 95, flat: 0.95, unitsPerPx: 5, grid: 2 },
+  // ---- the letters' volume (scripts/glass/tube.js; font units, 1000 = 1 em). profile 'slab': solid glass of thickness
+  // 2 × half, shoulders rounded with radius `shoulder`, a gentle crown (share) along each stroke; ('tube': round tubes).
+  // round: corner radius of the outline; unitsPerPx / grid: raster and mesh resolution (smaller = finer and heavier)
+  tube: { profile: 'slab', half: 125, shoulder: 90, crown: 0.36, round: 30, maxHalf: 95, flat: 0.95, unitsPerPx: 5, grid: 2 },
 
   // ---- the cluster. x / y: centre of the word (em), z: depth, s: size, r: [x, y, z] rotation (deg)
   // desktop: two rows — 朝市 催し above (a little larger), 能登 応援 案内 below — one near-rectangular block
@@ -37,11 +37,13 @@ export const GLASS = {
   detail: { desk: { x: 0.25, y: 0.5, w: 0.3, h: 0.44 }, phone: { x: 0.5, y: 0.19, w: 0.6, h: 0.22 } },
   camera: { fov: 24 },
 
-  // ---- glass: pale sky blue in the middle of a tube, cobalt toward its rims; haze = how milky (frosted) it is;
-  // rim = how quickly the colour deepens toward the rim (lower = more of the deep colour)
+  // ---- glass: clear glass, faintly tinted. tint: the colour the ivory page takes through tRef of glass (thicker =
+  // deeper); f0: reflectance facing the viewer; env: strength of the reflected room (the Hero's studio colours);
+  // rough: a slightly soft surface (0 = mirror sharp)
   glass: {
-    ivory: '#FCFAEF', sky: '#9CCEFB', blue: '#1F4FE4', skyOrange: '#FFB283', orange: '#FD5500',
-    haze: 0.36, rim: 1.2, ior: 1.33, refract: 0.8, fresnel: 0.8,
+    ivory: '#FCFAEF', tint: '#C4DAF2', tintOrange: '#FBC7A2', tRef: 0.25,
+    ior: 1.5, refract: 1.4, f0: 0.12, env: 1.0, rough: 0.04,
+    wave: 0.46, waveFreq: 3.0,                // the liquid swell of the surface: strength, frequency (per em)
   },
   hover: { lift: 0.12, scale: 0.025 },
 

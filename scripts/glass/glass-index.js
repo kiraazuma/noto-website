@@ -137,14 +137,18 @@ export async function mountGlass(root, hooks = {}) {
     const srgb2lin = (c) => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
     const lin = (hex) => { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(v => srgb2lin(v / 255)); };
     const ivory = lin(G.glass.ivory);
+    const sigma = (hex, tRef) => lin(hex).map((c, i) => -Math.log(clamp(c / ivory[i], 1e-3, 1)) / tRef);
     const rt = new THREE.WebGLRenderTarget(4, 4, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, type: THREE.UnsignedByteType, depthBuffer: true });
     const U = {
       tBack: { value: rt.texture }, uRes: { value: new THREE.Vector2(4, 4) }, uNear: { value: 1 }, uFar: { value: 2 },
       uIvory: { value: new THREE.Vector3(...ivory) },
-      uIor: { value: G.glass.ior }, uRefr: { value: G.glass.refract }, uFres: { value: G.glass.fresnel }, uDefT: { value: G.tube.maxHalf * 1.6 / upm },
-      uSkyB: { value: new THREE.Vector3(...lin(G.glass.sky)) }, uDeepB: { value: new THREE.Vector3(...lin(G.glass.blue)) },
-      uSkyO: { value: new THREE.Vector3(...lin(G.glass.skyOrange)) }, uDeepO: { value: new THREE.Vector3(...lin(G.glass.orange)) },
-      uHaze: { value: G.glass.haze }, uRimK: { value: G.glass.rim },
+      uIor: { value: G.glass.ior }, uRefr: { value: G.glass.refract }, uF0: { value: G.glass.f0 }, uRough: { value: G.glass.rough },
+      uDefT: { value: 2 * G.tube.half / upm },
+      // body colour (Beer–Lambert): the ivory page seen through `tRef` of glass takes exactly the tint colour
+      uSigB: { value: new THREE.Vector3(...sigma(G.glass.tint, G.glass.tRef)) }, uSigO: { value: new THREE.Vector3(...sigma(G.glass.tintOrange, G.glass.tRef)) },
+      // the Hero's studio (hero.js, its env): cobalt, moss, a little orange, around a bright sky
+      uEnvC: { value: new THREE.Vector3(0.004, 0.03, 0.76) }, uEnvM: { value: new THREE.Vector3(0.11, 0.17, 0.06) }, uEnvO: { value: new THREE.Vector3(0.98, 0.09, 0.0) },
+      uEnvK: { value: G.glass.env }, uTime: { value: 0 }, uWave: { value: G.glass.wave }, uWaveF: { value: G.glass.waveFreq },
       uP00: { value: 1 }, uP11: { value: 1 },
     };
     const backMat = new THREE.ShaderMaterial({ vertexShader: VS, fragmentShader: FS_BACK, side: THREE.BackSide, blending: THREE.NoBlending, uniforms: { uNear: U.uNear, uFar: U.uFar } });
@@ -239,7 +243,7 @@ export async function mountGlass(root, hooks = {}) {
     }
     const tints = {};               // word id -> target orange (0 / 1)
     let hotId = null;
-    function hoverWord(id) { hotId = id; dirty = true; }
+    function hoverWord(id) { hotId = id; for (const k of ids) tints[k] = k === current ? 1 : (k === id && !current ? 1 : 0); dirty = true; }
 
     const T = G.time;
     function openWord(id, instant) {
@@ -292,6 +296,7 @@ export async function mountGlass(root, hooks = {}) {
     }
     function step(dt) {
       if (!REDUCED) time += dt;
+      U.uTime.value = time;
       tickTweens(dt);
       // tint: a short cross-fade to orange and back
       for (const id of ids) {
@@ -338,8 +343,8 @@ export async function mountGlass(root, hooks = {}) {
 function hashPhase(s) { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return (h % 1000) / 1000 * Math.PI * 2; }
 
 const VS = /* glsl */`
-varying vec3 vV; varying vec3 vN;
-void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); vV = mv.xyz; vN = normalize(normalMatrix * normal); gl_Position = projectionMatrix * mv; }`;
+varying vec3 vV; varying vec3 vN; varying vec3 vP;
+void main() { vec4 mv = modelViewMatrix * vec4(position, 1.0); vV = mv.xyz; vP = (modelMatrix * vec4(position, 1.0)).xyz; vN = normalize(normalMatrix * normal); gl_Position = projectionMatrix * mv; }`;
 
 // back faces: view-space normal (xy) + distance (16 bit in b/a)
 const FS_BACK = /* glsl */`
@@ -352,51 +357,65 @@ void main() {
 }`;
 
 const FS_FRONT = /* glsl */`
-uniform sampler2D tBack; uniform vec2 uRes; uniform float uNear, uFar, uIor, uRefr, uFres, uDefT, uP00, uP11, uOrange, uHot, uHaze, uRimK;
-uniform vec3 uIvory, uSkyB, uDeepB, uSkyO, uDeepO;
-varying vec3 vV; varying vec3 vN;
+uniform sampler2D tBack; uniform vec2 uRes; uniform float uNear, uFar, uIor, uRefr, uF0, uRough, uDefT, uP00, uP11, uOrange, uHot, uEnvK;
+uniform vec3 uIvory, uSigB, uSigO, uEnvC, uEnvM, uEnvO;
+uniform float uTime, uWave, uWaveF;
+varying vec3 vV; varying vec3 vN; varying vec3 vP;
 float backAt(vec2 uv, out vec3 nb) {
   vec4 c = texture2D(tBack, uv); float dn = c.b + c.a / 255.0;
   vec2 xy = c.rg * 2.0 - 1.0; nb = vec3(xy, -sqrt(max(0.0, 1.0 - dot(xy, xy))));
   return dn > 0.995 ? -1.0 : uNear + dn * (uFar - uNear);
 }
-// a soft, bright room (view space): a light ceiling, a large soft window upper left, a paler floor
-vec3 room(vec3 d) {
-  vec3 c = mix(uIvory * 0.78, vec3(1.0, 0.995, 0.98), smoothstep(-0.7, 0.6, d.y));
-  c += vec3(0.55) * smoothstep(0.55, 0.98, dot(d, normalize(vec3(-0.5, 0.7, 0.5))));
+// The Hero's environment, as directions (view space, y up): a bright sky with a soft window upper left, and the same
+// three coloured panels the Hero's glass reflects — cobalt to the right, moss low left, a small orange patch low right.
+// uRough widens every edge (a slightly soft surface).
+vec3 env(vec3 d) {
+  float r = uRough;
+  vec3 c = mix(vec3(0.84, 0.88, 0.95), vec3(1.0, 1.0, 0.99), smoothstep(-0.5, 0.7, d.y));
+  c += vec3(0.9) * smoothstep(0.93 - r, 0.975, dot(d, normalize(vec3(-0.45, 0.62, 0.64))));
+  float wC = smoothstep(0.24 - r, 0.32 + r, d.x + 0.25 * d.y);
+  float wM = smoothstep(0.4 - r, 0.48 + r, -d.x - 0.45 * d.y);
+  float wO = 1.0 - smoothstep(0.06, 0.1 + r, length(d.xy - vec2(0.46, -0.4)));
+  // the glass recoloured orange carries its colour into everything it shows: the cobalt it would show turns orange
+  vec3 cC = mix(uEnvC, vec3(0.98, 0.2, 0.01), uOrange), cO = mix(uEnvO, uEnvC * 0.0 + vec3(0.95, 0.55, 0.12), uOrange);
+  c = mix(c, cC, wC); c = mix(c, uEnvM, wM * 0.9 * (1.0 - 0.5 * uOrange)); c = mix(c, cO, wO * 0.8);
   return c;
 }
 vec3 toSrgb(vec3 c) { c = max(c, 0.0); return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }
 void main() {
   vec3 N = normalize(vN), V = normalize(-vV);
   if (dot(N, V) < 0.0) N = -N;
+  // liquid: a slow, low swell over the surface (as the Hero's reflections drift), strongest where the glass faces us
+  vec2 p = vP.xy * uWaveF;
+  vec2 sw = vec2(sin(p.x * 1.0 + p.y * 0.55 + uTime * 0.31) + 0.5 * sin(p.y * 1.7 - p.x * 0.8 - uTime * 0.23),
+                 sin(p.y * 1.1 - p.x * 0.4 + uTime * 0.27) + 0.5 * sin(p.x * 1.9 + p.y * 0.7 + uTime * 0.19));
+  N = normalize(N + vec3(sw * uWave * smoothstep(0.2, 0.9, N.z), 0.0));
   float fd = -vV.z; vec2 suv = gl_FragCoord.xy / uRes;
   vec3 nb; float bd = backAt(suv, nb); float t0 = bd > fd + 0.002 ? bd - fd : uDefT * 0.5;
-  // in through the front, across the tube, out through the back
+  // in through the front, across the glass, out through the back
   vec3 R = refract(-V, N, 1.0 / uIor);
   vec2 off = vec2(R.x * uP00, R.y * uP11) * 0.5 * t0 * uRefr / fd;
   vec3 nb1; float bd1 = backAt(suv + off, nb1);
-  bool ok = bd1 > fd + 0.002 && bd1 - fd < uDefT * 2.0;
+  bool ok = bd1 > fd + 0.002 && bd1 - fd < uDefT * 2.5;
   float t = ok ? bd1 - fd : t0; if (!ok) nb1 = bd > 0.0 ? nb : vec3(0.0, 0.0, -1.0);
   vec3 E = refract(R, -nb1, uIor);
-  float bend = dot(E, E) < 1e-4 ? 1.0 : clamp(length(E.xy) * 1.3, 0.0, 1.0);   // how far the light is turned
-  float h = clamp(vV.y / fd * uP11 * 0.5 + 0.5, 0.0, 1.0);                   // height on screen: lighter above
-  // the glass: pale sky where the tube faces the viewer, deeper toward the rims and where the light is turned far
-  vec3 sky = mix(uSkyB, uSkyO, uOrange), deep = mix(uDeepB, uDeepO, uOrange);
+  vec3 seen;
+  if (dot(E, E) < 1e-4) { seen = mix(uIvory, env(reflect(R, -nb1)), 0.75) * 0.95; t *= 1.5; }   // turned back inside: the room
+  else {
+    // straight through: the ivory page; the further the light is bent, the more of the room it brings
+    float bend = smoothstep(0.12, 0.5, length(E.xy));
+    seen = mix(uIvory, env(normalize(E + vec3(0.0, 0.0, 0.5))), bend);
+  }
+  // the glass itself: a faint sky tint that deepens with thickness (or orange, the same glass recoloured)
+  vec3 sig = mix(uSigB, uSigO, uOrange);
+  vec3 col = seen * exp(-sig * t);
+  // the surface reflects the room (Fresnel), white to pale blue highlights included in the room
   float c = clamp(dot(N, V), 0.0, 1.0);
-  float rim = clamp(pow(1.0 - c, uRimK) * 1.15 + bend * 0.35 + t / uDefT * 0.12, 0.0, 1.0);
-  vec3 body = mix(sky, deep, smoothstep(0.05, 1.0, rim));
-  // the page seen through (soft), and a milky haze: frosted, never dark in the middle
-  vec3 through = uIvory * (0.94 + 0.1 * h) * body / max(sky, vec3(0.02)) * mix(1.0, 0.8, bend);
-  vec3 milk = mix(body, vec3(1.0), 0.18) * (0.96 + 0.08 * h);
-  vec3 col = mix(clamp(through, 0.0, 1.0) * body * 1.1, milk, uHaze);
-  col = mix(col, body, smoothstep(0.35, 1.0, rim) * 0.6);
-  // a soft reflection of the room at grazing angles, a broad soft highlight
-  float F = clamp((0.04 + 0.96 * pow(1.0 - c, 5.0)) * uFres, 0.0, 1.0);
-  col = mix(col, room(reflect(-V, N)), F * 0.55);
-  vec3 L = normalize(vec3(-0.45, 0.75, 0.55)), Hh = normalize(L + V);
-  col += vec3(0.14) * pow(max(dot(N, Hh), 0.0), 16.0);                         // broad, soft
-  col += vec3(0.16) * smoothstep(0.82, 0.99, dot(N, Hh));                     // a soft streak along the top of each tube
-  col += vec3(0.05, 0.06, 0.07) * uHot;                                       // hover: a little clearer
+  float F = uF0 + (1.0 - uF0) * pow(1.0 - c, 3.2);      // a little more reflective than plain glass, as the Hero
+  col = mix(col, env(reflect(-V, N)) * uEnvK, clamp(F, 0.0, 1.0));
+  // the key light's highlight, as the Hero's (white, slightly soft)
+  vec3 L = normalize(vec3(-0.35, 0.45, 0.82)), Hh = normalize(L + V);
+  col = 1.0 - (1.0 - col) * (1.0 - 0.85 * smoothstep(0.5, 0.95, pow(max(dot(N, Hh), 0.0), mix(110.0, 40.0, uRough * 4.0))));
+  col += vec3(0.03) * uHot;
   gl_FragColor = vec4(toSrgb(col), 1.0);
 }`;

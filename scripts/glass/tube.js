@@ -1,4 +1,4 @@
-// Glass-tube letters: a glyph's outline becomes a soft, inflated body whose strokes have a round cross-section —
+// Glass letters with a volume (two cross-sections, see `prof`): a glyph's outline becomes a soft, inflated body whose strokes have a round cross-section —
 // as if a glass tube had been run along each stroke — instead of a flat outline pushed into depth.
 //
 // 1. the glyph is drawn into a small raster (real font outline, Path2D)
@@ -12,7 +12,14 @@
 import * as THREE from 'three';
 
 export function tubeGeometry(d, opt) {
-  const { upm, emMid, adv, unitsPerPx: S = 4, grid: GS = 2, round = 28, maxHalf = 90, flat = 0.9, asc, desc } = opt;
+  const { upm, emMid, adv, unitsPerPx: S = 4, grid: GS = 2, round = 28, maxHalf = 90, flat = 0.9, asc, desc, profile = 'tube', half: T = 120, shoulder = 70, crown = 0.18 } = opt;
+  // the cross-section of a stroke at distance dd from its edge, where the stroke's half width is w (font units)
+  //   tube: a full circle across the stroke (a glass tube)
+  //   slab: a solid of constant thickness 2T with rounded shoulders (radius `shoulder`) and a gentle crown along the
+  //         stroke's centre line — a cast glass letter, smooth, not a flat plate and not a balloon
+  const prof = profile === 'slab'
+    ? (dd, w) => { const r = Math.min(shoulder, w), s = Math.min(1, dd / Math.max(r, 1e-3)), sh = Math.sqrt(Math.max(0, 1 - (1 - s) * (1 - s))), c = Math.min(1, dd / Math.max(w, 1e-3)); return T * sh * (1 - crown + crown * (1 - (1 - c) * (1 - c))); }
+    : (dd, w) => Math.sqrt(Math.max(0, dd * (2 * w - dd))) * flat;
   const pad = round + 40;
   const x0 = -pad, x1 = adv + pad, y0 = desc - pad, y1 = asc + pad;
   const W = Math.ceil((x1 - x0) / S), H = Math.ceil((y1 - y0) / S);
@@ -40,7 +47,7 @@ export function tubeGeometry(d, opt) {
   const val = new Float32Array(NN * (M + 1)), hgt = new Float32Array(NN * (M + 1));
   for (let j = 0; j <= M; j++) for (let i = 0; i <= N; i++) {
     const k = (j * GS) * W + i * GS, dd = Math.max(0, sd[k]) * S, w = Math.max(dd, half[k] * S);
-    val[j * NN + i] = sd[k]; hgt[j * NN + i] = Math.sqrt(Math.max(0, dd * (2 * w - dd))) * flat;
+    val[j * NN + i] = sd[k]; hgt[j * NN + i] = prof(dd, w);
   }
   const cF = new Int32Array(NN * (M + 1)).fill(-1), cB = new Int32Array(NN * (M + 1)).fill(-1);
   const eH = new Int32Array(NN * (M + 1)).fill(-1), eV = new Int32Array(NN * (M + 1)).fill(-1);
