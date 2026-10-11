@@ -26,9 +26,9 @@ export const GLASS = {
   // the whole block's resting turn in space [x, y] (deg): a little from below and from the side, so the tubes read as volume
   pose: { desk: [0, 0], phone: [0, 0] },
   // how much of the screen the cluster takes (fraction of width / height, whichever binds first)
-  fit: { desk: { w: 0.5, h: 0.8, cy: 0.0 }, phone: { w: 0.62, h: 0.66, cy: 0.0 } },
+  fit: { desk: { w: 0.5, h: 0.7, cy: 0.0 }, phone: { w: 0.5, h: 0.5, cy: -0.02 } },
   // where the selected word goes in the detail view (fraction of the screen) and how wide it is
-  detail: { desk: { x: 0.25, y: 0.5, w: 0.3, h: 0.44 }, phone: { x: 0.5, y: 0.19, w: 0.6, h: 0.22 } },
+  detail: { desk: { x: 0.235, y: 0.56, w: 0.3, h: 0.4 }, phone: { x: 0.5, y: 0.27, w: 0.5, h: 0.17 } },
   camera: { fov: 24 },
 
   // ---- glass: clear glass, faintly tinted. tint: the colour the ivory page takes through tRef of glass (thicker =

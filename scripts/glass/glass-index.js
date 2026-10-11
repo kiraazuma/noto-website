@@ -54,6 +54,8 @@ export async function mountGlass(root, hooks = {}) {
     b.addEventListener('click', (e) => { e.preventDefault(); if (current === id) close(); else open(id); });
   }
   backBtn.addEventListener('click', () => close());
+  // while an item is open, any empty part of the page (around the glass word, outside the content) goes back
+  sticky.addEventListener('click', (e) => { if (current && !busy && !e.target.closest('button, a, .gx-dhead, .gx-body')) close(); });
 
   const sectionTop = () => root.getBoundingClientRect().top + scrollY;
   function scrollToSection(cb) {

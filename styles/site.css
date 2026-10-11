@@ -407,75 +407,177 @@ body.booted #page{animation:none}
 
 
 /* ---------------------------------------------------------------- GLASS INDEX (html[data-index="glass"])
-   The summary page: the five INDEX words as blue glass in the middle (scripts/glass/), the event top left, the dates /
-   admission / venue bottom right, the three programmes small bottom left. A word opens its INDEX item beside it (the
-   item itself is moved into .gx-body while it is read, then put back). Switch: index.html INDEX_MODE or ?index=classic. */
+   The summary page as one poster: the five INDEX words as liquid glass in an upright column on the centre axis — the
+   odd one out — and flat type that builds the frame around them: the event, large, top left; a corner note top right;
+   two rules across the page; the three programmes as a numbered table bottom left; the dates bottom right.
+   A word opens its INDEX item beside it (the item itself is moved into .gx-body while it is read, then put back).
+   Back: the chosen glass word, any empty part of the page, the INDEX button, or Esc.
+   Switch: index.html INDEX_MODE or ?index=classic. In classic mode nothing here applies. */
 .gx{display:none}
 [data-index=glass] #summary{height:auto;min-height:var(--vh);overflow:clip}
 [data-index=glass] #summary .fr{display:none}
-[data-index=glass] #summary .gx{display:block;position:relative}
+[data-index=glass] #summary .gx{display:block;position:relative;--gx-top:calc(214*var(--p));--gx-bot:calc(206*var(--p));--gx-side:calc(50*var(--p))}
 [data-index=glass] #index{display:none}
 .gx-sticky{position:sticky;top:0;height:var(--vh);min-height:calc(560*var(--p));z-index:1}
+.gx-open .gx-sticky{cursor:pointer}
 #summary .gx-stage{position:absolute;inset:0}
 .gx-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* the frame: two rules across the page (they pass behind the glass) */
+#summary .gx-rule{position:absolute;left:var(--gx-side);right:calc(56*var(--p));height:2px;background:currentColor;pointer-events:none}
+.gx-rule.t{top:var(--gx-top)}.gx-rule.b{bottom:var(--gx-bot)}
+/* top left: the event, large */
+#summary .gx-title{position:absolute;left:var(--gx-side);top:calc(40*var(--p));margin:0;z-index:2;
+  font:900 calc(78*var(--p))/.98 var(--jp);letter-spacing:-.04em;white-space:nowrap}
+.gx-title .in{font-family:var(--lat);font-weight:800;font-stretch:72%;font-size:.8em;margin:0 .14em 0 0;letter-spacing:-.02em}
+/* top right: a small corner note */
+#summary .gx-corner{position:absolute;right:calc(56*var(--p));top:calc(48*var(--p));margin:0;z-index:2;display:flex;flex-direction:column;align-items:flex-end;
+  gap:calc(6*var(--p));font:700 calc(12*var(--t))/1.2 var(--lat);letter-spacing:.16em;text-transform:uppercase}
+.gx-corner span:first-child{font:900 calc(40*var(--p))/.9 var(--lat);font-stretch:68%;letter-spacing:0;margin-bottom:calc(6*var(--p))}
+/* bottom left: the three programmes, a numbered table */
+#summary .gx-prog{position:absolute;left:var(--gx-side);bottom:calc(36*var(--p));width:calc(470*var(--p));margin:0;padding:0;list-style:none;z-index:2;
+  font:900 calc(26*var(--p))/1.15 var(--jp);letter-spacing:-.01em;transition:opacity .4s var(--ease)}
+.gx-prog li{display:flex;align-items:baseline;gap:calc(18*var(--p));padding:calc(10*var(--p)) 0 calc(11*var(--p));border-bottom:1px solid currentColor}
+.gx-prog li:last-child{border-bottom:0}
+.gx-prog i{font:900 calc(26*var(--p))/1 var(--lat);font-stretch:68%;font-style:normal;min-width:calc(34*var(--p))}
+/* bottom right: the dates, large; admission and venue under a rule */
+#summary .gx-meta{position:absolute;right:calc(56*var(--p));bottom:calc(36*var(--p));margin:0;z-index:2;display:flex;flex-direction:column;align-items:flex-end;
+  text-align:right;transition:opacity .4s var(--ease)}
+.gx-meta .d{font:900 calc(104*var(--p))/.86 var(--lat);font-stretch:66%;letter-spacing:-.015em;white-space:nowrap}
+.gx-meta .m{display:flex;gap:calc(22*var(--p));align-items:baseline;margin-top:calc(14*var(--p));font:700 calc(19*var(--p))/1.3 var(--jp);letter-spacing:.04em}
+.gx-meta .m b{font-weight:900}
+.gx-open .gx-meta,.gx-open .gx-prog,.gx-open .gx-rule.b,.gx-open .gx-corner{opacity:0;pointer-events:none}
+.gx-rule.b,.gx-corner{transition:opacity .4s var(--ease)}
+/* the glass words: the hit areas follow the glass; each carries its English name, set beside it on the axis */
 .gx-words{position:absolute;inset:0;pointer-events:none}
-.gx-words button{position:absolute;left:0;top:0;width:0;height:0;margin:0;padding:0;border:0;background:none;color:transparent;cursor:pointer;
-  pointer-events:auto;font:900 10px/1 var(--jp);-webkit-tap-highlight-color:transparent}
-.gx-words button span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.gx-words button{position:absolute;left:0;top:0;width:0;height:0;margin:0;padding:0;border:0;background:none;color:var(--cobalt);cursor:pointer;
+  pointer-events:auto;font:700 10px/1 var(--lat);-webkit-tap-highlight-color:transparent}
+.gx-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.gx-lab,.gx-x{position:absolute;white-space:nowrap;font:700 calc(13*var(--t))/1 var(--lat);letter-spacing:.18em;text-transform:uppercase;transition:color .3s var(--ease),opacity .3s var(--ease)}
+.gx-lab{right:calc(100% + 26*var(--p));top:50%;transform:translateY(-50%);padding-right:calc(30*var(--p))}
+.gx-lab::after{content:"";position:absolute;right:0;top:50%;width:calc(20*var(--p));height:2px;background:currentColor}
+.gx-words button:hover .gx-lab,.gx-words button:focus-visible .gx-lab{color:var(--orange)}
+.gx-x{left:50%;top:calc(100% + 18*var(--p));transform:translateX(-50%);opacity:0;pointer-events:none;
+  text-decoration:underline;text-decoration-color:transparent;text-underline-offset:.45em;text-decoration-thickness:2px}
+.gx-x b{color:var(--orange);margin-left:.5em;font-weight:900}
+.gx-open .gx-lab{opacity:0}
+.gx-open .gx-words button[aria-expanded=true] .gx-x{opacity:1}
+.gx-words button[aria-expanded=true]:hover .gx-x,.gx-words button[aria-expanded=true]:focus-visible .gx-x{text-decoration-color:var(--orange)}
 .gx-words button:focus-visible{outline:2px solid var(--orange);outline-offset:8px;border-radius:2px}
 .gx:not(.gx-ready) .gx-words button{pointer-events:none}
-/* top left / bottom right / bottom left: flat, small, exact */
-#summary .gx-title{position:absolute;left:calc(50*var(--p));top:calc(44*var(--p));margin:0;z-index:2;
-  font:900 calc(40*var(--p))/1.02 var(--jp);letter-spacing:-.03em;white-space:nowrap}
-.gx-title .in{font-family:var(--lat);font-weight:800;font-stretch:72%;font-size:.8em;margin:0 .14em 0 .1em}
-#summary .gx-meta{position:absolute;right:calc(56*var(--p));bottom:calc(40*var(--p));margin:0;z-index:2;display:flex;flex-direction:column;align-items:flex-end;
-  gap:calc(6*var(--p));font:700 calc(15*var(--t))/1.3 var(--jp);letter-spacing:.04em;text-align:right;transition:opacity .4s var(--ease)}
-.gx-meta .d{font:900 calc(46*var(--p))/1 var(--lat);font-stretch:68%;letter-spacing:-.01em;margin-bottom:calc(4*var(--p))}
-#summary .gx-prog{position:absolute;left:calc(50*var(--p));bottom:calc(40*var(--p));margin:0;padding:0;list-style:none;z-index:2;
-  display:flex;flex-direction:column;gap:calc(6*var(--p));font:700 calc(13*var(--t))/1.3 var(--jp);letter-spacing:.06em;transition:opacity .4s var(--ease)}
-.gx-prog i{font:700 calc(11*var(--t))/1 var(--lat);font-style:normal;letter-spacing:.08em;margin-right:calc(10*var(--p));opacity:.7}
-.gx-open .gx-meta,.gx-open .gx-prog{opacity:0;pointer-events:none}
-/* the detail: beside the word (which stays on the left, sticky), the item's own content, scrolling with the page */
+/* how to go back, said once, small (only while an item is open) */
+#summary .gx-hint{position:absolute;left:var(--gx-side);bottom:calc(36*var(--p));margin:0;z-index:2;opacity:0;pointer-events:none;
+  font:700 calc(13*var(--t))/1.4 var(--jp);letter-spacing:.06em;transition:opacity .4s var(--ease) .3s}
+.gx-hint b{color:var(--orange);margin-right:.6em}
+#summary .gx-open .gx-hint{opacity:1}
+/* the detail: right of the word (which stays on the left, sticky), the item's own content, scrolling with the page.
+   Only its content takes clicks: everything else on the page goes back to the INDEX. */
 .gx-detail{position:relative;z-index:2;margin-top:calc(-1*var(--vh));min-height:var(--vh);
-  padding:calc(150*var(--p)) calc(56*var(--p)) calc(110*var(--p)) 46vw;opacity:0;transform:translate3d(0,calc(18*var(--p)),0);
+  padding:calc(var(--gx-top) - 96*var(--p)) calc(56*var(--p)) calc(110*var(--p)) 47vw;opacity:0;transform:translate3d(0,calc(18*var(--p)),0);
   transition:opacity .45s var(--ease),transform .6s var(--ease);pointer-events:none}
 .gx-detail[hidden]{display:none}
-.gx-detail.gx-show{opacity:1;transform:none;pointer-events:auto}
-.gx-dhead{display:flex;align-items:baseline;gap:calc(14*var(--p));margin-bottom:calc(30*var(--p));font:700 calc(12*var(--t))/1 var(--lat);letter-spacing:.16em}
-.gx-num{color:var(--orange)}
-.gx-back{margin:-12px calc(18*var(--p)) -12px -12px;padding:12px;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;cursor:pointer;
-  text-decoration:underline;text-decoration-color:transparent;text-underline-offset:.4em;transition:text-decoration-color .35s var(--ease)}
-.gx-back b{color:var(--orange);margin-right:.6em;font-weight:900}
+.gx-detail.gx-show{opacity:1;transform:none}
+.gx-detail.gx-show .gx-dhead,.gx-detail.gx-show .gx-body{pointer-events:auto;cursor:auto}
+/* the head: the number, very large, the English name, and INDEX (back) — sitting on the top rule */
+.gx-dhead{display:grid;grid-template-columns:auto 1fr auto;align-items:end;column-gap:calc(26*var(--p));padding-bottom:calc(12*var(--p));margin-bottom:calc(46*var(--p))}
+.gx-num{font:900 calc(150*var(--p))/.8 var(--lat);font-stretch:66%;letter-spacing:-.02em;color:var(--orange)}
+.gx-dt{display:flex;flex-direction:column;gap:calc(8*var(--p));padding-bottom:calc(4*var(--p));font:900 calc(34*var(--p))/1 var(--lat);font-stretch:72%;letter-spacing:.02em}
+.gx-of{font:700 calc(12*var(--t))/1 var(--lat);letter-spacing:.16em}
+.gx-back{align-self:end;margin:0 -12px -12px 0;padding:12px;border:0;background:none;color:inherit;cursor:pointer;
+  font:700 calc(13*var(--t))/1 var(--lat);letter-spacing:.18em;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:.45em;text-decoration-thickness:2px;transition:text-decoration-color .3s var(--ease)}
+.gx-back b{color:var(--orange);margin-left:.5em;font-weight:900}
 .gx-back:hover,.gx-back:focus-visible{text-decoration-color:var(--orange);outline:none}
-/* the moved INDEX item: its content only (no row), one column, in the page colours */
+/* the moved INDEX item: its content only (no row), one column, set larger, in the page colours */
 .gx-body .item>.row,.gx-body .item>.rl.bot,.gx-body .item::before{display:none}
 .gx-body .item{color:var(--cobalt)}
 .gx-body .panel{height:auto;overflow:visible}
 .gx-body .pin{display:block;padding:0;opacity:1!important;transform:none!important}
-.gx-body .pin>*+*{margin-top:calc(46*var(--p))}
+.gx-body .pin>*+*{margin-top:calc(56*var(--p))}
 .gx-body .c-r[style]{padding-top:0!important}
-.gx-body .item .pin .rl{color:currentColor}
-.gx-body .end{color:var(--cobalt);margin-top:calc(70*var(--p))}
+.gx-body .item .pin .rl{color:currentColor;left:0}
+.gx-body .L{font-size:calc(104*var(--p))}
+.gx-body #asaichi .fig{font-size:calc(176*var(--p))}
+.gx-body .M{font-size:calc(34*var(--p));line-height:1.4}
+.gx-body .S{font-size:calc(16*var(--t));line-height:2}
+.gx-body .lab{font-size:calc(13*var(--t));margin-bottom:calc(18*var(--p))}
+.gx-body .lab b{font-size:calc(14*var(--t))}
+.gx-body #asaichi .goods .g{font-size:calc(38*var(--p))}
+.gx-body .prog3{display:block}
+.gx-body .prog3>div{display:grid;grid-template-columns:calc(120*var(--p)) 1fr;column-gap:calc(20*var(--p));padding:calc(22*var(--p)) 0 calc(28*var(--p))}
+.gx-body .prog3>div>.rl{height:2px}
+.gx-body .prog3 .no{grid-row:1/4;font-size:calc(104*var(--p))}
+.gx-body .prog3 .t{margin-top:0;font-size:calc(46*var(--p));line-height:1.15}
+.gx-body .prog3 .st{font-size:calc(18*var(--t))}
+.gx-body .prog3 .d{font-size:calc(15*var(--t))}
+.gx-body #noto .big{font-size:calc(66*var(--p))}
+.gx-body #noto .S{font-size:calc(17*var(--t))}
+.gx-body #support .M{font-size:calc(32*var(--p))}
+.gx-body .tiers .L{font-size:calc(66*var(--p))}
 .gx-body .table2{grid-template-columns:1fr;row-gap:0}
 .gx-body .table2 .list.table:first-child li:last-child{border-bottom:0}
-/* no WebGL: the five words as flat type, same places */
+.gx-body .table .v{font-size:calc(28*var(--p))}
+.gx-body .end{color:var(--cobalt);margin-top:calc(70*var(--p))}
+/* no WebGL: the five words as flat type, in the same column */
 .gx-flat .gx-canvas{display:none}
-.gx-flat .gx-words{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;font-size:calc(120*var(--p))}
-.gx-flat .gx-words button{position:relative;inset:auto;width:auto!important;height:auto!important;left:auto!important;top:auto!important;color:var(--cobalt);font-size:1em;letter-spacing:-.02em;line-height:1.1}
-.gx-flat .gx-words button span{position:static;width:auto;height:auto;clip:auto;overflow:visible}
+.gx-flat .gx-words{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;font-size:calc(110*var(--p))}
+.gx-flat .gx-words button{position:relative;inset:auto;width:auto!important;height:auto!important;left:auto!important;top:auto!important;font:900 1em/1.1 var(--jp);letter-spacing:-.02em}
+.gx-flat .gx-sr{position:static;width:auto;height:auto;clip:auto;overflow:visible}
 .gx-flat .gx-words button:hover,.gx-flat .gx-words button:focus-visible,.gx-flat .gx-words button[aria-expanded=true]{color:var(--orange)}
 .gx-flat.gx-open .gx-words button:not([aria-expanded=true]){display:none}
-.gx-flat.gx-open .gx-words{justify-content:flex-start;align-content:center;padding-left:calc(56*var(--p))}
+.gx-flat.gx-open .gx-words{align-items:flex-start;padding-left:calc(56*var(--p))}
+
+/* narrower landscape screens (tablets, small laptops): the frame is the same; the glass column and the type keep their
+   weight (the type does not shrink with --p below a floor) */
+@media (min-width: 1024px) and (max-width: 1279px), (orientation: landscape) and (max-width: 1023px) {
+  #summary .gx-title { font-size: max(48px, calc(78 * var(--p))); }
+  .gx-meta .d { font-size: max(68px, calc(104 * var(--p))); }
+  #summary .gx-prog, .gx-prog i { font-size: max(17px, calc(26 * var(--p))); }
+  #summary .gx-prog { width: max(300px, calc(470 * var(--p))); }
+  .gx-meta .m { font-size: max(13px, calc(19 * var(--p))); }
+  .gx-detail { padding-left: 45vw; }
+}
+
+/* PHONE + PORTRAIT TABLET: a vertical poster. Title block on top (two lines) over a rule; the glass column in the
+   middle with its English names beside it; the programmes and the dates side by side at the foot, over a rule.
+   Detail: the chosen word stays at the top, its number and content run below it. */
 @media (max-width: 1023px) and (orientation: portrait) {
   [data-index=glass] #summary { min-height: 100svh; }
-  .gx-sticky { height: 100svh; min-height: calc(560 * var(--u)); }
-  #summary .gx-title { left: var(--pad); top: calc(26 * var(--u) + env(safe-area-inset-top)); font-size: calc(24 * var(--u)); }
-  #summary .gx-meta { right: var(--pad); bottom: calc(24 * var(--u) + env(safe-area-inset-bottom)); gap: 2px; font-size: max(11.5px, calc(12.5 * var(--u))); }
-  .gx-meta .d { font-size: calc(34 * var(--u)); margin-bottom: 4px; }
-  #summary .gx-prog { left: var(--pad); top: calc(62 * var(--u) + env(safe-area-inset-top)); bottom: auto; gap: 3px; font-size: max(10.5px, calc(11 * var(--u))); }
-  .gx-prog i { font-size: 10px; margin-right: 6px; }
-  .gx-detail { margin-top: -100svh; min-height: 100svh; padding: calc(36svh) var(--pad) calc(64 * var(--u)); background: linear-gradient(to bottom, transparent calc(36svh - 24px), var(--paper) calc(36svh - 24px)); }
-  .gx-dhead { margin-bottom: calc(22 * var(--u)); font-size: max(10.5px, calc(11 * var(--u))); }
-  .gx-body .pin > * + * { margin-top: calc(36 * var(--u)); }
-  .gx-flat .gx-words { font-size: calc(60 * var(--u)); padding: 0 var(--pad); }
+  [data-index=glass] #summary .gx { --gx-top: calc(128 * var(--u) + env(safe-area-inset-top)); --gx-bot: calc(176 * var(--u) + env(safe-area-inset-bottom)); --gx-side: var(--pad); }
+  .gx-sticky { height: 100svh; min-height: calc(600 * var(--u)); }
+  #summary .gx-rule { right: var(--pad); height: 2px; }
+  #summary .gx-title { top: calc(24 * var(--u) + env(safe-area-inset-top)); font-size: calc(44 * var(--u)); line-height: .98; }
+  #summary .gx-corner { right: var(--pad); top: calc(30 * var(--u) + env(safe-area-inset-top)); font-size: 9.5px; gap: 3px; }
+  .gx-corner span:first-child { font-size: calc(26 * var(--u)); margin-bottom: 2px; }
+  .gx-corner span:last-child { display: none; }
+  #summary .gx-prog { left: var(--pad); right: var(--pad); width: auto; bottom: calc(112 * var(--u) + env(safe-area-inset-bottom)); display: flex; flex-wrap: wrap; column-gap: 14px; font-size: calc(13.5 * var(--u)); }
+  .gx-prog li { gap: 6px; padding: 2px 0; border: 0; }
+  .gx-prog i { font-size: calc(15 * var(--u)); min-width: calc(18 * var(--u)); }
+  #summary .gx-meta { right: var(--pad); bottom: calc(20 * var(--u) + env(safe-area-inset-bottom)); }
+  #summary .gx-meta { left: var(--pad); align-items: stretch; text-align: left; }
+  .gx-meta .d { font-size: calc(62 * var(--u)); }
+  .gx-meta .m { justify-content: space-between; gap: 8px; margin-top: calc(8 * var(--u)); font-size: max(12px, calc(13 * var(--u))); }
+  .gx-lab { right: calc(100% + 10px); padding-right: 18px; font-size: 9.5px; letter-spacing: .14em; }
+  .gx-lab::after { width: 12px; }
+  .gx-x { font-size: 10px; top: calc(100% + 8px); }
+  #summary .gx-hint { display: none; }
+  .gx-detail { margin-top: -100svh; min-height: 100svh; padding: calc(40svh) var(--pad) calc(64 * var(--u));
+    background: linear-gradient(to bottom, transparent calc(40svh - 20px), var(--paper) calc(40svh - 20px)); }
+  .gx-dhead { column-gap: 12px; margin-bottom: calc(26 * var(--u)); border-top: 2px solid currentColor; padding-top: calc(12 * var(--u)); }
+  .gx-num { font-size: calc(84 * var(--u)); }
+  .gx-dt { font-size: calc(22 * var(--u)); gap: 6px; }
+  .gx-of, .gx-back { font-size: 10.5px; }
+  .gx-body .pin > * + * { margin-top: calc(40 * var(--u)); }
+  .gx-body .L { font-size: calc(60 * var(--u)); }
+  .gx-body #asaichi .fig { font-size: calc(104 * var(--u)); }
+  .gx-body .M, .gx-body #support .M { font-size: calc(21 * var(--u)); }
+  .gx-body .S, .gx-body #noto .S { font-size: max(14px, calc(14.5 * var(--u))); }
+  .gx-body #asaichi .goods .g { font-size: calc(22 * var(--u)); }
+  .gx-body .prog3 > div { grid-template-columns: calc(62 * var(--u)) 1fr; column-gap: 10px; padding: calc(16 * var(--u)) 0 calc(20 * var(--u)); }
+  .gx-body .prog3 .no { font-size: calc(54 * var(--u)); }
+  .gx-body .prog3 .t { font-size: calc(24 * var(--u)); }
+  .gx-body .prog3 .st { font-size: max(13px, calc(14 * var(--u))); }
+  .gx-body .prog3 .d { font-size: max(12.5px, calc(13 * var(--u))); }
+  .gx-body #noto .big { font-size: calc(34 * var(--u)); }
+  .gx-body .tiers .L { font-size: calc(40 * var(--u)); }
+  .gx-body .table .v { font-size: calc(19 * var(--u)); }
+  .gx-flat .gx-words { font-size: calc(58 * var(--u)); }
 }

@@ -70,22 +70,25 @@
     <!-- EDIT: INDEX（ガラスの5語）。配置・質感・動きは scripts/glass/config.js、文字の形は assets/glass/glyphs.json -->
     <div class="gx">
       <div class="gx-sticky">
-        <h2 class="sp gx-title">出張輪島朝市<span class="in">in</span>一橋祭</h2>
+        <h2 class="sp gx-title">出張輪島朝市<br><span class="in">in</span>一橋祭</h2>
+        <p class="sp gx-corner" aria-hidden="true"><span>INDEX</span><span>05 ITEMS</span><span>NOTO meets HITOTSUBASHI</span></p>
+        <i class="sp gx-rule t" aria-hidden="true"></i><i class="sp gx-rule b" aria-hidden="true"></i>
         <div class="sp gx-stage">
           <canvas class="gx-canvas" aria-hidden="true"></canvas>
           <nav class="gx-words" aria-label="INDEX">
-            <button type="button" data-id="program" data-text="催し" data-label="催し（PROGRAM）" aria-label="催し（PROGRAM）を開く" aria-controls="gx-detail" aria-expanded="false"><span>催し</span></button>
-            <button type="button" data-id="asaichi" data-text="朝市" data-label="朝市（ASAICHI）" aria-label="朝市（ASAICHI）を開く" aria-controls="gx-detail" aria-expanded="false"><span>朝市</span></button>
-            <button type="button" data-id="noto" data-text="能登" data-label="能登（NOTO）" aria-label="能登（NOTO）を開く" aria-controls="gx-detail" aria-expanded="false"><span>能登</span></button>
-            <button type="button" data-id="support" data-text="応援" data-label="応援（SUPPORT）" aria-label="応援（SUPPORT）を開く" aria-controls="gx-detail" aria-expanded="false"><span>応援</span></button>
-            <button type="button" data-id="info" data-text="案内" data-label="案内（INFO）" aria-label="案内（INFO）を開く" aria-controls="gx-detail" aria-expanded="false"><span>案内</span></button>
+            <button type="button" data-id="program" data-text="催し" data-label="催し（PROGRAM）" aria-label="催し（PROGRAM）を開く" aria-controls="gx-detail" aria-expanded="false"><span class="gx-sr">催し</span><span class="gx-lab" aria-hidden="true">PROGRAM</span><span class="gx-x" aria-hidden="true">CLOSE<b>×</b></span></button>
+            <button type="button" data-id="asaichi" data-text="朝市" data-label="朝市（ASAICHI）" aria-label="朝市（ASAICHI）を開く" aria-controls="gx-detail" aria-expanded="false"><span class="gx-sr">朝市</span><span class="gx-lab" aria-hidden="true">ASAICHI</span><span class="gx-x" aria-hidden="true">CLOSE<b>×</b></span></button>
+            <button type="button" data-id="noto" data-text="能登" data-label="能登（NOTO）" aria-label="能登（NOTO）を開く" aria-controls="gx-detail" aria-expanded="false"><span class="gx-sr">能登</span><span class="gx-lab" aria-hidden="true">NOTO</span><span class="gx-x" aria-hidden="true">CLOSE<b>×</b></span></button>
+            <button type="button" data-id="support" data-text="応援" data-label="応援（SUPPORT）" aria-label="応援（SUPPORT）を開く" aria-controls="gx-detail" aria-expanded="false"><span class="gx-sr">応援</span><span class="gx-lab" aria-hidden="true">SUPPORT</span><span class="gx-x" aria-hidden="true">CLOSE<b>×</b></span></button>
+            <button type="button" data-id="info" data-text="案内" data-label="案内（INFO）" aria-label="案内（INFO）を開く" aria-controls="gx-detail" aria-expanded="false"><span class="gx-sr">案内</span><span class="gx-lab" aria-hidden="true">INFO</span><span class="gx-x" aria-hidden="true">CLOSE<b>×</b></span></button>
           </nav>
         </div>
-        <ul class="sp gx-prog" aria-label="企画"><li><i>01</i>出張輪島朝市</li><li><i>02</i>特別講演</li><li><i>03</i>復興応援フリーペーパー</li></ul>
-        <p class="sp gx-meta"><span class="d">2026.11.21–23</span><span>入場無料</span><span>一橋大学 国立西キャンパス</span></p>
+        <ol class="sp gx-prog" aria-label="一橋祭で行うこと"><li><i>01</i><b>出張輪島朝市</b></li><li><i>02</i><b>特別講演</b></li><li><i>03</i><b>復興応援フリーペーパー</b></li></ol>
+        <p class="sp gx-meta"><span class="d">2026.11.21–23</span><span class="m"><b>入場無料</b><span>一橋大学 国立西キャンパス</span></span></p>
+        <p class="gx-hint" aria-hidden="true"><b>←</b>文字か余白をクリック／ESC で INDEX に戻る</p>
       </div>
       <div class="gx-detail" id="gx-detail" role="region" hidden>
-        <div class="gx-dhead"><button type="button" class="gx-back"><b aria-hidden="true">←</b>INDEX</button><span class="gx-num"></span><span class="gx-en"></span></div>
+        <div class="gx-dhead"><span class="gx-num"></span><span class="gx-dt"><span class="gx-en"></span><span class="gx-of">/ 05</span></span><button type="button" class="gx-back">INDEX<b aria-hidden="true">↑</b></button></div>
         <div class="gx-body"></div>
       </div>
     </div>
