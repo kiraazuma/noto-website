@@ -2,13 +2,16 @@
 // the middle of the summary page. A word turns orange under the pointer / keyboard focus; a click sends the other four
 // off, the chosen word moves aside and the item's existing INDEX content appears beside it. Back reverses it.
 //
-// Letters: real outlines of the typeface (assets/glass/glyphs.json, overlaps removed), extruded with a bevel.
+// Letters: real outlines of the typeface (assets/glass/glyphs.json), turned into soft glass tubes (tube.js): every
+// stroke gets a round cross-section, corners are rounded, junctions swell a little.
 // Glass: two passes. 1) the back faces of all letters -> a small buffer (their normal + distance). 2) the front faces:
-// the ray enters (refraction at the front face), crosses the letter, leaves through the back face read from the buffer;
-// the real thickness along that path tints the light (Beer–Lambert: thin = light blue, thick = deep cobalt); a soft
-// studio environment is reflected at the surface (Fresnel) and seen through the bevels. No textures, one draw per glyph.
+// the ray enters (refraction), crosses the tube, leaves through the back face read from the buffer. The colour is a
+// pale, slightly milky sky blue where the tube faces the viewer and a deeper blue toward its rims (where the light
+// travels along the glass); the page behind shows through softly (frost), and a soft room is reflected at grazing
+// angles. No textures, one draw per glyph.
 import * as THREE from 'three';
 import { GLASS as G } from './config.js';
+import { tubeGeometry } from './tube.js';
 
 const PHONE = matchMedia('(max-width:1023px) and (orientation:portrait)');
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -134,45 +137,33 @@ export async function mountGlass(root, hooks = {}) {
     const srgb2lin = (c) => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
     const lin = (hex) => { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(v => srgb2lin(v / 255)); };
     const ivory = lin(G.glass.ivory);
-    // absorption per unit thickness so that the ivory ground seen through tRef of glass is exactly the tint colour
-    const sigma = (hex, tRef) => lin(hex).map((c, i) => -Math.log(clamp(c / ivory[i], 1e-3, 1)) / tRef);
     const rt = new THREE.WebGLRenderTarget(4, 4, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, type: THREE.UnsignedByteType, depthBuffer: true });
     const U = {
       tBack: { value: rt.texture }, uRes: { value: new THREE.Vector2(4, 4) }, uNear: { value: 1 }, uFar: { value: 2 },
-      uIvory: { value: new THREE.Vector3(...ivory) }, uSigB: { value: new THREE.Vector3(...sigma(G.glass.blue, G.glass.tRef)) }, uSigO: { value: new THREE.Vector3(...sigma(G.glass.orange, G.glass.tRefOrange)) },
-      uIor: { value: G.glass.ior }, uRefr: { value: G.glass.refract }, uFres: { value: G.glass.fresnel }, uDefT: { value: (G.solid.depth + 2 * G.solid.bevelThickness) / upm },
+      uIvory: { value: new THREE.Vector3(...ivory) },
+      uIor: { value: G.glass.ior }, uRefr: { value: G.glass.refract }, uFres: { value: G.glass.fresnel }, uDefT: { value: G.tube.maxHalf * 1.6 / upm },
+      uSkyB: { value: new THREE.Vector3(...lin(G.glass.sky)) }, uDeepB: { value: new THREE.Vector3(...lin(G.glass.blue)) },
+      uSkyO: { value: new THREE.Vector3(...lin(G.glass.skyOrange)) }, uDeepO: { value: new THREE.Vector3(...lin(G.glass.orange)) },
+      uHaze: { value: G.glass.haze }, uRimK: { value: G.glass.rim },
       uP00: { value: 1 }, uP11: { value: 1 },
     };
     const backMat = new THREE.ShaderMaterial({ vertexShader: VS, fragmentShader: FS_BACK, side: THREE.BackSide, blending: THREE.NoBlending, uniforms: { uNear: U.uNear, uFar: U.uFar } });
 
     // ---- the letters
-    const S = G.solid;
-    const geoCache = {};
+    const geoCache = {}, t0 = performance.now();
     function glyphGeo(ch) {
       if (geoCache[ch]) return geoCache[ch];
-      const g = font.glyphs[ch]; const sp = new THREE.ShapePath();
-      const tk = g.d.match(/[MLHVQZ]|-?\d*\.?\d+(?:e-?\d+)?/g); let i = 0, x = 0, y = 0, cmd = '';
-      const num = () => parseFloat(tk[i++]);
-      while (i < tk.length) {
-        if (/[A-Z]/.test(tk[i])) cmd = tk[i++];
-        if (cmd === 'M') { x = num(); y = num(); sp.moveTo(x, y); cmd = 'L'; }
-        else if (cmd === 'L') { x = num(); y = num(); sp.lineTo(x, y); }
-        else if (cmd === 'H') { x = num(); sp.lineTo(x, y); }
-        else if (cmd === 'V') { y = num(); sp.lineTo(x, y); }
-        else if (cmd === 'Q') { const cx = num(), cy = num(); x = num(); y = num(); sp.quadraticCurveTo(cx, cy, x, y); }
-        else if (cmd === 'Z') { /* subpaths close themselves */ }
-      }
-      let geo = new THREE.ExtrudeGeometry(sp.toShapes(false), { depth: S.depth, bevelEnabled: true, bevelThickness: S.bevelThickness, bevelSize: S.bevelSize, bevelOffset: S.bevelOffset, bevelSegments: S.bevelSegments, curveSegments: S.curveSegments, steps: 1 });
-      if (geo.index) geo = geo.toNonIndexed();
-      geo.translate(0, -emMid, -S.depth / 2); geo.scale(1 / upm, 1 / upm, 1 / upm);
-      smoothNormals(geo, S.crease);
-      geo.computeBoundingBox();
+      const g = font.glyphs[ch];
+      const geo = tubeGeometry(g.d, { ...G.tube, upm, emMid, adv: g.adv, asc: font.asc, desc: font.desc });
       return (geoCache[ch] = { geo, adv: g.adv / upm });
     }
     const words = {};
+    // built one glyph at a time, letting the page breathe in between (no long block of the main thread)
+    const breathe = () => new Promise(r => (window.requestIdleCallback ? requestIdleCallback(() => r(), { timeout: 120 }) : setTimeout(r, 16)));
+    for (const ch of new Set(ids.flatMap(id => [...btn[id].dataset.text]))) { glyphGeo(ch); await breathe(); }
     for (const id of ids) {
       const text = btn[id].dataset.text, chars = [...text];
-      const group = new THREE.Group(), mat = new THREE.ShaderMaterial({ vertexShader: VS, fragmentShader: FS_FRONT, uniforms: { ...U, uOrange: { value: 0 } } });
+      const group = new THREE.Group(), mat = new THREE.ShaderMaterial({ vertexShader: VS, fragmentShader: FS_FRONT, uniforms: { ...U, uOrange: { value: 0 }, uHot: { value: 0 } } });
       let x = 0; const box = new THREE.Box3();
       chars.forEach((ch, k) => {
         const { geo, adv } = glyphGeo(ch); const m = new THREE.Mesh(geo, mat); m.position.x = x; group.add(m);
@@ -181,8 +172,10 @@ export async function mountGlass(root, hooks = {}) {
       });
       const w = x; group.children.forEach(m => { m.position.x -= w / 2; }); box.translate(new THREE.Vector3(-w / 2, 0, 0));
       const pivot = new THREE.Group(); pivot.add(group); rig.add(pivot);
-      words[id] = { id, pivot, mat, w, box, a: { x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0, s: 1, o: 0 }, phase: hashPhase(id), tint: 0 };
+      words[id] = { id, pivot, mat, w, box, a: { x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0, s: 1, o: 0 }, phase: hashPhase(id), tint: 0, hot: 0 };
     }
+
+    const buildMs = Math.round(performance.now() - t0);
 
     // ---- layout (home positions), camera fit
     let VW = 1, VH = 1, visW = 1, visH = 1, camY = 0, phone = PHONE.matches;
@@ -224,7 +217,7 @@ export async function mountGlass(root, hooks = {}) {
       const h = homeOf(id), cb = clusterBox();
       let dx = h.x - cb.cx, dy = (h.y - cb.cy) * 1.6; const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
       if (Math.abs(dx) < 0.2 && Math.abs(dy) < 0.2) dy = -1;
-      const far = Math.max(visW, visH) * 0.85;
+      const far = Math.max(visW, visH) * 1.25;
       return { ...h, x: h.x + dx * far, y: h.y + dy * far, z: h.z - 1.2, rx: h.rx - dy * 22, ry: h.ry + dx * 30, rz: h.rz - dx * 8, s: h.s * 0.92 };
     }
 
@@ -245,7 +238,8 @@ export async function mountGlass(root, hooks = {}) {
       }
     }
     const tints = {};               // word id -> target orange (0 / 1)
-    function hoverWord(id) { for (const k of ids) tints[k] = (k === id || k === current) ? 1 : 0; dirty = true; }
+    let hotId = null;
+    function hoverWord(id) { hotId = id; dirty = true; }
 
     const T = G.time;
     function openWord(id, instant) {
@@ -258,10 +252,10 @@ export async function mountGlass(root, hooks = {}) {
     }
     function closeWord(id, instant) {
       const order = ids.filter(k => k !== id);
-      if (instant) { for (const k of ids) tween(words[k].a, homeOf(k), 0); tints[id] = 0; words[id].tint = hover === id ? 1 : 0; return 0; }
+      if (instant) { for (const k of ids) tween(words[k].a, homeOf(k), 0); tints[id] = 0; words[id].tint = 0; return 0; }
       tween(words[id].a, homeOf(id), T.back, 0, EASE.io);
       order.forEach((k, i) => tween(words[k].a, homeOf(k), T.back, 0.18 + i * 0.05, EASE.out));
-      setTimeout(() => { tints[id] = hover === id ? 1 : 0; }, T.back * 600);
+      setTimeout(() => { tints[id] = 0; }, T.back * 600);
       return 0.18 + 0.05 * (order.length - 1) + T.back;
     }
 
@@ -300,17 +294,22 @@ export async function mountGlass(root, hooks = {}) {
       if (!REDUCED) time += dt;
       tickTweens(dt);
       // tint: a short cross-fade to orange and back
-      for (const id of ids) { const W = words[id], to = tints[id] || 0; const k = 1 - Math.exp(-dt / Math.max(0.01, T.tint / 3)); W.tint = REDUCED ? to : lerp(W.tint, to, k); W.mat.uniforms.uOrange.value = W.tint; }
+      for (const id of ids) {
+        const W = words[id], to = tints[id] || 0, k = 1 - Math.exp(-dt / Math.max(0.01, T.tint / 3));
+        W.tint = REDUCED ? to : lerp(W.tint, to, k); W.mat.uniforms.uOrange.value = W.tint;
+        const ho = id === hotId && !current ? 1 : 0; W.hot = REDUCED ? ho : lerp(W.hot, ho, 1 - Math.exp(-dt / 0.12)); W.mat.uniforms.uHot.value = W.hot;
+      }
       ptr.x = lerp(ptr.x, REDUCED ? 0 : ptr.tx, 1 - Math.exp(-dt * 2.2)); ptr.y = lerp(ptr.y, REDUCED ? 0 : ptr.ty, 1 - Math.exp(-dt * 2.2));
       const F = G.float, tt = time * Math.PI * 2, calm = current ? 0.45 : 1;
       rig.position.y = Math.sin(tt * F.bobHz) * F.bob * calm;
-      rig.rotation.x = (Math.sin(tt * F.tiltHz + 1.3) * F.tilt + ptr.y * F.pointer * 0.6) * D2R * calm;
-      rig.rotation.y = (Math.sin(tt * F.swayHz) * F.sway + ptr.x * F.pointer) * D2R * calm;
+      const base = current ? [0, 0] : (phone ? G.pose.phone : G.pose.desk);   // the block's resting turn in space
+      rig.rotation.x = (base[0] + Math.sin(tt * F.tiltHz + 1.3) * F.tilt + ptr.y * F.pointer * 0.6) * D2R * calm;
+      rig.rotation.y = (base[1] + Math.sin(tt * F.swayHz) * F.sway + ptr.x * F.pointer) * D2R * calm;
       for (const id of ids) {
         const W = words[id], a = W.a, p = W.phase;
-        W.pivot.position.set(a.x, a.y + Math.sin(tt * 0.13 + p) * F.word * calm, a.z + Math.sin(tt * 0.09 + p * 2) * F.word);
+        W.pivot.position.set(a.x, a.y + Math.sin(tt * 0.13 + p) * F.word * calm, a.z + Math.sin(tt * 0.09 + p * 2) * F.word + W.hot * G.hover.lift);
         W.pivot.rotation.set((a.rx + Math.sin(tt * 0.1 + p) * F.wordRot) * D2R, (a.ry + Math.sin(tt * 0.08 + p * 1.7) * F.wordRot) * D2R, (a.rz + Math.sin(tt * 0.07 + p * 0.6) * F.wordRot * 0.4) * D2R);
-        W.pivot.scale.setScalar(a.s);
+        W.pivot.scale.setScalar(a.s * (1 + W.hot * G.hover.scale));
       }
       scene.updateMatrixWorld();
       placeButtons();
@@ -331,34 +330,12 @@ export async function mountGlass(root, hooks = {}) {
       hover: hoverWord,
       open: openWord,
       close: closeWord,
-      debug: () => ({ VW, VH, visW, visH, phone, words: Object.fromEntries(ids.map(id => [id, { ...words[id].a, tint: +words[id].tint.toFixed(2) }])) }),
+      debug: () => ({ VW, VH, visW, visH, phone, buildMs, words: Object.fromEntries(ids.map(id => [id, { ...words[id].a, tint: +words[id].tint.toFixed(2), hot: +words[id].hot.toFixed(2) }])) }),
     };
   }
 }
 
 function hashPhase(s) { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return (h % 1000) / 1000 * Math.PI * 2; }
-
-// smooth shading over the bevel's curve, crisp where the face turns more than `crease` degrees
-function smoothNormals(geo, crease) {
-  const P = geo.attributes.position.array, n = P.length / 3, FN = new Float32Array(n * 3), cosC = Math.cos(crease * Math.PI / 180);
-  for (let t = 0; t < n; t += 3) {
-    const ax = P[t * 3], ay = P[t * 3 + 1], az = P[t * 3 + 2];
-    const ux = P[t * 3 + 3] - ax, uy = P[t * 3 + 4] - ay, uz = P[t * 3 + 5] - az, vx = P[t * 3 + 6] - ax, vy = P[t * 3 + 7] - ay, vz = P[t * 3 + 8] - az;
-    let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx; const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
-    for (let k = 0; k < 3; k++) { FN[(t + k) * 3] = nx; FN[(t + k) * 3 + 1] = ny; FN[(t + k) * 3 + 2] = nz; }
-  }
-  const map = new Map(), key = (i) => `${Math.round(P[i * 3] * 1e4)},${Math.round(P[i * 3 + 1] * 1e4)},${Math.round(P[i * 3 + 2] * 1e4)}`;
-  for (let i = 0; i < n; i++) { const k = key(i); let a = map.get(k); if (!a) map.set(k, a = []); a.push(i); }
-  const N = new Float32Array(n * 3);
-  const cap = (i) => Math.abs(FN[i * 3 + 2]) > 0.9995;          // the flat faces keep their own normal
-  for (const list of map.values()) for (const i of list) {
-    if (cap(i)) { N[i * 3] = FN[i * 3]; N[i * 3 + 1] = FN[i * 3 + 1]; N[i * 3 + 2] = FN[i * 3 + 2]; continue; }
-    let x = 0, y = 0, z = 0;
-    for (const j of list) { const d = FN[i * 3] * FN[j * 3] + FN[i * 3 + 1] * FN[j * 3 + 1] + FN[i * 3 + 2] * FN[j * 3 + 2]; if (d >= cosC) { x += FN[j * 3]; y += FN[j * 3 + 1]; z += FN[j * 3 + 2]; } }
-    const l = Math.hypot(x, y, z) || 1; N[i * 3] = x / l; N[i * 3 + 1] = y / l; N[i * 3 + 2] = z / l;
-  }
-  geo.setAttribute('normal', new THREE.BufferAttribute(N, 3));
-}
 
 const VS = /* glsl */`
 varying vec3 vV; varying vec3 vN;
@@ -375,47 +352,51 @@ void main() {
 }`;
 
 const FS_FRONT = /* glsl */`
-uniform sampler2D tBack; uniform vec2 uRes; uniform float uNear, uFar, uIor, uRefr, uFres, uDefT, uP00, uP11, uOrange;
-uniform vec3 uIvory, uSigB, uSigO;
+uniform sampler2D tBack; uniform vec2 uRes; uniform float uNear, uFar, uIor, uRefr, uFres, uDefT, uP00, uP11, uOrange, uHot, uHaze, uRimK;
+uniform vec3 uIvory, uSkyB, uDeepB, uSkyO, uDeepO;
 varying vec3 vV; varying vec3 vN;
 float backAt(vec2 uv, out vec3 nb) {
   vec4 c = texture2D(tBack, uv); float dn = c.b + c.a / 255.0;
   vec2 xy = c.rg * 2.0 - 1.0; nb = vec3(xy, -sqrt(max(0.0, 1.0 - dot(xy, xy))));
   return dn > 0.995 ? -1.0 : uNear + dn * (uFar - uNear);
 }
-// a soft studio around the letters (view space): bright ceiling and a large soft box upper left, a strip on the right,
-// a darker floor and dark flags at the sides — these draw the glass's edges against the ivory page
-vec3 studio(vec3 d) {
-  vec3 c = mix(uIvory * 0.62, vec3(1.0, 0.99, 0.965), smoothstep(-0.6, 0.55, d.y));
-  c *= 1.0 - 0.55 * smoothstep(0.72, 0.97, abs(d.x)) * (1.0 - smoothstep(-0.1, 0.5, d.y));     // two narrow dark flags
-  c += vec3(1.9) * smoothstep(0.86, 0.975, dot(d, normalize(vec3(-0.55, 0.72, 0.42))));        // soft box, upper left
-  c += vec3(1.1) * smoothstep(0.93, 0.99, dot(d, normalize(vec3(0.86, 0.18, 0.48))));          // strip, right
-  c += vec3(2.6) * smoothstep(0.972, 0.998, dot(d, normalize(vec3(-0.3, 0.34, 0.89))));       // a large window behind the viewer: the sheen that moves over the faces
+// a soft, bright room (view space): a light ceiling, a large soft window upper left, a paler floor
+vec3 room(vec3 d) {
+  vec3 c = mix(uIvory * 0.78, vec3(1.0, 0.995, 0.98), smoothstep(-0.7, 0.6, d.y));
+  c += vec3(0.55) * smoothstep(0.55, 0.98, dot(d, normalize(vec3(-0.5, 0.7, 0.5))));
   return c;
 }
-// what is seen through the glass: the ivory page straight behind, the studio where the light is bent far
-vec3 behind(vec3 d, float h) { float b = length(d.xy); return mix(uIvory * (0.9 + 0.16 * h + 0.08 * d.y), studio(d), smoothstep(0.22, 0.7, b)); }
 vec3 toSrgb(vec3 c) { c = max(c, 0.0); return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }
 void main() {
   vec3 N = normalize(vN), V = normalize(-vV);
   if (dot(N, V) < 0.0) N = -N;
   float fd = -vV.z; vec2 suv = gl_FragCoord.xy / uRes;
-  vec3 nb; float bd = backAt(suv, nb); float t0 = bd > fd + 0.004 ? bd - fd : uDefT;
-  // in through the front face, across, out through the back face
+  vec3 nb; float bd = backAt(suv, nb); float t0 = bd > fd + 0.002 ? bd - fd : uDefT * 0.5;
+  // in through the front, across the tube, out through the back
   vec3 R = refract(-V, N, 1.0 / uIor);
   vec2 off = vec2(R.x * uP00, R.y * uP11) * 0.5 * t0 * uRefr / fd;
   vec3 nb1; float bd1 = backAt(suv + off, nb1);
-  // the offset sample must still be this letter's back (not empty, not in front, not a letter far behind)
-  bool ok = bd1 > fd + 0.004 && bd1 - fd < uDefT * 2.6;
+  bool ok = bd1 > fd + 0.002 && bd1 - fd < uDefT * 2.0;
   float t = ok ? bd1 - fd : t0; if (!ok) nb1 = bd > 0.0 ? nb : vec3(0.0, 0.0, -1.0);
-  t = clamp(t, 0.015, uDefT * 3.0);
-  vec3 E = refract(R, -nb1, uIor), light;
-  float h = clamp(vV.y / fd * uP11 * 0.5 + 0.5, 0.0, 1.0);        // height on screen: the room is lighter above
-  if (dot(E, E) < 1e-4) { light = behind(reflect(R, -nb1), h) * 0.9; t *= 2.0; }   // total internal reflection: a longer path
-  else light = behind(E, h);
-  vec3 col = light * mix(exp(-uSigB * t), exp(-uSigO * t), uOrange);     // a cross-fade of two glasses (no muddy mix)
-  float F = clamp((0.04 + 0.96 * pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 5.0)) * uFres, 0.0, 1.0);
-  col = mix(col, studio(reflect(-V, N)), F);
-  vec3 L = normalize(vec3(-0.45, 0.75, 0.55)); col += vec3(0.85) * pow(max(dot(N, normalize(L + V)), 0.0), 140.0);
+  vec3 E = refract(R, -nb1, uIor);
+  float bend = dot(E, E) < 1e-4 ? 1.0 : clamp(length(E.xy) * 1.3, 0.0, 1.0);   // how far the light is turned
+  float h = clamp(vV.y / fd * uP11 * 0.5 + 0.5, 0.0, 1.0);                   // height on screen: lighter above
+  // the glass: pale sky where the tube faces the viewer, deeper toward the rims and where the light is turned far
+  vec3 sky = mix(uSkyB, uSkyO, uOrange), deep = mix(uDeepB, uDeepO, uOrange);
+  float c = clamp(dot(N, V), 0.0, 1.0);
+  float rim = clamp(pow(1.0 - c, uRimK) * 1.15 + bend * 0.35 + t / uDefT * 0.12, 0.0, 1.0);
+  vec3 body = mix(sky, deep, smoothstep(0.05, 1.0, rim));
+  // the page seen through (soft), and a milky haze: frosted, never dark in the middle
+  vec3 through = uIvory * (0.94 + 0.1 * h) * body / max(sky, vec3(0.02)) * mix(1.0, 0.8, bend);
+  vec3 milk = mix(body, vec3(1.0), 0.18) * (0.96 + 0.08 * h);
+  vec3 col = mix(clamp(through, 0.0, 1.0) * body * 1.1, milk, uHaze);
+  col = mix(col, body, smoothstep(0.35, 1.0, rim) * 0.6);
+  // a soft reflection of the room at grazing angles, a broad soft highlight
+  float F = clamp((0.04 + 0.96 * pow(1.0 - c, 5.0)) * uFres, 0.0, 1.0);
+  col = mix(col, room(reflect(-V, N)), F * 0.55);
+  vec3 L = normalize(vec3(-0.45, 0.75, 0.55)), Hh = normalize(L + V);
+  col += vec3(0.14) * pow(max(dot(N, Hh), 0.0), 16.0);                         // broad, soft
+  col += vec3(0.16) * smoothstep(0.82, 0.99, dot(N, Hh));                     // a soft streak along the top of each tube
+  col += vec3(0.05, 0.06, 0.07) * uHot;                                       // hover: a little clearer
   gl_FragColor = vec4(toSrgb(col), 1.0);
 }`;

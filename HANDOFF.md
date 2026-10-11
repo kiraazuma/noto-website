@@ -42,11 +42,11 @@ INDEX の5行は、そのまま**内容の入れ物**です。
 
 ## 2b. INDEX の表示方式（試作：ガラスの5語）
 
-ブランチ `feat/glass-typography-index` のみ（main には入っていない）。Event Summary と INDEX を、5語（朝市・催し・能登・応援・案内）の青いガラスの立体文字に置き換えたもの。
+ブランチ `feat/glass-typography-index` のみ（main には入っていない）。Event Summary と INDEX を、5語（朝市・催し・能登・応援・案内）の「ガラス管の文字」の塊に置き換えたもの（ストロークごとに丸い断面、空色で少し曇ったガラス）。
 
 - **切替**：`index.html` の `var INDEX_MODE = 'glass';` を `'classic'` にすると従来の表示に戻る。URL に `?index=classic` / `?index=glass` でも確認できる。classic のときは従来と完全に同じ。
-- **ファイル**：`scripts/glass/config.js`（配置・ガラスの色と厚み・浮遊・時間）、`scripts/glass/glass-index.js`（3D と操作）、`assets/glass/glyphs.json`（5語の文字の輪郭。Noto Sans JP Black ほか、SIL OFL）。
-- **操作**：ポインタ／キーボードのフォーカスでその語だけオレンジのガラスに。クリック／タップ／Enter で他の4語が退場し、選んだ語が左（スマホは上）へ、右（下）に既存の INDEX の内容がそのまま出る。「← INDEX」・Esc・オレンジの語のクリックで戻る。フッターのリンクや `#noto` などの直リンクも同じ。
+- **ファイル**：`scripts/glass/config.js`（配置・ガラスの色と厚み・浮遊・時間）、`scripts/glass/glass-index.js`（3D と操作）、`scripts/glass/tube.js`（文字の輪郭→ガラス管の形）、`assets/glass/glyphs.json`（5語の文字の輪郭。Noto Sans JP Black ほか、SIL OFL）。
+- **操作**：ポインタ／キーボードのフォーカスでその語がわずかに手前へ。クリック／タップ／Enter でその語だけオレンジのガラスになり、他の4語が退場し、選んだ語が左（スマホは上）へ、右（下）に既存の INDEX の内容がそのまま出る。「← INDEX」・Esc・オレンジの語のクリックで戻る。フッターのリンクや `#noto` などの直リンクも同じ。
 - **確認用**：`?gxflat`（WebGL なしの表示）、`?gxfont=mplus|zen|dela`（書体の比較）。
 
 ## 3. 色
