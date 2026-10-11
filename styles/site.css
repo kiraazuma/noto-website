@@ -599,10 +599,10 @@ body.booted #page{animation:none}
 }
 
 /* shared by the two new layouts: no rules across the page, no corner note, no English labels beside the glass */
-:is([data-gxl=monumental],[data-gxl=editorial]) #summary :is(.gx-rule,.gx-corner),
-:is([data-gxl=monumental],[data-gxl=editorial]) .gx-lab{display:none}
-:is([data-gxl=monumental],[data-gxl=editorial]) #summary .gx-hint{display:none}
-:is([data-gxl=monumental],[data-gxl=editorial]) .gx-prog li{border:0}
+:is([data-gxl=monumental],[data-gxl=editorial],[data-gxl=focus]) #summary :is(.gx-rule,.gx-corner),
+:is([data-gxl=monumental],[data-gxl=editorial],[data-gxl=focus]) .gx-lab{display:none}
+:is([data-gxl=monumental],[data-gxl=editorial],[data-gxl=focus]) #summary .gx-hint{display:none}
+:is([data-gxl=monumental],[data-gxl=editorial],[data-gxl=focus]) .gx-prog li{border:0}
 
 /* ================================================================ B — MONUMENTAL
    The event name, monumental, stacked two characters a line on the left (出張 / 輪島 / 朝市) — the same two-character
@@ -727,4 +727,72 @@ body.booted #page{animation:none}
   [data-gxl=editorial] .gx-prog i { font-size: calc(34 * var(--u)); }
   [data-gxl=editorial] #summary .gx-dslot { left: var(--m); right: var(--m); width: auto; top: calc(var(--top) + 236 * var(--u)); height: calc(120 * var(--u)); bottom: auto; }
   [data-gxl=editorial] .gx-detail { padding: calc(var(--top) + 372 * var(--u)) var(--m) calc(64 * var(--u)); background: linear-gradient(to bottom, transparent calc(var(--top) + 356 * var(--u)), var(--paper) calc(var(--top) + 356 * var(--u))); }
+}
+
+/* ================================================================ FOCUS (default) — the glass first
+   One group, centred on the page: the glass column, as tall as the screen allows, and beside it — one gap away —
+   the information, hung on the column's lines: the three programmes level with 催し (programme), the event name and
+   its dates as one block level with 朝市 – 能登, admission / venue level with 案内 (information). Nothing else.
+   All 2D sizes are set from the glass's own line (--em), so the order holds at every size: the glass (one line = 1 em,
+   transparent, the only volume) first; the name (0.42 em) and dates (0.74 em) second; the small facts (0.12 em) third.
+   Open: the item is what you read. The chosen word (orange glass) keeps the column's place, smaller, centred on it;
+   the item's own type runs beside it where the information was; one small line above it says where you are and how
+   to go back. No big numbers. */
+#summary .gx-adm{display:none}
+[data-gxl=focus] #summary .gx{
+  --vh0:var(--vh); --sh:calc(var(--vh0)*.86); --gt:calc((var(--vh0) - var(--sh)) / 2);
+  --colw:calc(var(--sh)*.337);                        /* the column's width for that height (1.86 / 5.52 em) */
+  --em:calc(var(--sh)/5.52);
+  --gap:calc(var(--em)*.62); --txw:calc(var(--em)*3.9);
+  --gl:max(calc(56*var(--p)),calc((100vw - var(--colw) - var(--gap) - var(--txw)) / 2));
+  --tx:calc(var(--gl) + var(--colw) + var(--gap)); --small:max(12px,calc(var(--em)*.122))}
+[data-gxl=focus] #summary .gx-slot{left:var(--gl);width:var(--colw);top:var(--gt);height:var(--sh);--gx-pitch:1.13}
+[data-gxl=focus] #summary :is(.gx-title,.gx-prog,.gx-meta,.gx-adm){left:var(--tx);right:auto;width:auto;bottom:auto}
+/* third: programmes, level with 催し */
+[data-gxl=focus] #summary .gx-prog{top:calc(var(--gt) + var(--em)*.1);font:700 var(--small)/1.55 var(--jp);letter-spacing:.04em;white-space:nowrap}
+[data-gxl=focus] .gx-prog li{padding:0;gap:.7em}
+[data-gxl=focus] .gx-prog i{font:700 .8em/1 var(--lat);letter-spacing:.08em;min-width:1.6em;opacity:.7}
+[data-gxl=focus] .gx-prog b{font-weight:700}
+/* second: name and dates, one block — the name's top level with 朝市, the dates under it */
+[data-gxl=focus] #summary .gx-title{top:calc(var(--gt) + var(--em)*1.2);font:900 calc(var(--em)*.42)/1.06 var(--jp);letter-spacing:-.035em}
+[data-gxl=focus] .gx-title .w{display:inline}
+[data-gxl=focus] .gx-title .w4{display:block}
+[data-gxl=focus] .gx-title .in{font-size:.8em;margin-right:.12em}
+[data-gxl=focus] #summary .gx-meta{top:calc(var(--gt) + var(--em)*2.2);align-items:flex-start;text-align:left}
+[data-gxl=focus] .gx-meta .d{font-size:calc(var(--em)*.62);line-height:.9}
+[data-gxl=focus] .gx-meta .m{display:none}
+/* third: admission / venue, level with 案内 */
+[data-gxl=focus] #summary .gx-adm{display:flex;flex-direction:column;position:absolute;margin:0;z-index:2;top:calc(var(--gt) + var(--sh) - var(--em)*.1 - var(--small)*3.1);
+  font:700 var(--small)/1.55 var(--jp);letter-spacing:.04em;white-space:nowrap}
+[data-gxl=focus] .gx-adm b{font-weight:900}
+/* open */
+[data-gxl=focus] #summary :is(.gx-title,.gx-prog,.gx-meta,.gx-adm){transition:opacity .4s var(--ease)}
+[data-gxl=focus] #summary .gx-open :is(.gx-title,.gx-prog,.gx-meta,.gx-adm){opacity:0;pointer-events:none}
+[data-gxl=focus] #summary .gx-dslot{left:calc(var(--gl) - var(--colw)*.1);width:calc(var(--colw)*1.2);top:calc(var(--gt) + var(--sh)*.36);height:calc(var(--sh)*.28)}
+[data-gxl=focus] .gx-detail{padding:calc(var(--gt) + 4*var(--p)) calc(56*var(--p)) calc(110*var(--p)) var(--tx)}
+[data-gxl=focus] .gx-dhead{grid-template-columns:auto 1fr auto;align-items:baseline;column-gap:calc(14*var(--p));padding-bottom:calc(12*var(--p));border-bottom:2px solid currentColor;margin-bottom:calc(40*var(--p))}
+[data-gxl=focus] .gx-num{font:900 max(15px,calc(22*var(--p)))/1 var(--lat);font-stretch:72%;letter-spacing:.04em}
+[data-gxl=focus] .gx-dt{flex-direction:row;align-items:baseline;gap:calc(12*var(--p));padding:0;font-size:max(15px,calc(22*var(--p)))}
+[data-gxl=focus] .gx-detail .gx-body{max-width:calc(820*var(--p))}
+
+/* phone (portrait): a vertical poster with the same order. The name and dates over the column (second), the column in
+   the middle, as large as fits (first), the programmes and admission / venue under it, side by side (third).
+   Open: the chosen word at the top, the item below it. */
+@media (max-width: 1023px) and (orientation: portrait) {
+  [data-gxl=focus] #summary .gx { --top: calc(22 * var(--u) + env(safe-area-inset-top)); --foot: calc(96 * var(--u) + env(safe-area-inset-bottom));
+    --gt: calc(var(--top) + 118 * var(--u)); --sh: min(calc(var(--vh0) - var(--gt) - var(--foot)), calc((100vw - 2 * var(--pad)) / .337 * .62));
+    --gl: calc((100vw - var(--colw)) / 2); --tx: var(--pad); --small: max(11.5px, calc(12.5 * var(--u))); }
+  [data-gxl=focus] #summary .gx-title { top: var(--top); font-size: calc(30 * var(--u)); }
+  [data-gxl=focus] .gx-title .w4 { display: inline; margin-left: .25em; }
+  [data-gxl=focus] #summary .gx-meta { top: calc(var(--top) + 42 * var(--u)); }
+  [data-gxl=focus] .gx-meta .d { font-size: calc(62 * var(--u)); }
+  [data-gxl=focus] #summary .gx-prog { top: auto; bottom: calc(22 * var(--u) + env(safe-area-inset-bottom)); display: block; }
+  [data-gxl=focus] .gx-prog li { display: flex; }
+  [data-gxl=focus] #summary .gx-adm { top: auto; left: auto; right: var(--pad); bottom: calc(22 * var(--u) + env(safe-area-inset-bottom)); align-items: flex-end; text-align: right; }
+  [data-gxl=focus] #summary .gx-dslot { left: 22%; width: 56%; top: calc(18 * var(--u) + env(safe-area-inset-top)); height: calc(var(--vh0) * .16); }
+  [data-gxl=focus] .gx-detail { padding: calc(var(--vh0) * .16 + 56 * var(--u) + env(safe-area-inset-top)) var(--pad) calc(64 * var(--u));
+    background: linear-gradient(to bottom, transparent calc(var(--vh0) * .16 + 40 * var(--u)), var(--paper) calc(var(--vh0) * .16 + 40 * var(--u))); }
+  [data-gxl=focus] .gx-num, [data-gxl=focus] .gx-dt { font-size: 15px; }
+  [data-gxl=focus] .gx-detail .gx-body { max-width: none; }
+  [data-gxl=focus] .gx-dhead { border-top: 0; padding-top: 0; }
 }

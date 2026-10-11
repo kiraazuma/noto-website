@@ -47,7 +47,7 @@ INDEX の5行は、そのまま**内容の入れ物**です。
 - **切替**：`index.html` の `var INDEX_MODE = 'glass';` を `'classic'` にすると従来の表示に戻る。URL に `?index=classic` / `?index=glass` でも確認できる。classic のときは従来と完全に同じ。
 - **ファイル**：`scripts/glass/config.js`（配置・ガラスの色と厚み・浮遊・時間）、`scripts/glass/glass-index.js`（3D と操作）、`scripts/glass/tube.js`（文字の輪郭→丸みのある厚みの形）、`assets/glass/glyphs.json`（5語の文字の輪郭。Noto Sans JP Black ほか、SIL OFL）。
 - **操作**：ポインタ／キーボードのフォーカスでその語のガラスがほんのりオレンジに（わずかに手前へ）。クリック／タップ／Enter で他の4語が退場し、選んだ語が左（スマホは上）へ、右（下）に既存の INDEX の内容がそのまま出る。「← INDEX」・Esc・オレンジの語のクリックで戻る。フッターのリンクや `#noto` などの直リンクも同じ。
-- **レイアウト（比較用）**：`index.html` の `GLASS_LAYOUT`（既定 `'monumental'`）、または URL の `?layout=monumental`（B案：巨大な2D の名前＋右にガラスの列）／`?layout=editorial`（A案：名前と日付を一つの塊に、ガラスの列は右寄り下）／`?layout=current`（前の版）。ガラスの位置は CSS の `.gx-slot`（列）と `.gx-dslot`（開いた時の語）で決める（`styles/site.css` 末尾の LAYOUTS）。前の版は `backup/glass-layout-current` ブランチにも保存。
+- **レイアウト（比較用）**：`index.html` の `GLASS_LAYOUT`（既定 `'focus'`＝ガラスが主役の版：ガラスの列＋その行に沿った情報を一つの群として中央に。文字の大きさはガラスの1行（--em）から決まる）、または URL の `?layout=focus`／ `?layout=monumental`（B案：巨大な2D の名前＋右にガラスの列）／`?layout=editorial`（A案：名前と日付を一つの塊に、ガラスの列は右寄り下）／`?layout=current`（前の版）。ガラスの位置は CSS の `.gx-slot`（列）と `.gx-dslot`（開いた時の語）で決める（`styles/site.css` 末尾の LAYOUTS）。前の版は `backup/glass-layout-current`、A/B/CURRENT 比較版は `backup/glass-layouts-abc` ブランチにも保存。
 - **確認用**：`?gxflat`（WebGL なしの表示）、`?gxfont=mplus|zen|dela`（書体の比較）。
 
 ## 3. 色
