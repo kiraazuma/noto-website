@@ -405,3 +405,77 @@ body.booted #page{animation:none}
 .cta-link:hover,.cta-link:focus-visible{text-decoration-color:var(--orange);outline:none}
 @media (max-width: 1023px) and (orientation: portrait) { .cta-link { font-size: max(13.5px, calc(14 * var(--u))); } }
 
+
+/* ---------------------------------------------------------------- GLASS INDEX (html[data-index="glass"])
+   The summary page: the five INDEX words as blue glass in the middle (scripts/glass/), the event top left, the dates /
+   admission / venue bottom right, the three programmes small bottom left. A word opens its INDEX item beside it (the
+   item itself is moved into .gx-body while it is read, then put back). Switch: index.html INDEX_MODE or ?index=classic. */
+.gx{display:none}
+[data-index=glass] #summary{height:auto;min-height:var(--vh);overflow:clip}
+[data-index=glass] #summary .fr{display:none}
+[data-index=glass] #summary .gx{display:block;position:relative}
+[data-index=glass] #index{display:none}
+.gx-sticky{position:sticky;top:0;height:var(--vh);min-height:calc(560*var(--p));z-index:1}
+#summary .gx-stage{position:absolute;inset:0}
+.gx-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.gx-words{position:absolute;inset:0;pointer-events:none}
+.gx-words button{position:absolute;left:0;top:0;width:0;height:0;margin:0;padding:0;border:0;background:none;color:transparent;cursor:pointer;
+  pointer-events:auto;font:900 10px/1 var(--jp);-webkit-tap-highlight-color:transparent}
+.gx-words button span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.gx-words button:focus-visible{outline:2px solid var(--orange);outline-offset:8px;border-radius:2px}
+.gx:not(.gx-ready) .gx-words button{pointer-events:none}
+/* top left / bottom right / bottom left: flat, small, exact */
+#summary .gx-title{position:absolute;left:calc(50*var(--p));top:calc(44*var(--p));margin:0;z-index:2;
+  font:900 calc(40*var(--p))/1.02 var(--jp);letter-spacing:-.03em;white-space:nowrap}
+.gx-title .in{font-family:var(--lat);font-weight:800;font-stretch:72%;font-size:.8em;margin:0 .14em 0 .1em}
+#summary .gx-meta{position:absolute;right:calc(56*var(--p));bottom:calc(40*var(--p));margin:0;z-index:2;display:flex;flex-direction:column;align-items:flex-end;
+  gap:calc(6*var(--p));font:700 calc(15*var(--t))/1.3 var(--jp);letter-spacing:.04em;text-align:right;transition:opacity .4s var(--ease)}
+.gx-meta .d{font:900 calc(46*var(--p))/1 var(--lat);font-stretch:68%;letter-spacing:-.01em;margin-bottom:calc(4*var(--p))}
+#summary .gx-prog{position:absolute;left:calc(50*var(--p));bottom:calc(40*var(--p));margin:0;padding:0;list-style:none;z-index:2;
+  display:flex;flex-direction:column;gap:calc(6*var(--p));font:700 calc(13*var(--t))/1.3 var(--jp);letter-spacing:.06em;transition:opacity .4s var(--ease)}
+.gx-prog i{font:700 calc(11*var(--t))/1 var(--lat);font-style:normal;letter-spacing:.08em;margin-right:calc(10*var(--p));opacity:.7}
+.gx-open .gx-meta,.gx-open .gx-prog{opacity:0;pointer-events:none}
+/* the detail: beside the word (which stays on the left, sticky), the item's own content, scrolling with the page */
+.gx-detail{position:relative;z-index:2;margin-top:calc(-1*var(--vh));min-height:var(--vh);
+  padding:calc(150*var(--p)) calc(56*var(--p)) calc(110*var(--p)) 46vw;opacity:0;transform:translate3d(0,calc(18*var(--p)),0);
+  transition:opacity .45s var(--ease),transform .6s var(--ease);pointer-events:none}
+.gx-detail[hidden]{display:none}
+.gx-detail.gx-show{opacity:1;transform:none;pointer-events:auto}
+.gx-dhead{display:flex;align-items:baseline;gap:calc(14*var(--p));margin-bottom:calc(30*var(--p));font:700 calc(12*var(--t))/1 var(--lat);letter-spacing:.16em}
+.gx-num{color:var(--orange)}
+.gx-back{margin:-12px calc(18*var(--p)) -12px -12px;padding:12px;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;cursor:pointer;
+  text-decoration:underline;text-decoration-color:transparent;text-underline-offset:.4em;transition:text-decoration-color .35s var(--ease)}
+.gx-back b{color:var(--orange);margin-right:.6em;font-weight:900}
+.gx-back:hover,.gx-back:focus-visible{text-decoration-color:var(--orange);outline:none}
+/* the moved INDEX item: its content only (no row), one column, in the page colours */
+.gx-body .item>.row,.gx-body .item>.rl.bot,.gx-body .item::before{display:none}
+.gx-body .item{color:var(--cobalt)}
+.gx-body .panel{height:auto;overflow:visible}
+.gx-body .pin{display:block;padding:0;opacity:1!important;transform:none!important}
+.gx-body .pin>*+*{margin-top:calc(46*var(--p))}
+.gx-body .c-r[style]{padding-top:0!important}
+.gx-body .item .pin .rl{color:currentColor}
+.gx-body .end{color:var(--cobalt);margin-top:calc(70*var(--p))}
+.gx-body .table2{grid-template-columns:1fr;row-gap:0}
+.gx-body .table2 .list.table:first-child li:last-child{border-bottom:0}
+/* no WebGL: the five words as flat type, same places */
+.gx-flat .gx-canvas{display:none}
+.gx-flat .gx-words{display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:0 .3em;padding:0 10vw;font-size:calc(150*var(--p))}
+.gx-flat .gx-words button{position:relative;inset:auto;width:auto!important;height:auto!important;left:auto!important;top:auto!important;color:var(--cobalt);font-size:1em;letter-spacing:-.02em;line-height:1.1}
+.gx-flat .gx-words button span{position:static;width:auto;height:auto;clip:auto;overflow:visible}
+.gx-flat .gx-words button:hover,.gx-flat .gx-words button:focus-visible,.gx-flat .gx-words button[aria-expanded=true]{color:var(--orange)}
+.gx-flat.gx-open .gx-words button:not([aria-expanded=true]){display:none}
+.gx-flat.gx-open .gx-words{justify-content:flex-start;align-content:center;padding-left:calc(56*var(--p))}
+@media (max-width: 1023px) and (orientation: portrait) {
+  [data-index=glass] #summary { min-height: 100svh; }
+  .gx-sticky { height: 100svh; min-height: calc(560 * var(--u)); }
+  #summary .gx-title { left: var(--pad); top: calc(26 * var(--u) + env(safe-area-inset-top)); font-size: calc(24 * var(--u)); }
+  #summary .gx-meta { right: var(--pad); bottom: calc(24 * var(--u) + env(safe-area-inset-bottom)); gap: 2px; font-size: max(11.5px, calc(12.5 * var(--u))); }
+  .gx-meta .d { font-size: calc(34 * var(--u)); margin-bottom: 4px; }
+  #summary .gx-prog { left: var(--pad); top: calc(62 * var(--u) + env(safe-area-inset-top)); bottom: auto; gap: 3px; font-size: max(10.5px, calc(11 * var(--u))); }
+  .gx-prog i { font-size: 10px; margin-right: 6px; }
+  .gx-detail { margin-top: -100svh; min-height: 100svh; padding: calc(36svh) var(--pad) calc(64 * var(--u)); background: linear-gradient(to bottom, transparent calc(36svh - 24px), var(--paper) calc(36svh - 24px)); }
+  .gx-dhead { margin-bottom: calc(22 * var(--u)); font-size: max(10.5px, calc(11 * var(--u))); }
+  .gx-body .pin > * + * { margin-top: calc(36 * var(--u)); }
+  .gx-flat .gx-words { font-size: calc(60 * var(--u)); padding: 0 var(--pad); }
+}

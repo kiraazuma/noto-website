@@ -79,7 +79,10 @@ const V_MAX = 150, V_FADE = 70;                          // vh / s: the scene's 
 const PHONE = matchMedia('(max-width: 1023px) and (orientation: portrait)');
 const STOPS = [];
 let D_OBJ, D_IV, IV, D_COV, COV, D_WIN, WIN, D_END;
-const sumParts = $$('#summary .sp').map((el, k) => ({ el, d: k * 5, k: '' }));
+// INDEX display mode (index.html: INDEX_MODE / ?index=): 'glass' = the five glass words, 'classic' = summary + rows
+const GLASS = document.documentElement.dataset.index === 'glass';
+let GX = null, gxStart = null;
+const sumParts = $$(GLASS ? '#summary .gx .sp' : '#summary .fr .sp').map((el, k) => ({ el, d: k * 5, k: '' }));
 function setTimings() {
   const [fi, fh, fo] = PHONE.matches ? SEG.phone : SEG.desk, L = fi + fh + fo;
   ST.forEach((s, i) => { s.a = S_A + i * (L + S_BLANK); s.inEnd = s.a + fi; s.outStart = s.inEnd + fh; s.outEnd = s.a + L; s._k = null; });
@@ -364,6 +367,7 @@ function setHash(id) {
 // footer SITE / SUPPORT links: travel to the INDEX, then open the row there (never a bare anchor jump)
 function navigateTo(x) {
   if (mode !== 'main') return;
+  if (GLASS) { startGlass().then(g => g ? g.open(x.id) : null); return; }    // the glass INDEX handles its own items
   if (A) { queued = x; return; }
   if (OPEN === x) { scrollToY(docTop(x.row)); return; }
   const r = x.row.getBoundingClientRect().top;
@@ -373,6 +377,7 @@ function navigateTo(x) {
 // TOP: back to the top of the page (the summary). An open row closes on the way; the opening is not replayed.
 function toTop() {
   if (mode !== 'main') return;
+  if (GLASS && GX && GX.current) { GX.close().then(() => scrollToY(0, 1.0)); return; }
   if (A) { queued = null; return; }
   if (OPEN) toggle(OPEN, { endScroll: 0, hd: 1.0 });
   else scrollToY(0, 1.0);
@@ -385,6 +390,18 @@ document.addEventListener('click', (e) => {
   if (x) { navigateTo(x); return; }
   const t = document.getElementById(id); if (t) scrollToY(docTop(t));
 });
+// the glass INDEX (loaded after the opening, when the browser is idle; at once for a deep link)
+function startGlass() {
+  if (!GLASS) return Promise.resolve(null);
+  if (!gxStart) gxStart = import('./glass/glass-index.js')
+    .then(m => m.mountGlass($('#summary .gx'), {
+      scrollTo: (y, done) => scrollToY(y, 0.7, done),
+      onChange: (id) => { setHash(id || ''); if (id === 'info') requestAnimationFrame(fitEnd); },
+    }))
+    .then(g => { GX = g; window.__gx = g; return g; })
+    .catch(err => { console.error(err); document.documentElement.dataset.index = 'classic'; sumParts.forEach(p => { p.el.style.opacity = ''; p.el.style.filter = ''; }); return null; });
+  return gxStart;
+}
 addEventListener('keydown', (e) => { if (e.key === 'Escape' && OPEN && !A && mode === 'main') { const r = OPEN.row; toggle(OPEN); r.focus({ preventScroll: true }); } });
 // deep link (#noto ...): skip the opening and the statements, go straight to the INDEX with that row open
 const DEEP = byId(location.hash.slice(1)) || null;
@@ -444,9 +461,13 @@ function tick(now, dt, draw = true) {
   if (locked && !A && openingDone()) locked = false;
   if (DEEP && !locked && mode === 'hero') {
     mode = 'main'; updateIntro(0);
-    scrollTo({ top: docTop(indexEl), behavior: 'instant' });
-    toggle(DEEP, { instant: true }); updateAcc(0);
+    if (GLASS) { scrollTo({ top: docTop(summary), behavior: 'instant' }); startGlass().then(g => g && g.open(DEEP.id, { instant: true, noScroll: true })); }
+    else {
+      scrollTo({ top: docTop(indexEl), behavior: 'instant' });
+      toggle(DEEP, { instant: true }); updateAcc(0);
+    }
   }
+  if (GLASS && !gxStart && (warmed || mode !== 'hero')) startGlass();
   maybeWarm();
   updateAcc(dt);
   updateTween(dt);
