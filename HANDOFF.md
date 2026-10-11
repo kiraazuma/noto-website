@@ -42,7 +42,7 @@ INDEX の5行は、そのまま**内容の入れ物**です。
 
 ## 2b. INDEX の表示方式（試作：ガラスの5語）
 
-ブランチ `feat/glass-typography-index` のみ（main には入っていない）。Event Summary と INDEX を、5語（朝市・催し・能登・応援・案内）のガラスの立体文字の塊に置き換えたもの（Hero と同じ素材に見えるよう、Hero のスタジオの色＝コバルト・苔色・少しのオレンジを映し、ガラス自体はごく淡く青い透明ガラス。形は角を丸めた厚みのある鋳造ガラス）。
+ブランチ `feat/glass-typography-index` のみ（main には入っていない）。Event Summary と INDEX を、5語（朝市・催し・能登・応援・案内）の liquid glass の文字に置き換えたもの。上から 催し・朝市・能登・応援・案内 の縦一列、中央揃え・正立・同じ大きさ・等間隔。形は液体のガラスが文字に流れ込んで固まったような丸み（細い線は丸く、太い線は表面張力のように平らに）、素材は淡く青い透明ガラスで、Hero のスタジオの色（コバルト・苔色・少しのオレンジ）を映す。
 
 - **切替**：`index.html` の `var INDEX_MODE = 'glass';` を `'classic'` にすると従来の表示に戻る。URL に `?index=classic` / `?index=glass` でも確認できる。classic のときは従来と完全に同じ。
 - **ファイル**：`scripts/glass/config.js`（配置・ガラスの色と厚み・浮遊・時間）、`scripts/glass/glass-index.js`（3D と操作）、`scripts/glass/tube.js`（文字の輪郭→丸みのある厚みの形）、`assets/glass/glyphs.json`（5語の文字の輪郭。Noto Sans JP Black ほか、SIL OFL）。

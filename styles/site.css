@@ -460,7 +460,7 @@ body.booted #page{animation:none}
 .gx-body .table2 .list.table:first-child li:last-child{border-bottom:0}
 /* no WebGL: the five words as flat type, same places */
 .gx-flat .gx-canvas{display:none}
-.gx-flat .gx-words{display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:0 .3em;padding:0 10vw;font-size:calc(150*var(--p))}
+.gx-flat .gx-words{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;font-size:calc(120*var(--p))}
 .gx-flat .gx-words button{position:relative;inset:auto;width:auto!important;height:auto!important;left:auto!important;top:auto!important;color:var(--cobalt);font-size:1em;letter-spacing:-.02em;line-height:1.1}
 .gx-flat .gx-words button span{position:static;width:auto;height:auto;clip:auto;overflow:visible}
 .gx-flat .gx-words button:hover,.gx-flat .gx-words button:focus-visible,.gx-flat .gx-words button[aria-expanded=true]{color:var(--orange)}

@@ -1,5 +1,7 @@
-// Glass letters with a volume (two cross-sections, see `prof`): a glyph's outline becomes a soft, inflated body whose strokes have a round cross-section —
-// as if a glass tube had been run along each stroke — instead of a flat outline pushed into depth.
+// Glass letters with a volume: a glyph's outline becomes a smooth body instead of a flat outline pushed into depth.
+// Cross-sections (see `prof`): 'liquid' (default) — as if liquid glass had been poured into the letter and set: round
+// where a stroke is narrow, levelling off (surface tension) where it is wide; 'slab' — constant thickness, rounded
+// shoulders; 'tube' — a full circle across every stroke.
 //
 // 1. the glyph is drawn into a small raster (real font outline, Path2D)
 // 2. its corners are rounded (morphological opening: shrink, then grow back by `round`)
@@ -12,12 +14,14 @@
 import * as THREE from 'three';
 
 export function tubeGeometry(d, opt) {
-  const { upm, emMid, adv, unitsPerPx: S = 4, grid: GS = 2, round = 28, maxHalf = 90, flat = 0.9, asc, desc, profile = 'tube', half: T = 120, shoulder = 70, crown = 0.18 } = opt;
+  const { upm, emMid, adv, unitsPerPx: S = 4, grid: GS = 2, round = 28, fill = 0, smooth = 0, maxHalf = 90, flat = 0.9, asc, desc, profile = 'tube', half: T = 120, shoulder = 70, crown = 0.18 } = opt;
   // the cross-section of a stroke at distance dd from its edge, where the stroke's half width is w (font units)
   //   tube: a full circle across the stroke (a glass tube)
   //   slab: a solid of constant thickness 2T with rounded shoulders (radius `shoulder`) and a gentle crown along the
   //         stroke's centre line — a cast glass letter, smooth, not a flat plate and not a balloon
-  const prof = profile === 'slab'
+  const prof = profile === 'liquid'
+    ? (dd, w) => { const c = Math.sqrt(Math.max(0, dd * (2 * w - dd))); return T * (1 - Math.exp(-c / T)) * flat; }   // round, then level
+    : profile === 'slab'
     ? (dd, w) => { const r = Math.min(shoulder, w), s = Math.min(1, dd / Math.max(r, 1e-3)), sh = Math.sqrt(Math.max(0, 1 - (1 - s) * (1 - s))), c = Math.min(1, dd / Math.max(w, 1e-3)); return T * sh * (1 - crown + crown * (1 - (1 - c) * (1 - c))); }
     : (dd, w) => Math.sqrt(Math.max(0, dd * (2 * w - dd))) * flat;
   const pad = round + 40;
@@ -37,6 +41,14 @@ export function tubeGeometry(d, opt) {
     const dCore = edt(core, W, H, 1);                       // distance to the core, for pixels outside it
     for (let i = 0; i < W * H; i++) inside[i] = core[i] || dCore[i] <= r ? 1 : 0;
   }
+  // 2b fill the small notches and inner corners (closing: grow by `fill`, shrink back): the shapes flow into each other
+  const rf = fill / S;
+  if (rf > 0.5) {
+    const dOut = edt(inside, W, H, 1);
+    const grown = new Uint8Array(W * H); for (let i = 0; i < W * H; i++) grown[i] = inside[i] || dOut[i] <= rf ? 1 : 0;
+    const dG = edt(grown, W, H, 0);
+    for (let i = 0; i < W * H; i++) inside[i] = grown[i] && dG[i] > rf ? 1 : 0;
+  }
   // 3 signed distance (px; + inside) and the local half width
   const dI = edt(inside, W, H, 0), dO = edt(inside, W, H, 1);
   let sd = new Float32Array(W * H); for (let i = 0; i < W * H; i++) sd[i] = inside[i] ? dI[i] - 0.5 : -(dO[i] - 0.5);
@@ -48,6 +60,16 @@ export function tubeGeometry(d, opt) {
   for (let j = 0; j <= M; j++) for (let i = 0; i <= N; i++) {
     const k = (j * GS) * W + i * GS, dd = Math.max(0, sd[k]) * S, w = Math.max(dd, half[k] * S);
     val[j * NN + i] = sd[k]; hgt[j * NN + i] = prof(dd, w);
+  }
+  // relax the surface (a few passes of averaging over the inside nodes; the outline stays where it is): no ridges, no
+  // facets — one continuous, molten surface
+  for (let it = 0; it < smooth; it++) {
+    const h2 = hgt.slice();
+    for (let j = 1; j < M; j++) for (let i = 1; i < N; i++) {
+      const k = j * NN + i; if (val[k] <= 0) continue;
+      h2[k] = (hgt[k] * 4 + hgt[k - 1] + hgt[k + 1] + hgt[k - NN] + hgt[k + NN]) / 8;
+    }
+    hgt.set(h2);
   }
   const cF = new Int32Array(NN * (M + 1)).fill(-1), cB = new Int32Array(NN * (M + 1)).fill(-1);
   const eH = new Int32Array(NN * (M + 1)).fill(-1), eV = new Int32Array(NN * (M + 1)).fill(-1);

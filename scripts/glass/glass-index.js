@@ -215,14 +215,14 @@ export async function mountGlass(root, hooks = {}) {
     function detailOf(id) {
       const D = phone ? G.detail.phone : G.detail.desk, w = words[id].w;
       const s = Math.min(D.w * visW / w, D.h * visH / 1.0);
-      return { x: camera.position.x + (D.x - 0.5) * visW, y: camY + (0.5 - D.y) * visH, z: 0.2, rx: 0, ry: phone ? 0 : 9, rz: 0, s, o: 0 };
+      return { x: camera.position.x + (D.x - 0.5) * visW, y: camY + (0.5 - D.y) * visH, z: 0.2, rx: 0, ry: 0, rz: 0, s, o: 0 };
     }
     function exitOf(id) {
       const h = homeOf(id), cb = clusterBox();
-      let dx = h.x - cb.cx, dy = (h.y - cb.cy) * 1.6; const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
-      if (Math.abs(dx) < 0.2 && Math.abs(dy) < 0.2) dy = -1;
+      // a column: the words leave sideways, alternately left and right (a little up / down with their place)
+      const k = ids.indexOf(id); let dx = k % 2 ? 1 : -1, dy = (h.y - cb.cy) * 0.15; const l = Math.hypot(dx, dy) || 1; dx /= l; dy /= l;
       const far = Math.max(visW, visH) * 1.25;
-      return { ...h, x: h.x + dx * far, y: h.y + dy * far, z: h.z - 1.2, rx: h.rx - dy * 22, ry: h.ry + dx * 30, rz: h.rz - dx * 8, s: h.s * 0.92 };
+      return { ...h, x: h.x + dx * far, y: h.y + dy * far, z: h.z - 0.6, rx: 0, ry: 0, rz: 0, s: h.s };
     }
 
     // ---- tweens
@@ -371,7 +371,7 @@ float backAt(vec2 uv, out vec3 nb) {
 // uRough widens every edge (a slightly soft surface).
 vec3 env(vec3 d) {
   float r = uRough;
-  vec3 c = mix(vec3(0.84, 0.88, 0.95), vec3(1.0, 1.0, 0.99), smoothstep(-0.5, 0.7, d.y));
+  vec3 c = mix(vec3(0.62, 0.74, 0.93), vec3(0.97, 0.98, 1.0), smoothstep(-0.5, 0.8, d.y));   // pale blue sky to white
   c += vec3(0.9) * smoothstep(0.93 - r, 0.975, dot(d, normalize(vec3(-0.45, 0.62, 0.64))));
   float wC = smoothstep(0.24 - r, 0.32 + r, d.x + 0.25 * d.y);
   float wM = smoothstep(0.4 - r, 0.48 + r, -d.x - 0.45 * d.y);
@@ -404,14 +404,14 @@ void main() {
   else {
     // straight through: the ivory page; the further the light is bent, the more of the room it brings
     float bend = smoothstep(0.12, 0.5, length(E.xy));
-    seen = mix(uIvory, env(normalize(E + vec3(0.0, 0.0, 0.5))), bend);
+    seen = mix(uIvory, env(normalize(E + vec3(0.0, 0.0, 0.5))), bend * 0.55);
   }
   // the glass itself: a faint sky tint that deepens with thickness (or orange, the same glass recoloured)
   vec3 sig = mix(uSigB, uSigO, uOrange);
   vec3 col = seen * exp(-sig * t);
   // the surface reflects the room (Fresnel), white to pale blue highlights included in the room
   float c = clamp(dot(N, V), 0.0, 1.0);
-  float F = uF0 + (1.0 - uF0) * pow(1.0 - c, 3.2);      // a little more reflective than plain glass, as the Hero
+  float F = uF0 + (1.0 - uF0) * pow(1.0 - c, 4.0);      // a little more reflective than plain glass at the turn, as the Hero
   col = mix(col, env(reflect(-V, N)) * uEnvK, clamp(F, 0.0, 1.0));
   // the key light's highlight, as the Hero's (white, slightly soft)
   vec3 L = normalize(vec3(-0.35, 0.45, 0.82)), Hh = normalize(L + V);
