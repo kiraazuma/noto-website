@@ -35,7 +35,7 @@ export const GLASS = {
   // ---- glass (linear colour; tRef: thickness at which the glass shows exactly its tint colour)
   glass: {
     ivory: '#FCFAEF', blue: '#0130E2', orange: '#FD5500',
-    tRef: 0.3, tRefOrange: 0.75, ior: 1.5, refract: 1.0, fresnel: 0.65,
+    tRef: 0.3, tRefOrange: 0.46, ior: 1.5, refract: 1.0, fresnel: 0.65,
   },
 
   // ---- motion: the whole block floats; each word only a little on its own; the pointer tilts it slightly

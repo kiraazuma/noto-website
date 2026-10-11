@@ -413,7 +413,7 @@ void main() {
   float h = clamp(vV.y / fd * uP11 * 0.5 + 0.5, 0.0, 1.0);        // height on screen: the room is lighter above
   if (dot(E, E) < 1e-4) { light = behind(reflect(R, -nb1), h) * 0.9; t *= 2.0; }   // total internal reflection: a longer path
   else light = behind(E, h);
-  vec3 col = light * exp(-mix(uSigB, uSigO, uOrange) * t);
+  vec3 col = light * mix(exp(-uSigB * t), exp(-uSigO * t), uOrange);     // a cross-fade of two glasses (no muddy mix)
   float F = clamp((0.04 + 0.96 * pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 5.0)) * uFres, 0.0, 1.0);
   col = mix(col, studio(reflect(-V, N)), F);
   vec3 L = normalize(vec3(-0.45, 0.75, 0.55)); col += vec3(0.85) * pow(max(dot(N, normalize(L + V)), 0.0), 140.0);
