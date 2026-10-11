@@ -581,3 +581,150 @@ body.booted #page{animation:none}
   .gx-body .table .v { font-size: calc(19 * var(--u)); }
   .gx-flat .gx-words { font-size: calc(58 * var(--u)); }
 }
+
+/* ================================================================ GLASS INDEX — LAYOUTS (html[data-gxl])
+   One component, three compositions (index.html GLASS_LAYOUT, or ?layout=monumental | editorial | current).
+   Where the glass goes is set here too: .gx-slot = the column at rest, .gx-dslot = the chosen word when open
+   (glass-index.js fits the 3D into these boxes); --gx-pitch on .gx-slot = the step between the words (em). */
+#summary .gx-slot,#summary .gx-dslot{position:absolute;pointer-events:none;visibility:hidden}
+.gx-title .w{display:inline}.gx-title .w4{display:block}
+#summary .gx-big,#summary .gx-run{display:none}
+
+/* ---- current (the previous version, unchanged in look) */
+[data-gxl=current] #summary .gx-slot{left:25%;width:50%;top:15%;height:70%}
+[data-gxl=current] #summary .gx-dslot{left:8.5%;width:30%;top:36%;height:40%}
+@media (max-width: 1023px) and (orientation: portrait) {
+  [data-gxl=current] #summary .gx-slot { left: 25%; width: 50%; top: 27%; height: 50%; }
+  [data-gxl=current] #summary .gx-dslot { left: 25%; width: 50%; top: 18.5%; height: 17%; }
+}
+
+/* shared by the two new layouts: no rules across the page, no corner note, no English labels beside the glass */
+:is([data-gxl=monumental],[data-gxl=editorial]) #summary :is(.gx-rule,.gx-corner),
+:is([data-gxl=monumental],[data-gxl=editorial]) .gx-lab{display:none}
+:is([data-gxl=monumental],[data-gxl=editorial]) #summary .gx-hint{display:none}
+:is([data-gxl=monumental],[data-gxl=editorial]) .gx-prog li{border:0}
+
+/* ================================================================ B — MONUMENTAL
+   The event name, monumental, stacked two characters a line on the left (出張 / 輪島 / 朝市) — the same two-character
+   rhythm as the glass column on the right. The 2D facts hang off the glass word they belong to: the three programmes
+   beside 催し (programme), the dates / admission / venue beside 案内 (information). Between them, open space.
+   Open: the name gives way to the item's number, monumental; the chosen word (orange glass) sits under it; the item
+   reads on the right; a running line keeps the event at the foot. */
+[data-gxl=monumental] #summary .gx{--m:calc(52*var(--p));--top:calc(40*var(--p));--bot:calc(40*var(--p));--colw:calc(286*var(--p))}
+[data-gxl=monumental] #summary .gx-slot{right:var(--m);width:var(--colw);top:var(--top);bottom:var(--bot);--gx-pitch:1.12}
+[data-gxl=monumental] #summary .gx-title{left:var(--m);top:calc(var(--top) - 26*var(--p));font:900 calc(250*var(--p))/.97 var(--jp);letter-spacing:-.05em;white-space:normal}
+[data-gxl=monumental] .gx-title .w{display:block}
+[data-gxl=monumental] .gx-title .w4{font-size:.4em;line-height:1;margin-top:.24em;letter-spacing:-.03em}
+[data-gxl=monumental] .gx-title .in{font-size:.78em;margin-right:.16em}
+/* programmes: right-aligned to the glass column, level with 催し */
+[data-gxl=monumental] #summary .gx-prog{left:auto;bottom:auto;right:calc(var(--m) + var(--colw) + 30*var(--p));top:calc(var(--top) + 6*var(--p));width:auto;
+  font:900 calc(31*var(--p))/1.2 var(--jp);text-align:right}
+[data-gxl=monumental] .gx-prog li{justify-content:flex-end;gap:calc(14*var(--p));padding:calc(3*var(--p)) 0}
+[data-gxl=monumental] .gx-prog i{order:2;min-width:calc(36*var(--p));font-size:calc(31*var(--p));text-align:right}
+/* dates: right-aligned to the glass column, level with 案内 */
+[data-gxl=monumental] #summary .gx-meta{right:calc(var(--m) + var(--colw) + 30*var(--p));bottom:calc(var(--bot) + 4*var(--p))}
+[data-gxl=monumental] .gx-meta .d{font-size:calc(124*var(--p))}
+[data-gxl=monumental] .gx-meta .m{font-size:calc(20*var(--p));margin-top:calc(12*var(--p))}
+/* open */
+[data-gxl=monumental] .gx-open .gx-title,[data-gxl=monumental] .gx-open .gx-prog,[data-gxl=monumental] .gx-open .gx-meta{opacity:0;pointer-events:none}
+[data-gxl=monumental] #summary .gx-title{transition:opacity .4s var(--ease)}
+[data-gxl=monumental] #summary .gx-big{display:flex;flex-direction:column;position:absolute;left:var(--m);top:calc(var(--top) - 10*var(--p));margin:0;z-index:2;opacity:0;pointer-events:none;transition:opacity .45s var(--ease) .15s}
+[data-gxl=monumental] .gx-big .n{font:900 calc(330*var(--p))/.78 var(--lat);font-stretch:62%;letter-spacing:-.03em}
+[data-gxl=monumental] .gx-big .e{font:900 calc(36*var(--p))/1 var(--lat);font-stretch:72%;letter-spacing:.04em;margin-top:calc(14*var(--p))}
+[data-gxl=monumental] #summary .gx-dslot{left:var(--m);width:calc(470*var(--p));top:calc(var(--top) + 360*var(--p));bottom:calc(var(--bot) + 70*var(--p))}
+[data-gxl=monumental] #summary .gx-run{display:flex;gap:calc(22*var(--p));align-items:baseline;position:absolute;left:var(--m);bottom:var(--bot);margin:0;z-index:2;opacity:0;pointer-events:none;
+  font:900 calc(20*var(--p))/1 var(--jp);letter-spacing:-.01em;transition:opacity .45s var(--ease) .15s}
+[data-gxl=monumental] .gx-run .in{font-family:var(--lat);font-weight:800;font-stretch:72%}
+[data-gxl=monumental] .gx-run .d{font:900 calc(20*var(--p))/1 var(--lat);font-stretch:68%}
+[data-gxl=monumental] #summary .gx-open .gx-big,[data-gxl=monumental] #summary .gx-open .gx-run{opacity:1}
+[data-gxl=monumental] .gx-open .gx-big .n{color:var(--cobalt)}
+[data-gxl=monumental] .gx-detail{padding:calc(var(--top) + 6*var(--p)) var(--m) calc(110*var(--p)) calc(640*var(--p))}
+[data-gxl=monumental] .gx-dhead{grid-template-columns:1fr auto;border-bottom:2px solid currentColor;margin-bottom:calc(40*var(--p))}
+[data-gxl=monumental] .gx-dhead .gx-num{display:none}
+[data-gxl=monumental] .gx-dt{flex-direction:row;align-items:baseline;gap:calc(14*var(--p));font-size:calc(22*var(--p))}
+
+/* B, narrower landscape (≈ 4:3 – 3:2): the name in two long lines across the top-left (出張輪島 / 朝市 in 一橋祭), so it
+   keeps its size; the facts stay with their glass words */
+@media (min-width: 700px) and (max-aspect-ratio: 3/2) and (orientation: landscape), (min-width: 1024px) and (max-width: 1279px) and (max-aspect-ratio: 16/10) {
+  [data-gxl=monumental] #summary .gx{--colw:calc(26vw)}
+  [data-gxl=monumental] #summary .gx-title{font-size:calc(11.4vw);line-height:.98}
+  [data-gxl=monumental] .gx-title .w{display:inline}
+  [data-gxl=monumental] .gx-title .w3::before{content:"\A";white-space:pre}
+  [data-gxl=monumental] .gx-title .w4{display:inline;font-size:.5em;margin-left:.3em}
+  [data-gxl=monumental] #summary .gx-prog{top:auto;bottom:calc(var(--bot) + 11vw);right:calc(var(--m) + var(--colw) + 3vw);font-size:max(15px,1.9vw)}
+  [data-gxl=monumental] .gx-prog i{font-size:max(15px,1.9vw)}
+  [data-gxl=monumental] .gx-meta .d{font-size:max(46px,7.4vw)}
+  [data-gxl=monumental] .gx-meta .m{font-size:max(12px,1.4vw)}
+  [data-gxl=monumental] .gx-detail{padding-left:47vw}
+  [data-gxl=monumental] #summary .gx-dslot{width:38vw}
+  [data-gxl=monumental] .gx-big .n{font-size:24vw}
+}
+
+/* B, phone: a vertical poster. The name across the top in two lines (出張輪島 / 朝市 in 一橋祭); the glass column on the
+   right half; the programmes beside 催し, admission / venue beside 案内; the dates across the foot, as large as fits.
+   Open: the number and the chosen word at the top, the item below. */
+@media (max-width: 1023px) and (orientation: portrait) {
+  [data-gxl=monumental] #summary .gx { --m: var(--pad); --top: calc(18 * var(--u) + env(safe-area-inset-top)); --bot: calc(20 * var(--u) + env(safe-area-inset-bottom)); }
+  [data-gxl=monumental] #summary .gx-title { font-size: calc(86 * var(--u)); line-height: .98; top: var(--top); }
+  [data-gxl=monumental] .gx-title .w { display: inline; }
+  [data-gxl=monumental] .gx-title .w3::before { content: "\A"; white-space: pre; }
+  [data-gxl=monumental] .gx-title .w4 { display: inline; font-size: .42em; margin-left: .25em; }
+  [data-gxl=monumental] #summary .gx-slot { left: 49%; right: var(--m); width: auto; top: calc(var(--top) + 200 * var(--u)); bottom: calc(var(--bot) + 92 * var(--u)); }
+  [data-gxl=monumental] #summary .gx-prog { right: 53%; left: var(--m); top: calc(var(--top) + 212 * var(--u)); font-size: calc(12.5 * var(--u)); white-space: nowrap; }
+  [data-gxl=monumental] .gx-prog li { padding: 3px 0; gap: 6px; }
+  [data-gxl=monumental] .gx-prog i { font-size: calc(12.5 * var(--u)); min-width: 1.2em; }
+  [data-gxl=monumental] #summary .gx-meta { left: var(--m); right: var(--m); bottom: var(--bot); align-items: stretch; text-align: left; }
+  [data-gxl=monumental] .gx-meta .d { font-size: calc(70 * var(--u)); order: 2; }
+  [data-gxl=monumental] .gx-meta .m { order: 1; flex-direction: column; align-items: flex-start; gap: 2px; margin: 0 0 calc(10 * var(--u)); width: 50%; white-space: nowrap;
+    font-size: max(11px, calc(11.5 * var(--u))); position: absolute; bottom: calc(100% + 18 * var(--u)); }
+  [data-gxl=monumental] #summary .gx-big { top: calc(var(--top) + 6 * var(--u)); }
+  [data-gxl=monumental] .gx-big .n { font-size: calc(150 * var(--u)); }
+  [data-gxl=monumental] .gx-big .e { font-size: calc(20 * var(--u)); margin-top: 8px; }
+  [data-gxl=monumental] #summary .gx-dslot { left: 45%; right: var(--m); width: auto; top: calc(var(--top) + 20 * var(--u)); bottom: auto; height: calc(130 * var(--u)); }
+  [data-gxl=monumental] #summary .gx-run { display: none; }
+  [data-gxl=monumental] .gx-detail { padding: calc(var(--top) + 196 * var(--u)) var(--m) calc(64 * var(--u)); background: linear-gradient(to bottom, transparent calc(var(--top) + 180 * var(--u)), var(--paper) calc(var(--top) + 180 * var(--u))); }
+  [data-gxl=monumental] .gx-dt { font-size: calc(16 * var(--u)); }
+}
+
+/* ================================================================ A — ASYMMETRIC EDITORIAL
+   The event and its dates as one block, top left (name / large dates / admission and venue). The glass column off
+   centre to the right and set lower, so the block and the column read as a diagonal; the three programmes as their own
+   numbered list, aligned to the foot of the column on its right. Open: the event block stays; the chosen word moves
+   under it, the item reads on the right. */
+[data-gxl=editorial] #summary .gx{--m:calc(56*var(--p));--top:calc(44*var(--p));--bot:calc(44*var(--p))}
+[data-gxl=editorial] #summary .gx-title{left:var(--m);top:var(--top);font:900 calc(96*var(--p))/1 var(--jp);letter-spacing:-.04em}
+[data-gxl=editorial] .gx-title .w4{margin-top:.04em}
+[data-gxl=editorial] #summary .gx-meta{left:var(--m);right:auto;top:calc(var(--top) + 214*var(--p));bottom:auto;align-items:flex-start;text-align:left}
+[data-gxl=editorial] .gx-meta .d{font-size:calc(172*var(--p))}
+[data-gxl=editorial] .gx-meta .m{font-size:calc(20*var(--p));margin-top:calc(16*var(--p))}
+[data-gxl=editorial] #summary .gx-slot{left:60%;width:calc(250*var(--p));top:calc(var(--top) + 214*var(--p));bottom:var(--bot);--gx-pitch:1.12}
+[data-gxl=editorial] #summary .gx-prog{left:calc(60% + 250*var(--p) + 44*var(--p));right:var(--m);width:auto;bottom:calc(var(--bot) + 6*var(--p));
+  font:900 calc(26*var(--p))/1.2 var(--jp)}
+[data-gxl=editorial] .gx-prog li{flex-direction:column;align-items:flex-start;gap:calc(4*var(--p));padding:calc(14*var(--p)) 0;border-top:2px solid currentColor}
+[data-gxl=editorial] .gx-prog i{font-size:calc(58*var(--p));line-height:.86}
+[data-gxl=editorial] .gx-open .gx-prog{opacity:0}
+/* open: the dates step back (the item is read beside the name) */
+[data-gxl=editorial] #summary .gx-dslot{left:var(--m);width:calc(470*var(--p));top:calc(var(--top) + 440*var(--p));bottom:calc(var(--bot) + 20*var(--p))}
+[data-gxl=editorial] .gx-detail{padding:calc(var(--top) + 196*var(--p) - 106*var(--p)) var(--m) calc(110*var(--p)) 50%}
+@media (min-width: 700px) and (max-aspect-ratio: 3/2) and (orientation: landscape) {
+  [data-gxl=editorial] #summary .gx-title{font-size:max(44px,7.4vw)}
+  [data-gxl=editorial] #summary .gx-meta{top:calc(var(--top) + 16vw)}
+  [data-gxl=editorial] .gx-meta .d{font-size:max(56px,9.6vw)}
+  [data-gxl=editorial] #summary .gx-slot{left:55%;width:19vw;top:calc(var(--top) + 30vw)}
+  [data-gxl=editorial] #summary .gx-prog{left:calc(55% + 19vw + 3vw);font-size:max(14px,1.65vw);white-space:nowrap}
+  [data-gxl=editorial] .gx-prog i{font-size:max(30px,4.4vw)}
+  [data-gxl=editorial] #summary .gx-dslot{top:calc(var(--top) + 36vw);width:36vw}
+}
+@media (max-width: 1023px) and (orientation: portrait) {
+  [data-gxl=editorial] #summary .gx { --m: var(--pad); --top: calc(22 * var(--u) + env(safe-area-inset-top)); --bot: calc(22 * var(--u) + env(safe-area-inset-bottom)); }
+  [data-gxl=editorial] #summary .gx-title { font-size: calc(44 * var(--u)); }
+  [data-gxl=editorial] #summary .gx-meta { top: calc(var(--top) + 102 * var(--u)); }
+  [data-gxl=editorial] .gx-meta .d { font-size: calc(70 * var(--u)); }
+  [data-gxl=editorial] .gx-meta .m { flex-direction: row; gap: 14px; font-size: max(12px, calc(13 * var(--u))); margin-top: 8px; }
+  [data-gxl=editorial] #summary .gx-slot { left: 46%; right: var(--m); width: auto; top: calc(var(--top) + 236 * var(--u)); bottom: var(--bot); }
+  [data-gxl=editorial] #summary .gx-prog { left: var(--m); right: 50%; bottom: var(--bot); display: block; font-size: calc(13.5 * var(--u)); white-space: nowrap; }
+  [data-gxl=editorial] .gx-prog li { padding: 8px 0 10px; display: flex; }
+  [data-gxl=editorial] .gx-prog i { font-size: calc(34 * var(--u)); }
+  [data-gxl=editorial] #summary .gx-dslot { left: var(--m); right: var(--m); width: auto; top: calc(var(--top) + 236 * var(--u)); height: calc(120 * var(--u)); bottom: auto; }
+  [data-gxl=editorial] .gx-detail { padding: calc(var(--top) + 372 * var(--u)) var(--m) calc(64 * var(--u)); background: linear-gradient(to bottom, transparent calc(var(--top) + 356 * var(--u)), var(--paper) calc(var(--top) + 356 * var(--u))); }
+}

@@ -15,7 +15,9 @@
   // EDIT: INDEX の表示方式（切替スイッチ）。'glass' = ガラスの5語（新） / 'classic' = 従来の Event Summary + アコーディオン INDEX。
   // URL に ?index=classic / ?index=glass を付けると、その表示で開けます（確認用）。
   var INDEX_MODE = 'glass';
-  (function () { var m = INDEX_MODE; try { var q = new URLSearchParams(location.search).get('index'); if (q === 'glass' || q === 'classic') m = q; } catch (e) {} document.documentElement.setAttribute('data-index', m); })();
+  // ガラス INDEX のレイアウト（デザイン比較用）：'monumental' = B案（本命） / 'editorial' = A案 / 'current' = 前の版。?layout= で切替
+  var GLASS_LAYOUT = 'monumental';
+  (function () { var m = INDEX_MODE, l = GLASS_LAYOUT; try { var u = new URLSearchParams(location.search), q = u.get('index'), r = u.get('layout'); if (q === 'glass' || q === 'classic') m = q; if (r === 'monumental' || r === 'editorial' || r === 'current') l = r; } catch (e) {} document.documentElement.setAttribute('data-index', m); document.documentElement.setAttribute('data-gxl', l); })();
 </script>
 <script type="importmap">
 { "imports": { "three": "./vendor/three/three.module.js" } }
@@ -70,10 +72,13 @@
     <!-- EDIT: INDEX（ガラスの5語）。配置・質感・動きは scripts/glass/config.js、文字の形は assets/glass/glyphs.json -->
     <div class="gx">
       <div class="gx-sticky">
-        <h2 class="sp gx-title">出張輪島朝市<br><span class="in">in</span>一橋祭</h2>
+        <h2 class="sp gx-title"><span class="w">出張</span><span class="w">輪島</span><span class="w w3">朝市</span><span class="w4"><span class="in">in</span>一橋祭</span></h2>
+        <p class="gx-big" aria-hidden="true"><span class="n" data-gx="num"></span><span class="e" data-gx="en"></span></p>
+        <p class="gx-run" aria-hidden="true">出張輪島朝市 <span class="in">in</span> 一橋祭<span class="d">2026.11.21–23</span></p>
         <p class="sp gx-corner" aria-hidden="true"><span>INDEX</span><span>05 ITEMS</span><span>NOTO meets HITOTSUBASHI</span></p>
         <i class="sp gx-rule t" aria-hidden="true"></i><i class="sp gx-rule b" aria-hidden="true"></i>
         <div class="sp gx-stage">
+          <i class="gx-slot" aria-hidden="true"></i><i class="gx-dslot" aria-hidden="true"></i>
           <canvas class="gx-canvas" aria-hidden="true"></canvas>
           <nav class="gx-words" aria-label="INDEX">
             <button type="button" data-id="program" data-text="催し" data-label="催し（PROGRAM）" aria-label="催し（PROGRAM）を開く" aria-controls="gx-detail" aria-expanded="false"><span class="gx-sr">催し</span><span class="gx-lab" aria-hidden="true">PROGRAM</span><span class="gx-x" aria-hidden="true">CLOSE<b>×</b></span></button>

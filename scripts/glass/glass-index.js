@@ -71,6 +71,8 @@ export async function mountGlass(root, hooks = {}) {
     const num = item.querySelector('.row .num'), en = item.querySelector('.row .en');
     detail.querySelector('.gx-num').textContent = num ? num.textContent : '';
     detail.querySelector('.gx-en').textContent = en ? en.textContent : '';
+    for (const el of root.querySelectorAll('[data-gx=num]')) el.textContent = num ? num.textContent : '';
+    for (const el of root.querySelectorAll('[data-gx=en]')) el.textContent = en ? en.textContent : '';
     detail.setAttribute('aria-label', btn[id].dataset.label || id);
   }
   function unmountItem() { if (item && placeholder) placeholder.replaceWith(item); item = null; placeholder = null; }
@@ -184,11 +186,18 @@ export async function mountGlass(root, hooks = {}) {
     const buildMs = Math.round(performance.now() - t0);
 
     // ---- layout (home positions), camera fit
-    let VW = 1, VH = 1, visW = 1, visH = 1, camY = 0, phone = PHONE.matches;
-    const home = (id) => (phone ? G.layout.phone : G.layout.desk).find(l => l.id === id);
+    // The page's CSS decides where the glass goes: .gx-slot (the column at rest) and .gx-dslot (the chosen word, open)
+    // are empty boxes placed by the layout; the column is fitted into the first, the word into the second. Without
+    // them (or with zero size) the config's screen fractions are used. --gx-pitch on .gx-slot sets the line step (em).
+    const slotEl = stage.querySelector('.gx-slot'), dslotEl = stage.querySelector('.gx-dslot');
+    let VW = 1, VH = 1, visW = 1, visH = 1, camY = 0, camX = 0, kpx = 1, phone = PHONE.matches, pitch = 0, dslot = null;
+    const baseLayout = () => (phone ? G.layout.phone : G.layout.desk);
+    const curLayout = () => { const L = baseLayout(); if (!pitch) return L; const n = L.length; return L.map((l, i) => ({ ...l, y: ((n - 1) / 2 - i) * pitch })); };
+    const home = (id) => curLayout().find(l => l.id === id);
+    const rectIn = (el) => { if (!el) return null; const r = el.getBoundingClientRect(), s0 = stage.getBoundingClientRect(); return r.width > 2 && r.height > 2 ? { x: r.left - s0.left, y: r.top - s0.top, w: r.width, h: r.height } : null; };
     function clusterBox() {
       let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
-      for (const l of (phone ? G.layout.phone : G.layout.desk)) { const w = words[l.id].w * l.s / 2, h = 0.5 * l.s; x0 = Math.min(x0, l.x - w); x1 = Math.max(x1, l.x + w); y0 = Math.min(y0, l.y - h); y1 = Math.max(y1, l.y + h); }
+      for (const l of curLayout()) { const w = words[l.id].w * l.s / 2, h = 0.5 * l.s; x0 = Math.min(x0, l.x - w); x1 = Math.max(x1, l.x + w); y0 = Math.min(y0, l.y - h); y1 = Math.max(y1, l.y + h); }
       return { w: x1 - x0, h: y1 - y0, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 };
     }
     function resize() {
@@ -196,11 +205,20 @@ export async function mountGlass(root, hooks = {}) {
       const dpr = Math.min(devicePixelRatio || 1, VW * VH > 1.6e6 ? 1.5 : 2);
       renderer.setPixelRatio(dpr); renderer.setSize(VW, VH, false);
       const bw = Math.round(VW * dpr), bh = Math.round(VH * dpr); rt.setSize(bw, bh); U.uRes.value.set(bw, bh);
+      pitch = slotEl ? parseFloat(getComputedStyle(slotEl).getPropertyValue('--gx-pitch')) || 0 : 0;
       const F = phone ? G.fit.phone : G.fit.desk, cb = clusterBox(), aspect = VW / VH, tf = Math.tan(G.camera.fov * D2R / 2);
-      visH = Math.max(cb.h / F.h, cb.w / F.w / aspect); visW = visH * aspect;
+      const slot = rectIn(slotEl); dslot = rectIn(dslotEl);
+      if (slot) {
+        // px per world unit, so the column fills its slot (whichever side binds); the camera is moved so the column's
+        // centre lands on the slot's centre
+        kpx = Math.min(slot.h / cb.h, slot.w / cb.w); visH = VH / kpx; visW = visH * aspect;
+        camX = cb.cx - (slot.x + slot.w / 2 - VW / 2) / kpx; camY = cb.cy + (slot.y + slot.h / 2 - VH / 2) / kpx;
+      } else {
+        visH = Math.max(cb.h / F.h, cb.w / F.w / aspect); visW = visH * aspect; kpx = VH / visH;
+        camX = cb.cx; camY = cb.cy - F.cy * visH;
+      }
       const dist = visH / 2 / tf;
-      camera.aspect = aspect; camera.position.set(cb.cx, cb.cy - F.cy * visH, dist); camera.lookAt(cb.cx, cb.cy - F.cy * visH, 0); camera.updateProjectionMatrix();
-      camY = cb.cy - F.cy * visH;
+      camera.aspect = aspect; camera.position.set(camX, camY, dist); camera.lookAt(camX, camY, 0); camera.updateProjectionMatrix();
       camera.near = dist - 6; camera.far = dist + 6; camera.updateProjectionMatrix();
       U.uNear.value = dist - 4; U.uFar.value = dist + 4; U.uP00.value = camera.projectionMatrix.elements[0]; U.uP11.value = camera.projectionMatrix.elements[5];
       // settle words at their places for the current layout (not during a move)
@@ -215,9 +233,14 @@ export async function mountGlass(root, hooks = {}) {
     }
     const homeOf = (id) => { const l = home(id); return { x: l.x, y: l.y, z: l.z, rx: l.r[0], ry: l.r[1], rz: l.r[2], s: l.s, o: 0 }; };
     function detailOf(id) {
-      const D = phone ? G.detail.phone : G.detail.desk, w = words[id].w;
+      const w = words[id].w;
+      if (dslot) {
+        const s = Math.min(dslot.w / kpx / w, dslot.h / kpx / 1.0);
+        return { x: camX + (dslot.x + dslot.w / 2 - VW / 2) / kpx, y: camY - (dslot.y + dslot.h / 2 - VH / 2) / kpx, z: 0.2, rx: 0, ry: 0, rz: 0, s, o: 0 };
+      }
+      const D = phone ? G.detail.phone : G.detail.desk;
       const s = Math.min(D.w * visW / w, D.h * visH / 1.0);
-      return { x: camera.position.x + (D.x - 0.5) * visW, y: camY + (0.5 - D.y) * visH, z: 0.2, rx: 0, ry: 0, rz: 0, s, o: 0 };
+      return { x: camX + (D.x - 0.5) * visW, y: camY + (0.5 - D.y) * visH, z: 0.2, rx: 0, ry: 0, rz: 0, s, o: 0 };
     }
     function exitOf(id) {
       const h = homeOf(id), cb = clusterBox();
@@ -285,7 +308,7 @@ export async function mountGlass(root, hooks = {}) {
     let time = 0, last = performance.now(), dirty = true, running = false, visible = false;
     const io = new IntersectionObserver((es) => { visible = es[0].isIntersecting; kick(); }, { rootMargin: '80px' });
     io.observe(sticky);
-    new ResizeObserver(() => { resize(); kick(); }).observe(stage);
+    const ro = new ResizeObserver(() => { resize(); kick(); }); ro.observe(stage); if (slotEl) ro.observe(slotEl); if (dslotEl) ro.observe(dslotEl);
     PHONE.addEventListener?.('change', () => { resize(); kick(); });
     document.addEventListener('visibilitychange', kick);
     const active = () => visible && !document.hidden && !document.body.classList.contains('intro');
