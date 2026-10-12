@@ -1,17 +1,16 @@
-// The glass INDEX (index.html INDEX_MODE = 'glass'): the five INDEX words as thick blue glass, floating together in
-// the middle of the summary page. A word turns orange under the pointer / keyboard focus; a click sends the other four
-// off, the chosen word moves aside and the item's existing INDEX content appears beside it. Back reverses it.
+// The glass INDEX (index.html INDEX_MODE = 'glass'): the five INDEX words as liquid glass, in front of the page's own
+// 2D type. A word turns orange under the pointer / keyboard focus; a click sends the other four off, the chosen word
+// moves aside and the item's existing INDEX content appears beside it. Back reverses it.
 //
-// Letters: real outlines of the typeface (assets/glass/glyphs.json), turned into soft glass tubes (tube.js): every
-// stroke gets a round cross-section, corners are rounded, junctions swell a little.
-// Glass: two passes. 1) the back faces of all letters -> a small buffer (their normal + distance). 2) the front faces:
-// the ray enters (refraction), crosses the tube, leaves through the back face read from the buffer. The colour is a
-// pale, slightly milky sky blue where the tube faces the viewer and a deeper blue toward its rims (where the light
-// travels along the glass); the page behind shows through softly (frost), and a soft room is reflected at grazing
-// angles. No textures, one draw per glyph.
+// Letters: real outlines of the typeface (assets/glass/glyphs.json), turned into rounded liquid volumes (tube.js).
+// Glass (engine 'lab', default): the NOTO Glass Lab's plain physical glass — MeshTransmissionMaterial (mtm.js) in two
+// passes (back faces, then front faces), reflecting a soft studio baked from four offscreen panels, refracting a copy of
+// the page's 2D type drawn on a plane behind it (so the glass bends the real name and dates it lies over).
+// Engine 'custom' (?gxengine=custom): the earlier hand-made shader (back-face buffer + Beer–Lambert tint, ivory behind).
 import * as THREE from 'three';
 import { GLASS as G } from './config.js';
 import { tubeGeometry } from './tube.js';
+import { MeshTransmissionMaterial } from './mtm.js';
 
 const PHONE = matchMedia('(max-width:1023px) and (orientation:portrait)');
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -136,6 +135,38 @@ export async function mountGlass(root, hooks = {}) {
     renderer.autoClear = true;
     const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(G.camera.fov, 1, 1, 100);
     const rig = new THREE.Group(); scene.add(rig);
+    // engine: 'lab' = the plain physical glass of the NOTO Glass Lab (MeshTransmissionMaterial, back -> front, refracting
+    // a copy of the page's 2D type); 'custom' = the earlier hand-made shader. ?gxengine=lab | custom
+    const ENGINE = (new URLSearchParams(location.search).get('gxengine') || G.engine || 'lab') === 'custom' ? 'custom' : 'lab';
+    // ?gxlab={"env":2,...} overrides the lab parameters (tuning)
+    let LAB = G.lab; try { const o = new URLSearchParams(location.search).get('gxlab'); if (o) LAB = { ...G.lab, ...JSON.parse(o) }; } catch (e) { /* ignore */ }
+    let envRT = null, bgPlane = null, opticCanvas = null, opticTex = null, fboBack = null, fboFront = null;
+    if (ENGINE === 'lab') {
+      renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.NoToneMapping;   // DOM ivory = glass ivory
+      // the studio the glass reflects, never seen directly: a soft box, cobalt, moss and a speck of orange (Glass Lab)
+      const envScene = new THREE.Scene(); envScene.background = new THREE.Color(LAB.room);
+      for (const r of LAB.reflectors) {
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(...r.size), new THREE.MeshBasicMaterial({ color: new THREE.Color(r.color).multiplyScalar(r.intensity), side: THREE.DoubleSide, toneMapped: false }));
+        m.position.set(...r.pos); m.lookAt(0, 0, 0); envScene.add(m);
+      }
+      const pmrem = new THREE.PMREMGenerator(renderer); envRT = pmrem.fromScene(envScene, 0, 0.1, 100); pmrem.dispose();
+      const RT = { type: THREE.HalfFloatType, samples: 4, depthBuffer: true };
+      fboBack = new THREE.WebGLRenderTarget(4, 4, RT); fboFront = new THREE.WebGLRenderTarget(4, 4, RT);
+      // the optical background: the page's own 2D type, redrawn into a canvas, on a plane behind the glass
+      opticCanvas = document.createElement('canvas');
+      opticTex = new THREE.CanvasTexture(opticCanvas); opticTex.colorSpace = THREE.SRGBColorSpace; opticTex.generateMipmaps = false; opticTex.minFilter = THREE.LinearFilter;
+      bgPlane = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: opticTex, toneMapped: false, depthWrite: false }));
+      bgPlane.renderOrder = -1; scene.add(bgPlane);
+    }
+    const labMat = (side) => {
+      const m = new MeshTransmissionMaterial(LAB.samples, false);
+      Object.assign(m, { side, transmission: 0, _transmission: 1, anisotropicBlur: 0, distortion: LAB.distortion, distortionScale: LAB.distortionScale, temporalDistortion: LAB.temporal, time: 0,
+        color: new THREE.Color('#ffffff'), metalness: 0, ior: LAB.ior, roughness: LAB.roughness, chromaticAberration: LAB.ca, envMapIntensity: LAB.env,
+        thickness: side === THREE.BackSide ? LAB.backThickness : LAB.frontThickness, attenuationColor: new THREE.Color(LAB.tint), attenuationDistance: LAB.tintDistance, rimDepth: LAB.rimDepth ?? 0, core: side === THREE.BackSide ? 0 : (LAB.core ?? 0), coreColor: new THREE.Color(G.glass.ivory) });
+      m.envMap = envRT.texture;
+      return m;
+    };
+    const cBlue = new THREE.Color(LAB.tint), cOrange = new THREE.Color(LAB.tintOrange), cWhite = new THREE.Color('#ffffff'), cOrangeBody = new THREE.Color(LAB.bodyOrange);
 
     // ---- materials
     const srgb2lin = (c) => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
@@ -172,15 +203,20 @@ export async function mountGlass(root, hooks = {}) {
     for (const id of ids) {
       const text = btn[id].dataset.text, chars = [...text];
       const group = new THREE.Group(), mat = new THREE.ShaderMaterial({ vertexShader: VS, fragmentShader: FS_FRONT, uniforms: { ...U, uOrange: { value: 0 }, uHot: { value: 0 } } });
+      const front = ENGINE === 'lab' ? labMat(THREE.FrontSide) : null, back = ENGINE === 'lab' ? labMat(THREE.BackSide) : null;
       let x = 0; const box = new THREE.Box3();
       chars.forEach((ch, k) => {
-        const { geo, adv } = glyphGeo(ch); const m = new THREE.Mesh(geo, mat); m.position.x = x; group.add(m);
+        const { geo, adv } = glyphGeo(ch);
+        if (ENGINE === 'lab') {
+          const mf = new THREE.Mesh(geo, front), mb = new THREE.Mesh(geo, back); mf.position.x = mb.position.x = x;
+          mf.userData.face = 'front'; mb.userData.face = 'back'; group.add(mb, mf);
+        } else { const m = new THREE.Mesh(geo, mat); m.position.x = x; group.add(m); }
         box.union(geo.boundingBox.clone().translate(new THREE.Vector3(x, 0, 0)));
         x += adv + (k < chars.length - 1 ? G.tracking : 0);
       });
       const w = x; group.children.forEach(m => { m.position.x -= w / 2; }); box.translate(new THREE.Vector3(-w / 2, 0, 0));
       const pivot = new THREE.Group(); pivot.add(group); rig.add(pivot);
-      words[id] = { id, pivot, mat, w, box, a: { x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0, s: 1, o: 0 }, phase: hashPhase(id), tint: 0, hot: 0 };
+      words[id] = { id, pivot, mat, front, back, w, box, a: { x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0, s: 1, o: 0 }, phase: hashPhase(id), tint: 0, hot: 0 };
     }
 
     const buildMs = Math.round(performance.now() - t0);
@@ -190,9 +226,10 @@ export async function mountGlass(root, hooks = {}) {
     // are empty boxes placed by the layout; the column is fitted into the first, the word into the second. Without
     // them (or with zero size) the config's screen fractions are used. --gx-pitch on .gx-slot sets the line step (em).
     const slotEl = stage.querySelector('.gx-slot'), dslotEl = stage.querySelector('.gx-dslot');
-    let VW = 1, VH = 1, visW = 1, visH = 1, camY = 0, camX = 0, kpx = 1, phone = PHONE.matches, pitch = 0, dslot = null;
+    let VW = 1, VH = 1, visW = 1, visH = 1, camY = 0, camX = 0, kpx = 1, phone = PHONE.matches, pitch = 0, shear = 0, dslot = null;
     const baseLayout = () => (phone ? G.layout.phone : G.layout.desk);
-    const curLayout = () => { const L = baseLayout(); if (!pitch) return L; const n = L.length; return L.map((l, i) => ({ ...l, y: ((n - 1) / 2 - i) * pitch })); };
+    // --gx-shear (em per line) on .gx-slot slants the column: the first word furthest right, the last furthest left
+    const curLayout = () => { const L = baseLayout(); if (!pitch && !shear) return L; const n = L.length; return L.map((l, i) => ({ ...l, x: l.x + ((n - 1) / 2 - i) * shear, y: pitch ? ((n - 1) / 2 - i) * pitch : l.y })); };
     const home = (id) => curLayout().find(l => l.id === id);
     const rectIn = (el) => { if (!el) return null; const r = el.getBoundingClientRect(), s0 = stage.getBoundingClientRect(); return r.width > 2 && r.height > 2 ? { x: r.left - s0.left, y: r.top - s0.top, w: r.width, h: r.height } : null; };
     function clusterBox() {
@@ -206,6 +243,7 @@ export async function mountGlass(root, hooks = {}) {
       renderer.setPixelRatio(dpr); renderer.setSize(VW, VH, false);
       const bw = Math.round(VW * dpr), bh = Math.round(VH * dpr); rt.setSize(bw, bh); U.uRes.value.set(bw, bh);
       pitch = slotEl ? parseFloat(getComputedStyle(slotEl).getPropertyValue('--gx-pitch')) || 0 : 0;
+      shear = slotEl ? parseFloat(getComputedStyle(slotEl).getPropertyValue('--gx-shear')) || 0 : 0;
       const F = phone ? G.fit.phone : G.fit.desk, cb = clusterBox(), aspect = VW / VH, tf = Math.tan(G.camera.fov * D2R / 2);
       const slot = rectIn(slotEl); dslot = rectIn(dslotEl);
       if (slot) {
@@ -221,10 +259,55 @@ export async function mountGlass(root, hooks = {}) {
       camera.aspect = aspect; camera.position.set(camX, camY, dist); camera.lookAt(camX, camY, 0); camera.updateProjectionMatrix();
       camera.near = dist - 6; camera.far = dist + 6; camera.updateProjectionMatrix();
       U.uNear.value = dist - 4; U.uFar.value = dist + 4; U.uP00.value = camera.projectionMatrix.elements[0]; U.uP11.value = camera.projectionMatrix.elements[5];
+      if (ENGINE === 'lab') {
+        fboBack.setSize(bw, bh); fboFront.setSize(bw, bh);
+        // the optical plane fills the view exactly at its depth, so the page's type lands where the DOM draws it
+        const zb = LAB.bgZ, hb = 2 * (dist - zb) * tf;
+        bgPlane.position.set(camX, camY, zb); bgPlane.scale.set(hb * aspect, hb, 1);
+        drawOptics(bw, bh, dpr);
+      }
       // settle words at their places for the current layout (not during a move)
       for (const id of ids) if (!anims.some(t => t.obj === words[id].a)) placeWord(id);
       dirty = true;
     }
+    // ---- the optical background: every visible piece of 2D type in the section, redrawn character by character at
+    // the place the DOM put it (so the glass refracts the real page)
+    let opticKey = '', opticTick = 0;
+    function drawOptics(bw, bh, dpr) {
+      if (opticCanvas.width !== bw || opticCanvas.height !== bh) { opticCanvas.width = bw; opticCanvas.height = bh; }
+      const g = opticCanvas.getContext('2d'), s0 = stage.getBoundingClientRect();
+      g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = G.glass.ivory; g.fillRect(0, 0, bw, bh);
+      g.setTransform(dpr, 0, 0, dpr, -s0.left * dpr, -s0.top * dpr);
+      const range = document.createRange(), meas = document.createElement('canvas').getContext('2d');
+      for (const el of sticky.querySelectorAll(LAB.optics)) {
+        const cs = getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+        let op = 1; for (let e = el; e && e !== sticky; e = e.parentElement) op *= parseFloat(getComputedStyle(e).opacity);
+        if (op < 0.02) continue;
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+          const pcs = getComputedStyle(n.parentElement); if (pcs.display === 'none' || pcs.visibility === 'hidden') continue;
+          const stretch = parseFloat(pcs.fontStretch) || 100;
+          const font = `${pcs.fontStyle} ${pcs.fontWeight} ${pcs.fontSize} ${pcs.fontFamily}`;
+          meas.font = font; if ('fontStretch' in meas) meas.fontStretch = stretch < 70 ? 'extra-condensed' : stretch < 80 ? 'condensed' : stretch < 95 ? 'semi-condensed' : 'normal';
+          g.font = meas.font; if ('fontStretch' in g) g.fontStretch = meas.fontStretch;
+          g.fillStyle = pcs.color; g.globalAlpha = op; g.textBaseline = 'alphabetic';
+          const asc = meas.measureText('出Hg').fontBoundingBoxAscent ?? parseFloat(pcs.fontSize) * 0.88, desc = meas.measureText('出Hg').fontBoundingBoxDescent ?? parseFloat(pcs.fontSize) * 0.12;
+          const t = n.textContent;
+          for (let i = 0; i < t.length; i++) {
+            if (t[i] === ' ' || t[i] === '\n') continue;
+            range.setStart(n, i); range.setEnd(n, i + 1);
+            const r = range.getClientRects()[0]; if (!r || r.width < 0.5) continue;
+            const w = meas.measureText(t[i]).width || r.width, base = r.top + (r.height - (asc + desc)) / 2 + asc;
+            g.save(); g.translate(r.left, base); g.scale(r.width / w, 1); g.fillText(t[i], 0, 0); g.restore();
+          }
+        }
+      }
+      g.globalAlpha = 1; opticTex.needsUpdate = true;
+    }
+    function refreshOptics() { if (ENGINE !== 'lab') return; const pr = renderer.getPixelRatio(); drawOptics(Math.round(VW * pr), Math.round(VH * pr), pr); dirty = true; }
+    document.fonts?.ready.then(refreshOptics);
+    new MutationObserver(() => { setTimeout(refreshOptics, 30); setTimeout(refreshOptics, 520); }).observe(root, { attributes: true, attributeFilter: ['class'] });
+
     function placeWord(id) {
       const a = words[id].a;
       if (!current) Object.assign(a, homeOf(id));
@@ -343,11 +426,32 @@ export async function mountGlass(root, hooks = {}) {
       }
       scene.updateMatrixWorld();
       placeButtons();
-      // pass 1: back faces -> buffer;  pass 2: the glass
-      scene.overrideMaterial = backMat; renderer.setRenderTarget(rt); renderer.setClearColor(0x8080ff, 1); renderer.clear();
-      renderer.render(scene, camera);
-      scene.overrideMaterial = null; renderer.setRenderTarget(null); renderer.setClearColor(0x000000, 0);
-      renderer.render(scene, camera);
+      if (ENGINE === 'lab') {
+        // the 2D type fades in with the page (and moves with the layout): redraw its copy when that changes
+        if ((opticTick = (opticTick + 1) % 12) === 0) {
+          let k = ''; for (const el of sticky.querySelectorAll(LAB.optics)) { const r = el.getBoundingClientRect(); k += getComputedStyle(el).opacity + ',' + (r.left | 0) + ',' + (r.top | 0) + ';'; }
+          if (k !== opticKey) { opticKey = k; refreshOptics(); }
+        }
+        // tint: blue glass <-> the same glass coloured orange (body and absorption)
+        for (const id of ids) {
+          const W = words[id], k = W.tint;
+          for (const m of [W.front, W.back]) { m.attenuationColor.copy(cBlue).lerp(cOrange, k); m.color.copy(cWhite).lerp(cOrangeBody, k); m.time = time; }
+        }
+        const faces = (f) => rig.traverse(o => { if (o.isMesh) o.visible = o.userData.face === f; });
+        // pass 1: the page's type alone -> fboBack;  pass 2: back faces refract it -> fboFront;  pass 3: front faces -> screen
+        bgPlane.visible = true; faces('none');
+        renderer.setRenderTarget(fboBack); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(scene, camera);
+        for (const id of ids) words[id].back.buffer = fboBack.texture;
+        faces('back'); renderer.setRenderTarget(fboFront); renderer.clear(); renderer.render(scene, camera);
+        for (const id of ids) words[id].front.buffer = fboFront.texture;
+        faces('front'); bgPlane.visible = false; renderer.setRenderTarget(null); renderer.clear(); renderer.render(scene, camera);
+      } else {
+        // pass 1: back faces -> buffer;  pass 2: the glass
+        scene.overrideMaterial = backMat; renderer.setRenderTarget(rt); renderer.setClearColor(0x8080ff, 1); renderer.clear();
+        renderer.render(scene, camera);
+        scene.overrideMaterial = null; renderer.setRenderTarget(null); renderer.setClearColor(0x000000, 0);
+        renderer.render(scene, camera);
+      }
       dirty = false;
     }
 
@@ -360,7 +464,7 @@ export async function mountGlass(root, hooks = {}) {
       hover: hoverWord,
       open: openWord,
       close: closeWord,
-      debug: () => ({ VW, VH, visW, visH, phone, buildMs, words: Object.fromEntries(ids.map(id => [id, { ...words[id].a, tint: +words[id].tint.toFixed(2), hot: +words[id].hot.toFixed(2) }])) }),
+      debug: () => ({ ENGINE, VW, VH, visW, visH, phone, buildMs, words: Object.fromEntries(ids.map(id => [id, { ...words[id].a, tint: +words[id].tint.toFixed(2), hot: +words[id].hot.toFixed(2) }])) }),
     };
   }
 }

@@ -40,6 +40,28 @@ export const GLASS = {
     wave: 0.6, waveFreq: 2.6,                // the liquid swell of the surface: strength, frequency (per em)
   },
   hover: { lift: 0.12, scale: 0.025 },
+  // ---- the plain physical glass (engine 'lab', default): the NOTO Glass Lab's MeshTransmissionMaterial, the studio it
+  // reflects, and how strongly the glass is tinted. tint: absorption colour (faint sky blue); tintDistance: how far
+  // light travels before taking it (larger = clearer); thickness: front / back refraction depth (world units, 1 = 1 em)
+  engine: 'lab',
+  lab: {
+    samples: 6, ior: 1.5, roughness: 0.0, ca: 0.04, env: 2.0,          // the Glass Lab's v1 values (ior, roughness, CA, env)
+    frontThickness: 0.7, backThickness: 0.35,                          // the Lab's 1.2 / 0.6, scaled to a letter's em
+    tint: '#9CC4F0', tintOrange: '#F7A35C', tintDistance: 2.0, bodyOrange: '#FFE3CC',
+    rimDepth: 1.2,        // the tint deepens toward the rims (longer path through the glass): clear centre, blue edges
+    core: 0.55,           // the bright centre: how much light the face of the glass carries over the type it refracts
+    distortion: 0, distortionScale: 0.6, temporal: 0,
+    bgZ: -1.2,
+    room: '#8f8e87',
+    reflectors: [
+      { color: '#ffffff', intensity: 4.0, size: [5, 2.6], pos: [-2.6, 4.2, 3.0] },
+      { color: '#0130E2', intensity: 1.0, size: [6, 6], pos: [4.2, 0.6, 1.0] },
+      { color: '#3C5424', intensity: 1.0, size: [6, 4], pos: [-3.6, -3.0, 0.6] },
+      { color: '#FD5500', intensity: 1.6, size: [0.6, 0.6], pos: [2.6, -2.4, 3.0] },
+    ],
+    // which 2D type the glass refracts (CSS selector inside the section's sticky frame)
+    optics: '.gx-title, .gx-meta, .gx-prog, .gx-adm, .gx-run, .gx-big, .gx-mega',
+  },
 
   // ---- motion: the whole block floats; each word only a little on its own; the pointer tilts it slightly
   float: { bob: 0.05, bobHz: 0.07, tilt: 0.5, tiltHz: 0.05, sway: 0.7, swayHz: 0.037, word: 0, wordRot: 0, pointer: 1.4 },

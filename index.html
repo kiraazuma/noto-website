@@ -15,9 +15,9 @@
   // EDIT: INDEX の表示方式（切替スイッチ）。'glass' = ガラスの5語（新） / 'classic' = 従来の Event Summary + アコーディオン INDEX。
   // URL に ?index=classic / ?index=glass を付けると、その表示で開けます（確認用）。
   var INDEX_MODE = 'glass';
-  // ガラス INDEX のレイアウト（デザイン比較用）：'focus' = ガラスが主役の新版（既定） / 'current' = 以前の中央配置 / 'monumental' = B案 / 'editorial' = A案。?layout= で切替
-  var GLASS_LAYOUT = 'focus';
-  (function () { var m = INDEX_MODE, l = GLASS_LAYOUT; try { var u = new URLSearchParams(location.search), q = u.get('index'), r = u.get('layout'); if (q === 'glass' || q === 'classic') m = q; if (r === 'focus' || r === 'monumental' || r === 'editorial' || r === 'current') l = r; } catch (e) {} document.documentElement.setAttribute('data-index', m); document.documentElement.setAttribute('data-gxl', l); })();
+  // ガラス INDEX のレイアウト（デザイン比較用）：'poster' = Hero の構図を引き継ぐ版（既定。巨大な名前と日付にガラスが重なる） / 'focus' = 前の既定 / 'current' = 最初の中央配置 / 'monumental' = B案 / 'editorial' = A案。?layout= で切替
+  var GLASS_LAYOUT = 'poster';
+  (function () { var m = INDEX_MODE, l = GLASS_LAYOUT; try { var u = new URLSearchParams(location.search), q = u.get('index'), r = u.get('layout'); if (q === 'glass' || q === 'classic') m = q; if (r === 'poster' || r === 'focus' || r === 'monumental' || r === 'editorial' || r === 'current') l = r; } catch (e) {} document.documentElement.setAttribute('data-index', m); document.documentElement.setAttribute('data-gxl', l); })();
 </script>
 <script type="importmap">
 { "imports": { "three": "./vendor/three/three.module.js" } }
@@ -90,7 +90,7 @@
         </div>
         <ol class="sp gx-prog" aria-label="一橋祭で行うこと"><li><i>01</i><b>出張輪島朝市</b></li><li><i>02</i><b>特別講演</b></li><li><i>03</i><b>復興応援フリーペーパー</b></li></ol>
         <p class="sp gx-adm"><b>入場無料</b><span>一橋大学 国立西キャンパス</span></p>
-        <p class="sp gx-meta"><span class="d">2026.11.21–23</span><span class="m"><b>入場無料</b><span>一橋大学 国立西キャンパス</span></span></p>
+        <p class="sp gx-meta"><span class="d"><span class="y">2026.</span><span class="md">11.21–23</span></span><span class="m"><b>入場無料</b><span>一橋大学 国立西キャンパス</span></span></p>
         <p class="gx-hint" aria-hidden="true"><b>←</b>文字か余白をクリック／ESC で INDEX に戻る</p>
       </div>
       <div class="gx-detail" id="gx-detail" role="region" hidden>
