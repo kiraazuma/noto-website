@@ -255,24 +255,26 @@ function updateIntro(dt) {
   else page.style.visibility = 'visible';
 }
 
-/* ---------------------------------------------------------------- closing wordmark (bottom edge of 案内) */
-// one line, ~102vw at every desktop width (fitted to the measured width, not a fixed size): the N and the last I
-// only lose a sliver at the edges (a little more on the left, so the last I stays readable); the feet sink ~11%
-const END = { width: 1.02, sink: 0.11, left: 0.62 };
+/* ---------------------------------------------------------------- footer wordmark (the final edge of the page) */
+// Fit the actual Archivo width after fonts load and on resize. Desktop is one slightly cropped line;
+// portrait screens use two lines with no horizontal or lower-edge crop.
+const END = { width: 1.015, left: 0.5 };
 function fitEnd() {
   const el = document.getElementById('endmark'); if (!el) return;
   const box = el.parentElement, avail = box.clientWidth; if (!avail) return;
+  const stacked = matchMedia('(max-width: 1023px) and (orientation: portrait)').matches;
   el.style.fontSize = '100px'; el.style.marginTop = '0'; el.style.marginLeft = '0'; box.style.height = '';
   const w = el.getBoundingClientRect().width; if (!w) return;
-  const F = 100 * avail * END.width / w; el.style.fontSize = F.toFixed(2) + 'px';
+  const F = 100 * avail * (stacked ? 0.96 : END.width) / w; el.style.fontSize = F.toFixed(2) + 'px';
   const wF = el.getBoundingClientRect().width;
-  el.style.marginLeft = (-(wF - avail) * END.left).toFixed(2) + 'px';
+  el.style.marginLeft = (stacked ? (avail - wF) / 2 : -(wF - avail) * END.left).toFixed(2) + 'px';
+  if (stacked) { box.style.height = Math.ceil(el.getBoundingClientRect().height) + 'px'; return; }
   const probe = document.createElement('i'); probe.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
   el.appendChild(probe); const base = probe.getBoundingClientRect().top - el.getBoundingClientRect().top; probe.remove();
   const c = document.createElement('canvas').getContext('2d'); c.font = `900 ${F}px Archivo`; if ('fontStretch' in c) c.fontStretch = 'extra-condensed';
   const asc = c.measureText('NOTOHITSUBA').actualBoundingBoxAscent || F * 0.72;
   el.style.marginTop = (-(base - asc)).toFixed(2) + 'px';
-  box.style.height = (asc * (1 - END.sink)).toFixed(2) + 'px';
+  box.style.height = (asc + F * 0.14).toFixed(2) + 'px';
 }
 
 /* ---------------------------------------------------------------- one programmatic scroll tween (anchor links) */
@@ -374,7 +376,6 @@ function updateAcc(dt) {
     page.style.paddingBottom = '';
     scrollTo({ top: A.endScroll, behavior: 'instant' });
     OPEN = to; A = null; locked = false;
-    if (OPEN && OPEN.id === 'info') fitEnd();
     setHash(OPEN ? OPEN.id : '');
     if (queued) { const q = queued; queued = null; toggle(q); }
   }

@@ -220,28 +220,27 @@ body.booted #page{animation:none}
 .table .k{font:700 calc(13*var(--t))/1.7 var(--jp);letter-spacing:.1em;opacity:.65}
 .table .v{font:900 calc(20*var(--p))/1.5 var(--jp);letter-spacing:.02em}
 .table .v small{display:block;font:500 calc(14*var(--t))/1.6 var(--jp);letter-spacing:.03em;opacity:.7}
-#info .pin{padding-bottom:0}
-#info.open>.rl.bot{opacity:0}
-/* the closing line forms the bottom edge of 案内: one line across the full width (a hair of air at each side), the feet sunk below the edge */
-.end{grid-column:1/-1;position:relative;overflow:hidden;margin-top:calc(80*var(--p));padding:0;color:var(--ivory)}
+/* the footer wordmark bleeds past the link columns and closes the page at its lower edge */
+.end{position:relative;overflow:hidden;width:calc(100% + 2*var(--foot-pad));margin:calc(48*var(--p)) 0 0 calc(-1*var(--foot-pad));color:var(--paper)}
 #endmark{display:block;width:max-content;font-family:var(--lat);font-weight:900;font-stretch:62.5%;letter-spacing:-.04em;word-spacing:.06em;line-height:1;white-space:nowrap}
+.end-line{display:inline}
 
-/* ---------------------------------------------------------------- footer: utility */
-#foot{background:var(--paper);color:var(--cobalt);padding:calc(48*var(--p)) clamp(32px,calc(56*var(--p)),72px) calc(30*var(--p));position:relative}
+/* ---------------------------------------------------------------- footer: a full-bleed cobalt ending */
+#foot{--foot-pad:clamp(32px,calc(56*var(--p)),72px);background:var(--cobalt);color:var(--paper);padding:calc(48*var(--p)) var(--foot-pad) 0;position:relative}
 .fcols{display:grid;grid-template-columns:repeat(4,minmax(168px,360px)) 1fr;column-gap:clamp(20px,2.4vw,48px);align-items:start}
 .fcols .totop{justify-self:end}
-.fcol h4{margin:0 0 calc(18*var(--p));font:700 calc(11*var(--t))/1 var(--lat);letter-spacing:.18em;opacity:.55}
+.fcol h4{margin:0 0 calc(18*var(--p));font:700 calc(11*var(--t))/1 var(--lat);letter-spacing:.18em;opacity:.75}
 .fcol ul{list-style:none;margin:0;padding:0;display:grid;gap:calc(9*var(--p))}
 .fcol.site ul{grid-template-columns:repeat(5,auto);justify-content:start;column-gap:calc(22*var(--p))}
 .fcol a,.fcol span{white-space:nowrap;font:700 calc(14*var(--t))/1.4 var(--jp);letter-spacing:.04em;text-decoration:none}
-.fcol .na{opacity:.5;cursor:default}
+.fcol .na{opacity:.75;cursor:default}
 .fcol small{font:700 calc(9*var(--t))/1 var(--lat);letter-spacing:.12em;margin-left:calc(8*var(--p))}
-.fcol .h{font:700 calc(12*var(--t))/1 var(--lat);letter-spacing:.04em;opacity:.6;margin-right:calc(10*var(--p))}
+.fcol .h{font:700 calc(12*var(--t))/1 var(--lat);letter-spacing:.04em;opacity:.8;margin-right:calc(10*var(--p))}
 .fcol .ar{font:900 calc(11*var(--t))/1 var(--lat);font-style:normal;color:var(--orange);margin-left:calc(6*var(--p))}
 .totop{align-self:start;font:700 calc(11*var(--t))/1 var(--lat);letter-spacing:.18em;text-decoration:none;display:inline-flex;gap:calc(8*var(--p));opacity:.7}
 .totop b{color:var(--orange)}
 .totop:hover,.totop:focus-visible{opacity:1}
-.fbar{position:relative;display:flex;justify-content:space-between;margin-top:calc(44*var(--p));padding-top:calc(16*var(--p));font:500 calc(11*var(--t))/1.4 var(--jp);letter-spacing:.06em;opacity:.6}
+.fbar{position:relative;display:flex;justify-content:space-between;margin-top:calc(44*var(--p));padding-top:calc(16*var(--p));font:500 calc(11*var(--t))/1.4 var(--jp);letter-spacing:.06em;opacity:.8}
 .fbar .rl{left:0;top:0}
 
 /* ---------------------------------------------------------------- links: one language (text, orange rule, arrow)
@@ -255,6 +254,7 @@ body.booted #page{animation:none}
 .totop,.s-cue{padding:14px;margin:-14px}
 .fcol a:hover,.totop:hover,.s-cue:hover{text-decoration-color:var(--orange)}
 .fcol a:focus-visible,.totop:focus-visible,.s-cue:focus-visible{outline:none;color:var(--orange);text-decoration-color:var(--orange);text-decoration-thickness:2px}
+#foot .fcol a:focus-visible,#foot .totop:focus-visible{color:var(--paper);outline:2px solid var(--paper);outline-offset:3px}
 .row:focus-visible{outline:none}
 .row:focus-visible .rx{transform:none;background:var(--orange)}
 .row:focus-visible .num{color:var(--orange)}
@@ -368,10 +368,12 @@ body.booted #page{animation:none}
   .table .k { font-size: max(11.5px, calc(12 * var(--u))); }
   .table .v { font-size: calc(17.5 * var(--u)); }
   .table .v small { font-size: max(12.5px, calc(13 * var(--u))); }
-  .end { margin-top: calc(48 * var(--u)); }
+  .end { margin-top: calc(36 * var(--u)); }
+  .end-line { display: block; }
+  #endmark { line-height: .85; }
 
-  /* FOOTER — utility, readable sizes, every link a 44 px target, clear of the home indicator */
-  #foot { padding: calc(44 * var(--u)) var(--pad) calc(22px + env(safe-area-inset-bottom)); }
+  /* FOOTER — readable links above a two-line full-width wordmark */
+  #foot { --foot-pad: var(--pad); padding: calc(44 * var(--u)) var(--foot-pad) 0; }
   .fcols { grid-template-columns: minmax(0, 1fr); column-gap: calc(16 * var(--u)); row-gap: calc(26 * var(--u)); }
   .fcol.site, .fcols > .fcol:nth-child(2) { grid-column: 1 / -1; }
   .fcols .totop { grid-column: 1 / -1; justify-self: end; }
@@ -515,7 +517,6 @@ body.booted #page{animation:none}
 .gx-body .table2{grid-template-columns:1fr;row-gap:0}
 .gx-body .table2 .list.table:first-child li:last-child{border-bottom:0}
 .gx-body .table .v{font-size:calc(28*var(--p))}
-.gx-body .end{color:var(--cobalt);margin-top:calc(70*var(--p))}
 /* no WebGL: the five words as flat type, in the same column */
 .gx-flat .gx-canvas{display:none}
 .gx-flat .gx-words{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;font-size:calc(110*var(--p))}
