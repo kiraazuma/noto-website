@@ -18,8 +18,6 @@
 // I <-> D is a timed transition (click / Enter; back: the heading, empty space, INDEX, Esc).
 // One loop: main.js calls frame(dt) from its own requestAnimationFrame loop.
 
-import { mountFx } from './kinetic-fx.js';
-
 const PHONE = matchMedia('(max-width:1023px) and (orientation:portrait)');
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp = (x, a, b) => Math.min(b, Math.max(a, x));
@@ -385,7 +383,6 @@ export async function mountKinetic(root, hooks = {}) {
     if (p !== lastP) { lastP = p; dirty = true; }
     tickTimers(dt); tickReveal(dt);
     const tweening = tickTweens(dt);
-    fx.frame(dt);
     if (!dirty && !tweening && !anyMoving) return;
     dirty = false;
     // the entrance (only while nothing is open and nothing is in a timed move)
@@ -425,24 +422,18 @@ export async function mountKinetic(root, hooks = {}) {
   function onResize() {
     measure();
     if (current) { dLay = detailLayout(current); for (const k in P) if (!tw[k]) P[k].c = { ...dLay.D[k] ?? L.I[k] }; root.style.setProperty('--kx-cx', dLay.cx.toFixed(1) + 'px'); root.style.setProperty('--kx-cy', dLay.cy.toFixed(1) + 'px'); }
-    dirty = true; lastP = -1; fx.onLayout();
+    dirty = true; lastP = -1;
   }
   measure();
   for (const k in P) P[k].c = { ...L.E0[k] };
   let rzT = 0; new ResizeObserver(() => { clearTimeout(rzT); rzT = setTimeout(onResize, 60); }).observe(sticky);
-  // the cursor interactions (kinetic-fx.js): only on the finished INDEX at rest
-  const fx = mountFx({
-    root, sticky, P,
-    progress: () => (hooks.progress ? hooks.progress() : 1),
-    rest: () => state === 'index' && !current && !busy && lastP >= 1 && !anyMoving && !Object.keys(tw).length && detail.hidden,
-    visible: () => { const r = sticky.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight; },
-    remeasure: () => { measure(); for (const k in P) if (!tw[k] && state === 'index' && !current) P[k].c = { ...L.I[k] }; dirty = true; lastP = -1; },
-  });
   root.classList.add('kx-ready');
   frame(0);
 
   return {
-    open, close, frame, fx,
+    open, close, frame,
+    // the INDEX finished and still (no entrance, no open / close, nothing open): when a hover may play its one-shot
+    rest: () => state === 'index' && !current && !busy && lastP >= 1 && !anyMoving && !Object.keys(tw).length && detail.hidden,
     get current() { return current; },
     debug: () => ({ W, H, phone, state, current, busy: !!busy, anyMoving, moving: Object.keys(P).filter(k => P[k].moving).map(k => k + ':' + P[k].still.toFixed(2) + ':' + P[k].last), tw: Object.keys(tw), dh: detail.hidden, p: lastP, L: L && Object.fromEntries(Object.entries(L.I).map(([k, v]) => [k, [Math.round(v.x), Math.round(v.y), Math.round(v.s)]])) }),
   };

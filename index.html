@@ -17,11 +17,12 @@
   var INDEX_MODE = 'kinetic';
   // ガラス INDEX のレイアウト（デザイン比較用）：'poster' = Hero の構図を引き継ぐ版（既定。巨大な名前と日付にガラスが重なる） / 'focus' = 前の既定 / 'current' = 最初の中央配置 / 'monumental' = B案 / 'editorial' = A案。?layout= で切替
   var GLASS_LAYOUT = 'poster';
-  // Kinetic INDEX のカーソル演出（比較用）：'off' = なし（元のまま） / 'distort' = A案 文字が液体のように歪む / 'elastic' = B案 文字が押されて弾性的に戻る。
-  // ?interaction=off|distort|elastic で切替。KX_PANEL = true で画面左下に比較パネル（?panel=0 で非表示）。調整値は scripts/kinetic/kinetic-fx.js の FX
-  var KX_INTERACTION = 'distort';
-  var KX_PANEL = true;
-  (function () { var m = INDEX_MODE, l = GLASS_LAYOUT; try { var u = new URLSearchParams(location.search), q = u.get('index'), r = u.get('layout'); if (q === 'glass' || q === 'classic' || q === 'kinetic') m = q; if (r === 'poster' || r === 'focus' || r === 'monumental' || r === 'editorial' || r === 'current') l = r; } catch (e) {} document.documentElement.setAttribute('data-index', m); document.documentElement.setAttribute('data-gxl', l); var x = KX_INTERACTION, pn = KX_PANEL; try { var v = new URLSearchParams(location.search); if (/^(off|distort|elastic)$/.test(v.get('interaction') || '')) x = v.get('interaction'); if (v.get('panel') === '0') pn = false; if (v.get('panel') === '1') pn = true; } catch (e) {} document.documentElement.setAttribute('data-kxi', x); document.documentElement.setAttribute('data-kxpanel', pn ? '1' : '0'); })();
+  // カーソルとホバー（比較用）：'off' = なし（元のまま） / 'fill' = オレンジのカーソル＋円形に広がる色 / 'a' 'b' 'c' = それにワンショット
+  // （A Squash & Pop / B Tilt & Bounce / C Spin & Settle） / 'random' = A〜C から毎回1つ。?cursor= で切替。CUR_PANEL = true で右端に比較パネル（?panel=0 で非表示）。
+  // 時間と強さは scripts/cursor.js の CUR
+  var CUR_MODE = 'a';
+  var CUR_PANEL = true;
+  (function () { var m = INDEX_MODE, l = GLASS_LAYOUT; try { var u = new URLSearchParams(location.search), q = u.get('index'), r = u.get('layout'); if (q === 'glass' || q === 'classic' || q === 'kinetic') m = q; if (r === 'poster' || r === 'focus' || r === 'monumental' || r === 'editorial' || r === 'current') l = r; } catch (e) {} document.documentElement.setAttribute('data-index', m); document.documentElement.setAttribute('data-gxl', l); var x = CUR_MODE, pn = CUR_PANEL; try { var v = new URLSearchParams(location.search); if (/^(off|fill|a|b|c|random)$/.test(v.get('cursor') || '')) x = v.get('cursor'); if (v.get('panel') === '0') pn = false; if (v.get('panel') === '1') pn = true; } catch (e) {} document.documentElement.setAttribute('data-cur', x); document.documentElement.setAttribute('data-curpanel', pn ? '1' : '0'); })();
 </script>
 <script type="importmap">
 { "imports": { "three": "./vendor/three/three.module.js" } }
@@ -108,11 +109,11 @@
         <h2 class="sr">出張輪島朝市 in 一橋祭 — INDEX</h2>
         <p class="kx-ev"><span class="kx-t kx-jp" data-k="name1">出張輪島</span><span class="kx-t kx-jp" data-k="name2">朝市</span><span class="kx-t kx-jp" data-k="in"><span class="in">in</span>一橋祭</span><span class="kx-t kx-lat" data-k="date">2026.11.21–23</span></p>
         <nav class="kx-words" aria-label="INDEX">
-          <button type="button" class="kx-t kx-jp kx-w" data-k="asaichi" data-id="asaichi" data-label="朝市" aria-label="01 朝市を開く" aria-controls="kx-detail" aria-expanded="false">朝市</button>
-          <button type="button" class="kx-t kx-jp kx-w" data-k="program" data-id="program" data-label="催し" aria-label="02 催しを開く" aria-controls="kx-detail" aria-expanded="false">催し</button>
-          <button type="button" class="kx-t kx-jp kx-w" data-k="noto" data-id="noto" data-label="能登" aria-label="03 能登を開く" aria-controls="kx-detail" aria-expanded="false">能登</button>
-          <button type="button" class="kx-t kx-jp kx-w" data-k="support" data-id="support" data-label="応援" aria-label="04 応援を開く" aria-controls="kx-detail" aria-expanded="false">応援</button>
-          <button type="button" class="kx-t kx-jp kx-w" data-k="info" data-id="info" data-label="案内" aria-label="05 案内を開く" aria-controls="kx-detail" aria-expanded="false">案内</button>
+          <button type="button" class="kx-t kx-jp kx-w" data-k="asaichi" data-id="asaichi" data-label="朝市" aria-label="01 朝市を開く" aria-controls="kx-detail" aria-expanded="false"><span class="kx-in" aria-hidden="true"><span class="kx-ch">朝</span><span class="kx-ch">市</span></span></button>
+          <button type="button" class="kx-t kx-jp kx-w" data-k="program" data-id="program" data-label="催し" aria-label="02 催しを開く" aria-controls="kx-detail" aria-expanded="false"><span class="kx-in" aria-hidden="true"><span class="kx-ch">催</span><span class="kx-ch">し</span></span></button>
+          <button type="button" class="kx-t kx-jp kx-w" data-k="noto" data-id="noto" data-label="能登" aria-label="03 能登を開く" aria-controls="kx-detail" aria-expanded="false"><span class="kx-in" aria-hidden="true"><span class="kx-ch">能</span><span class="kx-ch">登</span></span></button>
+          <button type="button" class="kx-t kx-jp kx-w" data-k="support" data-id="support" data-label="応援" aria-label="04 応援を開く" aria-controls="kx-detail" aria-expanded="false"><span class="kx-in" aria-hidden="true"><span class="kx-ch">応</span><span class="kx-ch">援</span></span></button>
+          <button type="button" class="kx-t kx-jp kx-w" data-k="info" data-id="info" data-label="案内" aria-label="05 案内を開く" aria-controls="kx-detail" aria-expanded="false"><span class="kx-in" aria-hidden="true"><span class="kx-ch">案</span><span class="kx-ch">内</span></span></button>
         </nav>
         <div class="kx-t kx-facts" data-k="facts"><ol aria-label="一橋祭で行うこと"><li><i>01</i>出張輪島朝市</li><li><i>02</i>特別講演</li><li><i>03</i>復興応援フリーペーパー</li></ol><p><b>入場無料</b>一橋大学 国立西キャンパス</p></div>
       </div>

@@ -60,10 +60,16 @@ INDEX の5行は、そのまま**内容の入れ物**です。
 - **選択**：選んだ語がその位置から詳細の見出しへ移動・拡大、他の4語は選んだ語から遠ざかる方向へ退場、イベント名と日付は見出しの下の1行に畳まれ、空いた領域に既存の INDEX 項目の内容（DOM をそのまま移動）が出る。戻る：見出し・余白・INDEX↑・Esc。本文やリンクでは閉じない。
 - **配置の調整**：`layouts()`（PC / スマホの I・E1・E0）と `detailLayout()`。大きさは画面の高さと幅から計算（例：PC の巨大2語 = min(0.48×高さ, 0.29×幅)）。
 - **prefers-reduced-motion**：登場は完成状態をそのまま表示、選択・戻るは即時切り替え。
-- **カーソル演出（比較用、2026-10-12）**：`index.html` の `KX_INTERACTION`（既定 `'distort'`）または `?interaction=off|distort|elastic`。画面右端の「FX」タブ（`KX_PANEL`、`?panel=0` で非表示）で切替と調整ができる。実装と既定値は `scripts/kinetic/kinetic-fx.js` の `FX`（URL の `?fx={"radius":180}` でも上書き可）。
-  - A `distort`：WebGL の層が INDEX の文字（DOM の文字を1字ずつ同じ位置に描き写したもの）を、カーソルに押される変位場を通して表示。止めると戻り、戻りきると層は消えて元の DOM 表示に戻る。日付は DOM のまま（Archivo 66% 幅は canvas で正確に再現できないため）。
-  - B `elastic`：INDEX 5語は1字ずつ、イベント名・日付・情報は塊として、カーソルから離れる方向にばねで動く（CSS の `translate` / `scale` のみ。エンジンの `transform` とは独立）。
-  - どちらも、INDEX が完成して静止している時だけ（登場中・開閉中・詳細表示中は停止）、マウス等の細かいポインタで hover できる環境だけ、`prefers-reduced-motion` では無効。
+
+## 2d. カーソルとホバー（試作、サイト全体）
+
+`scripts/cursor.js`。`index.html` の `CUR_MODE`（このブランチの既定 `'a'`）または URL の `?cursor=off|fill|a|b|c|random`。右端の「CURSOR」タブ（`CUR_PANEL`、`?panel=0` で非表示）で切替・調整でき、直前に再生されたワンショットも表示される（`?curlog` でコンソールにも出る）。
+
+- **カーソル**：オレンジの小さな円（直径 12px）がマウス位置にぴったり追従（遅れなし）。システムのカーソルは隠す。押すと少し縮む。タッチ端末・`prefers-reduced-motion` では出さない（システムのカーソルのまま）。
+- **円形ホバー**：選べるもの（INDEX の5語、フッターのリンク、INDEX↑、詳細本文のリンク、↺）に入ると、円がそこへ沈み、入った点から文字の塗りがオレンジの円で広がる（`background-clip:text` の放射グラデーション。文字の複製なし）。離れると出た点へ向かって縮む。INDEX の5語は1文字ずつ同じ円を持つ（文字ごとに動けるように）。
+- **ワンショット**（INDEX の5語だけ）：円が語を満たした瞬間に1回。A Squash & Pop（潰れて弾み戻る）／B Tilt & Bounce（進んできた方向へ傾き、戻りで小さく弾む）／C Spin & Settle（1文字ずつ縦軸で1回転）／random（A〜C、同じものは続けない）。満ちる前に離れたら再生しない、乗っている間は再実行しない、離れて戻れば次が再生される、押すと中止して開く動きを優先。動かすのは語の内側（`.kx-in` / `.kx-ch`）だけで、エンジンが配置する箱には触れない。
+- **調整**：`scripts/cursor.js` の `CUR`（fillIn / fillOut 秒、speed、strength、各ワンショットの dur）。対象は同ファイルの `MAIN` / `MINOR`。
+- 以前の Distortion / Elastic は削除（`backup/kinetic-fx-ab` ブランチに保存）。
 
 ## 3. 色
 

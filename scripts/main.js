@@ -4,6 +4,7 @@
 // One scroll source: the browser's native scroll. The intro locks it; programmatic moves use one damped tween.
 import { hero, ctl } from './hero.js';
 import { field, bindField, setPointer } from './field.js';
+import { initCursor } from './cursor.js';
 
 const clamp01 = x => Math.max(0, Math.min(1, x));
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -26,6 +27,8 @@ const ES = bezier(0.65, 0, 0.35, 1);                // its symmetric partner, on
 const SINE = x => 0.5 - 0.5 * Math.cos(Math.PI * x);   // the statements' fades: gentle at both ends, no steep middle
 const seg = (t, a, d) => clamp01((t - a) / d);
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+// the cursor (an orange dot) and the circular hover, site-wide (scripts/cursor.js; index.html CUR_MODE / ?cursor=)
+window.__cur = initCursor();
 const MANUAL = hero.MANUAL, REDUCED = hero.REDUCED;
 const root = document.documentElement;
 
@@ -515,6 +518,7 @@ function tick(now, dt, draw = true) {
   syncHold();
   if (mode !== 'main') hero.step(now, dt, draw); else hero.hiddenTick();
   if (KX) KX.frame(dt);
+  if (MANUAL) window.__cur?.frame(dt);
 }
 await document.fonts.ready;
 fitEnd();

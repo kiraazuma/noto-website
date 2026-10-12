@@ -900,12 +900,16 @@ body.booted #page{animation:none}
 .kx-t .in{font-family:var(--lat);font-weight:800;font-stretch:72%;font-size:.86em;letter-spacing:-.01em;margin-right:.16em}
 .kx-moving{will-change:transform}
 /* the INDEX words: plain type, the whole word is the button; the pointer / focus turns it orange */
-/* the hit area is the word's own box: the glyphs' content area runs above / below a line-height-1 box (not the ink),
-   and would otherwise take the pointer over the neighbouring words (a little room left for the elastic push) */
-.kx-w{clip-path:inset(-14px -80px -14px -80px);padding:0;border:0;background:none;cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:transparent;
+/* the hit area is the word's own box: the type inside does not take the pointer (the glyphs' content area runs above /
+   below a line-height-1 box and would reach over the neighbouring words); a hover one-shot (scripts/cursor.js) moves
+   .kx-in / .kx-ch only, never the box the engine places */
+.kx-w{padding:0;border:0;background:none;cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:transparent;
   font-family:var(--jp);font-weight:900;transition:color .28s var(--ease)}
+.kx-in{display:inline-block;pointer-events:none;transform-origin:50% 60%}
+.kx-ch{display:inline-block}
 .kx-w:focus-visible,.kx-w[aria-expanded=true]{color:var(--orange)}
-@media (hover:hover){.kx-w:hover{color:var(--orange)}}   /* no sticky hover after a tap */
+/* (no sticky hover after a tap; with the cursor modes on, the colour comes in as a circle instead) */
+@media (hover:hover){html:not(.cf-mode) .kx-w:hover{color:var(--orange)}}
 .kx-w:focus-visible{outline:3px solid var(--orange);outline-offset:6px}
 .kx:not(.kx-ready) .kx-w{pointer-events:none}
 /* the small facts: a block of small type (it moves, it does not scale) */
@@ -941,21 +945,34 @@ body.booted #page{animation:none}
 /* no script / reduced motion fall back to the same INDEX sheet, placed by the script without motion */
 .kx:not(.kx-ready) .kx-t{visibility:hidden}
 @media (max-width: 1023px) and (orientation: portrait) { .kx-facts b { display: block; margin: 0; } .kx-facts ol { margin-bottom: .5em; } }
-/* ---- cursor interactions (scripts/kinetic/kinetic-fx.js) — nothing here changes the INDEX at rest */
-.kx-fxc{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;z-index:3}
-.kx-ch{display:inline-block;transform-origin:50% 55%}
+/* ================================================================ CURSOR (scripts/cursor.js; html[data-cur] = off | fill | a | b | c | random)
+   A small orange dot is the cursor everywhere (fine pointers only). Over something that can be chosen it sinks in:
+   the dot goes, and from where it entered, the type turns orange in a growing circle (the type's own glyphs are the
+   mask: background-clip:text with a radial gradient — no copy of the text). Leaving, the circle shrinks back out.
+   Nothing here changes the page at rest: these styles only exist while a circle is on. */
+#cur{position:fixed;left:0;top:0;z-index:1000;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--orange);
+  pointer-events:none;opacity:0;scale:1;transition:scale .2s var(--ease),opacity .15s linear}
+html.cur-on #cur.in{opacity:1}
+html.cur-on #cur.sunk{scale:0;transition:scale .14s var(--ease),opacity .15s linear}
+html.cur-on #cur.down{scale:.6}
+html.cur-on,html.cur-on *{cursor:none!important}
+/* the circle: on the element while it is on (outside the circle: the element's own colour, --cfb) */
+.cf-on{color:transparent!important;-webkit-text-fill-color:transparent;-webkit-background-clip:text;background-clip:text;background-repeat:no-repeat;
+  background-image:radial-gradient(circle at var(--cfx) var(--cfy),var(--orange) var(--cfr),var(--cfb) calc(var(--cfr) + .6px))!important}
 /* the comparison panel (this experimental branch only): a small tab at the right edge, opening to the left */
-.kx-dev{position:fixed;right:0;top:34vh;z-index:20;display:flex;align-items:flex-start;color:var(--cobalt);font:700 10.5px/1.2 var(--lat);letter-spacing:.08em}
-.kx-dev[hidden]{display:none}
-.kx-dev-t{order:2;writing-mode:vertical-rl;padding:10px 5px;border:1px solid var(--cobalt);border-right:0;background:var(--paper);color:inherit;font:inherit;letter-spacing:.18em;cursor:pointer}
-.kx-dev-t b{color:var(--orange);margin-top:6px}
-.kx-dev-b{order:1;display:none;width:236px;padding:10px 12px 12px;background:var(--paper);border:1px solid var(--cobalt)}
-.kx-dev.open .kx-dev-b{display:block}
-.kx-dev-h{letter-spacing:.14em;margin-bottom:8px}
-.kx-dev-m{display:flex;gap:4px;margin-bottom:6px}
-.kx-dev-m button{flex:1;padding:6px 2px;border:1px solid var(--cobalt);background:none;color:inherit;font:inherit;letter-spacing:.06em;cursor:pointer}
-.kx-dev-m button[aria-pressed=true]{background:var(--cobalt);color:var(--paper)}
-.kx-dev label{display:grid;grid-template-columns:64px 1fr 44px;align-items:center;gap:6px;margin-top:4px;font-weight:600;letter-spacing:.04em}
-.kx-dev input{width:100%;accent-color:var(--orange)}
-.kx-dev output{text-align:right;font-variant-numeric:tabular-nums}
-@media (hover: none), (pointer: coarse) { .kx-dev { display: none; } }
+.cur-dev{position:fixed;right:0;top:34vh;z-index:1001;display:flex;align-items:flex-start;color:var(--cobalt);font:700 10.5px/1.2 var(--lat);letter-spacing:.08em}
+.cur-dev[hidden]{display:none}
+.cur-dev-t{order:2;writing-mode:vertical-rl;padding:10px 5px;border:1px solid var(--cobalt);border-right:0;background:var(--paper);color:inherit;font:inherit;letter-spacing:.18em;cursor:pointer}
+.cur-dev-t b{color:var(--orange);margin-top:6px}
+.cur-dev-b{order:1;display:none;width:252px;padding:10px 12px 12px;background:var(--paper);border:1px solid var(--cobalt)}
+.cur-dev.open .cur-dev-b{display:block}
+.cur-dev-h{letter-spacing:.14em;margin-bottom:8px}
+.cur-dev-m{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:6px}
+.cur-dev-m button{padding:6px 2px;border:1px solid var(--cobalt);background:none;color:inherit;font:inherit;letter-spacing:.04em;cursor:pointer}
+.cur-dev-m button[aria-pressed=true]{background:var(--cobalt);color:var(--paper)}
+.cur-dev label{display:grid;grid-template-columns:72px 1fr 44px;align-items:center;gap:6px;margin-top:4px;font-weight:600;letter-spacing:.04em}
+.cur-dev input{width:100%;accent-color:var(--orange)}
+.cur-dev output{text-align:right;font-variant-numeric:tabular-nums}
+.cur-dev-p{margin-top:8px;padding-top:6px;border-top:1px solid currentColor;letter-spacing:.1em;min-height:2.4em}
+.cur-dev-p b{color:var(--orange)}
+@media (hover: none), (pointer: coarse) { .cur-dev, #cur { display: none; } }
