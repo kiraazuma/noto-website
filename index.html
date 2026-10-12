@@ -17,7 +17,11 @@
   var INDEX_MODE = 'kinetic';
   // ガラス INDEX のレイアウト（デザイン比較用）：'poster' = Hero の構図を引き継ぐ版（既定。巨大な名前と日付にガラスが重なる） / 'focus' = 前の既定 / 'current' = 最初の中央配置 / 'monumental' = B案 / 'editorial' = A案。?layout= で切替
   var GLASS_LAYOUT = 'poster';
-  (function () { var m = INDEX_MODE, l = GLASS_LAYOUT; try { var u = new URLSearchParams(location.search), q = u.get('index'), r = u.get('layout'); if (q === 'glass' || q === 'classic' || q === 'kinetic') m = q; if (r === 'poster' || r === 'focus' || r === 'monumental' || r === 'editorial' || r === 'current') l = r; } catch (e) {} document.documentElement.setAttribute('data-index', m); document.documentElement.setAttribute('data-gxl', l); })();
+  // Kinetic INDEX のカーソル演出（比較用）：'off' = なし（元のまま） / 'distort' = A案 文字が液体のように歪む / 'elastic' = B案 文字が押されて弾性的に戻る。
+  // ?interaction=off|distort|elastic で切替。KX_PANEL = true で画面左下に比較パネル（?panel=0 で非表示）。調整値は scripts/kinetic/kinetic-fx.js の FX
+  var KX_INTERACTION = 'distort';
+  var KX_PANEL = true;
+  (function () { var m = INDEX_MODE, l = GLASS_LAYOUT; try { var u = new URLSearchParams(location.search), q = u.get('index'), r = u.get('layout'); if (q === 'glass' || q === 'classic' || q === 'kinetic') m = q; if (r === 'poster' || r === 'focus' || r === 'monumental' || r === 'editorial' || r === 'current') l = r; } catch (e) {} document.documentElement.setAttribute('data-index', m); document.documentElement.setAttribute('data-gxl', l); var x = KX_INTERACTION, pn = KX_PANEL; try { var v = new URLSearchParams(location.search); if (/^(off|distort|elastic)$/.test(v.get('interaction') || '')) x = v.get('interaction'); if (v.get('panel') === '0') pn = false; if (v.get('panel') === '1') pn = true; } catch (e) {} document.documentElement.setAttribute('data-kxi', x); document.documentElement.setAttribute('data-kxpanel', pn ? '1' : '0'); })();
 </script>
 <script type="importmap">
 { "imports": { "three": "./vendor/three/three.module.js" } }

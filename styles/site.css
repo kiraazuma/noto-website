@@ -900,7 +900,9 @@ body.booted #page{animation:none}
 .kx-t .in{font-family:var(--lat);font-weight:800;font-stretch:72%;font-size:.86em;letter-spacing:-.01em;margin-right:.16em}
 .kx-moving{will-change:transform}
 /* the INDEX words: plain type, the whole word is the button; the pointer / focus turns it orange */
-.kx-w{padding:0;border:0;background:none;cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:transparent;
+/* the hit area is the word's own box: the glyphs' content area runs above / below a line-height-1 box (not the ink),
+   and would otherwise take the pointer over the neighbouring words (a little room left for the elastic push) */
+.kx-w{clip-path:inset(-14px -80px -14px -80px);padding:0;border:0;background:none;cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:transparent;
   font-family:var(--jp);font-weight:900;transition:color .28s var(--ease)}
 .kx-w:focus-visible,.kx-w[aria-expanded=true]{color:var(--orange)}
 @media (hover:hover){.kx-w:hover{color:var(--orange)}}   /* no sticky hover after a tap */
@@ -939,3 +941,21 @@ body.booted #page{animation:none}
 /* no script / reduced motion fall back to the same INDEX sheet, placed by the script without motion */
 .kx:not(.kx-ready) .kx-t{visibility:hidden}
 @media (max-width: 1023px) and (orientation: portrait) { .kx-facts b { display: block; margin: 0; } .kx-facts ol { margin-bottom: .5em; } }
+/* ---- cursor interactions (scripts/kinetic/kinetic-fx.js) — nothing here changes the INDEX at rest */
+.kx-fxc{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;z-index:3}
+.kx-ch{display:inline-block;transform-origin:50% 55%}
+/* the comparison panel (this experimental branch only): a small tab at the right edge, opening to the left */
+.kx-dev{position:fixed;right:0;top:34vh;z-index:20;display:flex;align-items:flex-start;color:var(--cobalt);font:700 10.5px/1.2 var(--lat);letter-spacing:.08em}
+.kx-dev[hidden]{display:none}
+.kx-dev-t{order:2;writing-mode:vertical-rl;padding:10px 5px;border:1px solid var(--cobalt);border-right:0;background:var(--paper);color:inherit;font:inherit;letter-spacing:.18em;cursor:pointer}
+.kx-dev-t b{color:var(--orange);margin-top:6px}
+.kx-dev-b{order:1;display:none;width:236px;padding:10px 12px 12px;background:var(--paper);border:1px solid var(--cobalt)}
+.kx-dev.open .kx-dev-b{display:block}
+.kx-dev-h{letter-spacing:.14em;margin-bottom:8px}
+.kx-dev-m{display:flex;gap:4px;margin-bottom:6px}
+.kx-dev-m button{flex:1;padding:6px 2px;border:1px solid var(--cobalt);background:none;color:inherit;font:inherit;letter-spacing:.06em;cursor:pointer}
+.kx-dev-m button[aria-pressed=true]{background:var(--cobalt);color:var(--paper)}
+.kx-dev label{display:grid;grid-template-columns:64px 1fr 44px;align-items:center;gap:6px;margin-top:4px;font-weight:600;letter-spacing:.04em}
+.kx-dev input{width:100%;accent-color:var(--orange)}
+.kx-dev output{text-align:right;font-variant-numeric:tabular-nums}
+@media (hover: none), (pointer: coarse) { .kx-dev { display: none; } }
