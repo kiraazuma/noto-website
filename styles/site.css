@@ -954,16 +954,10 @@ body.booted #page{animation:none}
 /* no script / reduced motion fall back to the same INDEX sheet, placed by the script without motion */
 .kx:not(.kx-ready) .kx-t{visibility:hidden}
 @media (max-width: 1023px) and (orientation: portrait) { .kx-facts b { display: block; margin: 0; } .kx-facts ol { margin-bottom: .5em; } }
-/* ================================================================ CURSOR (scripts/cursor.js; html[data-cur] = off | fill | a | b | c | random)
-   A small orange dot follows the system cursor tip (fine pointers only). Over something that can be chosen it sinks in:
-   the dot goes, and from where it entered, the type turns orange in a growing circle (the type's own glyphs are the
+/* ================================================================ CIRCULAR HOVER (scripts/cursor.js; html[data-cur] = off | fill | a | b | c | random)
+   From where the system cursor entered, the type turns orange in a growing circle (the type's own glyphs are the
    mask: background-clip:text with a radial gradient — no copy of the text). Leaving, the circle shrinks back out.
    Nothing here changes the page at rest: these styles only exist while a circle is on. */
-#cur{position:fixed;left:0;top:0;z-index:1000;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--orange);
-  pointer-events:none;opacity:0;scale:1;transition:scale .2s var(--ease),opacity .15s linear}
-html.cur-on #cur.in{opacity:1}
-html.cur-on #cur.sunk{scale:0;transition:scale .14s var(--ease),opacity .15s linear}
-html.cur-on #cur.down{scale:.6}
 /* the circle: on the element while it is on (outside the circle: the element's own colour, --cfb) */
 .cf-on{color:transparent!important;-webkit-text-fill-color:transparent;-webkit-background-clip:text;background-clip:text;background-repeat:no-repeat;
   background-image:radial-gradient(circle at var(--cfx) var(--cfy),var(--orange) var(--cfr),var(--cfb) calc(var(--cfr) + .6px))!important}
@@ -983,4 +977,4 @@ html.cur-on #cur.down{scale:.6}
 .cur-dev output{text-align:right;font-variant-numeric:tabular-nums}
 .cur-dev-p{margin-top:8px;padding-top:6px;border-top:1px solid currentColor;letter-spacing:.1em;min-height:2.4em}
 .cur-dev-p b{color:var(--orange)}
-@media (hover: none), (pointer: coarse) { .cur-dev, #cur { display: none; } }
+@media (hover: none), (pointer: coarse) { .cur-dev { display: none; } }

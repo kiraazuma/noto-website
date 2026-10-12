@@ -27,7 +27,7 @@ const ES = bezier(0.65, 0, 0.35, 1);                // its symmetric partner, on
 const SINE = x => 0.5 - 0.5 * Math.cos(Math.PI * x);   // the statements' fades: gentle at both ends, no steep middle
 const seg = (t, a, d) => clamp01((t - a) / d);
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
-// the cursor (an orange dot) and the circular hover, site-wide (scripts/cursor.js; index.html CUR_MODE / ?cursor=)
+// circular hover and one-shot motions, site-wide (scripts/cursor.js; index.html CUR_MODE / ?cursor=)
 window.__cur = initCursor();
 const MANUAL = hero.MANUAL, REDUCED = hero.REDUCED;
 const root = document.documentElement;

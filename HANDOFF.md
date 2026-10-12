@@ -63,10 +63,10 @@ INDEX の5行は、そのまま**内容の入れ物**です。
 
 ## 2d. カーソルとホバー（試作、サイト全体）
 
-`scripts/cursor.js`。`index.html` の `CUR_MODE`（このブランチの既定 `'random'`）または URL の `?cursor=off|fill|a|b|c|random`。右端の「CURSOR」タブ（`CUR_PANEL`、`?panel=0` で非表示）で切替・調整でき、直前に再生されたワンショットも表示される（`?curlog` でコンソールにも出る）。
+`scripts/cursor.js`。`index.html` の `CUR_MODE`（既定 `'random'`）または URL の `?cursor=off|fill|a|b|c|random`。比較用の「CURSOR」タブは `CUR_PANEL = false` で通常非表示（`?panel=1` で表示）。直前に再生されたワンショットは `?curlog` でコンソールにも出る。
 
-- **カーソル**：システムの矢印を表示したまま、オレンジの小さな円（直径 12px）の中心が矢印の先端と重なるように遅れなく追従する。押すと少し縮む。タッチ端末・`prefers-reduced-motion` では円を出さない。
-- **円形ホバー**：選べるもの（INDEX の5語、フッターのリンク、INDEX↑、詳細本文のリンク、↺）に入ると、円がそこへ沈み、入った点から文字の塗りがオレンジの円で広がる（`background-clip:text` の放射グラデーション。文字の複製なし）。離れると出た点へ向かって縮む。INDEX の5語は1文字ずつ同じ円を持つ（文字ごとに動けるように）。
+- **カーソル**：システム標準のポインタを使用する。追従するオレンジ円は生成しない。
+- **円形ホバー**：選べるもの（INDEX の5語、フッターのリンク、INDEX↑、詳細本文のリンク、↺）に入ると、入った点から文字の塗りがオレンジの円で広がる（`background-clip:text` の放射グラデーション。文字の複製なし）。離れると出た点へ向かって縮む。INDEX の5語は1文字ずつ同じ円を持つ（文字ごとに動けるように）。
 - **ワンショット**（INDEX の5語だけ）：円が語を満たした瞬間に1回。A Squash & Pop（潰れて弾み戻る）／B Tilt & Bounce（進んできた方向へ傾き、戻りで小さく弾む）／C Spin & Settle（1文字ずつ縦軸で1回転）／random（A〜C、同じものは続けない）。満ちる前に離れたら再生しない、乗っている間は再実行しない、離れて戻れば次が再生される、押すと中止して開く動きを優先。動かすのは語の内側（`.kx-in` / `.kx-ch`）だけで、エンジンが配置する箱には触れない。
 - **調整**：`scripts/cursor.js` の `CUR`（fillIn / fillOut 秒、speed、strength、各ワンショットの dur）。対象は同ファイルの `MAIN` / `MINOR`。
 - 以前の Distortion / Elastic は削除（`backup/kinetic-fx-ab` ブランチに保存）。

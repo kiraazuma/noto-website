@@ -114,16 +114,18 @@ export async function mountKinetic(root, hooks = {}) {
     const I = {}, E1 = {}, E0 = {};
     if (!phone) {
       // ---- I: the INDEX
+      // The middle words share the facts/event edges and the exact viewport centre.
+      const left = m, right = W - m, middle = W / 2;
       const G = Math.min(0.48 * H, 0.29 * W);
       I.noto = at('noto', G, { x: -0.05 * G, inkTop: -0.1 * G });
       I.asaichi = at('asaichi', G, { right: W + 0.03 * G, inkBot: H + 0.07 * G });
       const nb = ink('noto', I.noto).bot, at0 = ink('asaichi', I.asaichi).top;
       const M = Math.min(0.15 * H, 0.092 * W, (at0 - nb) * 0.6), yc = (nb + at0) / 2;
-      I.program = at('program', M, { x: m, inkMid: yc });
-      I.support = at('support', M, { cx: W / 2 + 0.02 * W, inkMid: yc });
-      I.info = at('info', M, { right: W - m, inkMid: yc });
+      I.program = at('program', M, { x: left, inkMid: yc });
+      I.support = at('support', M, { cx: middle, inkMid: yc });
+      I.info = at('info', M, { right, inkMid: yc });
       // the event block, top right (right-aligned), as large as the space beside 能登 allows
-      const xL = ink('noto', I.noto).right + 0.045 * W, xR = W - m, A = xR - xL;
+      const xL = ink('noto', I.noto).right + 0.045 * W, xR = right, A = xR - xL;
       const rowTop = yc - (P.program.ib - P.program.it) / 2 * M;
       let N = Math.min(0.1 * H, A / (P.name1.r + P.name2.r));
       for (let i = 0; i < 2; i++) {
@@ -139,7 +141,7 @@ export async function mountKinetic(root, hooks = {}) {
       const nBot = ink('name1', I.name1).bot;
       I.in = at('in', 0.6 * N, { right: xR, inkTop: nBot + 0.22 * N });
       I.date = at('date', D, { right: xR, inkTop: ink('in', I.in).bot + 0.3 * N });
-      I.facts = at('facts', 1, { x: m, inkBot: H - m * 0.9 });
+      I.facts = at('facts', 1, { x: left, inkBot: H - m * 0.9 });
 
       // ---- E1: the Hero's scale
       const G1 = 1.32 * G;

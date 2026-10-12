@@ -1,8 +1,7 @@
-// CURSOR — one cursor language for the whole site (index.html CUR_MODE or ?cursor=):
+// CIRCULAR HOVER — one colour/motion language for the whole site (index.html CUR_MODE or ?cursor=):
 //   off     the page as it was (the system cursor; INDEX words turn orange by a plain colour change)
-//   fill    a small orange dot follows the system cursor tip; over something that can be chosen it sinks in, and from where it entered
-//           the type turns orange in a growing circle (the glyphs themselves are the mask — background-clip:text with a
-//           radial gradient, no copy of the text); leaving, the circle shrinks back out toward where it left
+//   fill    from where the system cursor entered, the type turns orange in a growing circle (the glyphs themselves
+//           are the mask — background-clip:text with a radial gradient, no copy of the text); leaving, it shrinks back
 //   a/b/c   fill + a one-shot on the five INDEX words, played once, the moment the word is entirely orange:
 //           a Squash & Pop  ·  b Tilt & Bounce  ·  c Spin & Settle
 //   random  fill + one of a/b/c each time (never the same twice in a row)
@@ -10,8 +9,8 @@
 // while the pointer stays; only after leaving and coming back; not if the pointer leaves before the word is full; a
 // press cancels it (the INDEX's own open motion has the word). It moves the word's inner type (.kx-in / .kx-ch), never
 // the box the INDEX engine places and transforms, and always ends exactly at rest.
-// Fine pointers that can hover only (no dot, no circle on touch). prefers-reduced-motion: no dot, no one-shot (the
-// circle stays: it is a colour change).
+// Fine pointers that can hover only (no circle on touch). prefers-reduced-motion: no one-shot (the circle stays:
+// it is a colour change).
 
 // ---- timing and strength (s / multipliers). The panel (CUR_PANEL) edits these live.
 export const CUR = {
@@ -45,23 +44,10 @@ export function initCursor() {
   let mode = html.dataset.cur || 'off';
   if (!['off', 'fill', 'a', 'b', 'c', 'random'].includes(mode)) mode = 'off';
 
-  // ---------------------------------------------------------------- the dot
-  const dot = document.createElement('div'); dot.id = 'cur'; dot.setAttribute('aria-hidden', 'true'); document.body.append(dot);
-  const ptr = { x: -100, y: -100, type: '' };
-  addEventListener('pointermove', (e) => {
-    ptr.type = e.pointerType; ptr.x = e.clientX; ptr.y = e.clientY;
-    if (e.pointerType === 'mouse' || e.pointerType === 'pen') { dot.style.translate = `${e.clientX}px ${e.clientY}px`; dot.classList.add('in'); }
-  }, { passive: true });
-  addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse') dot.classList.add('down'); }, { passive: true });
-  addEventListener('pointerup', () => dot.classList.remove('down'), { passive: true });
-  document.documentElement.addEventListener('pointerleave', () => dot.classList.remove('in'));
-  addEventListener('blur', () => dot.classList.remove('in'));
-
   const fillOn = () => mode !== 'off' && FINE.matches;
   function applyMode() {
     html.dataset.cur = mode;
-    html.classList.toggle('cur-on', fillOn() && !REDUCED);   // the dot over the system cursor tip
-    html.classList.toggle('cf-mode', fillOn());              // the circle instead of the plain colour change
+    html.classList.toggle('cf-mode', fillOn());  // circular colour change on hover
   }
 
   // ---------------------------------------------------------------- targets
@@ -194,13 +180,13 @@ export function initCursor() {
     if (!fillOn() || (e.pointerType !== 'mouse' && e.pointerType !== 'pen')) return;
     const el = isTarget(e.target); if (!el) return;
     if (e.relatedTarget && el.contains(e.relatedTarget)) return;            // moving inside it
-    dot.classList.add('sunk'); begin(target(el), e.clientX, e.clientY);
+    begin(target(el), e.clientX, e.clientY);
   });
   document.addEventListener('pointerout', (e) => {
     if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
     const el = isTarget(e.target); if (!el) return;
     if (e.relatedTarget && el.contains(e.relatedTarget)) return;
-    dot.classList.remove('sunk'); const t = T.get(el); if (t) end(t, e.clientX, e.clientY);
+    const t = T.get(el); if (t) end(t, e.clientX, e.clientY);
   });
   // a press: the item's own motion has the word now
   document.addEventListener('pointerdown', (e) => { const el = isTarget(e.target); const t = el && T.get(el); if (t) { t.fired = true; stop(t); } }, true);
