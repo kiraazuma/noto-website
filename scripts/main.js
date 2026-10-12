@@ -4,6 +4,7 @@
 // One scroll source: the browser's native scroll. The intro locks it; programmatic moves use one damped tween.
 import { hero, ctl } from './hero.js';
 import { field, bindField, setPointer } from './field.js';
+import { initCursor } from './cursor.js';
 
 const clamp01 = x => Math.max(0, Math.min(1, x));
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -26,6 +27,8 @@ const ES = bezier(0.65, 0, 0.35, 1);                // its symmetric partner, on
 const SINE = x => 0.5 - 0.5 * Math.cos(Math.PI * x);   // the statements' fades: gentle at both ends, no steep middle
 const seg = (t, a, d) => clamp01((t - a) / d);
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+// the cursor (an orange dot) and the circular hover, site-wide (scripts/cursor.js; index.html CUR_MODE / ?cursor=)
+window.__cur = initCursor();
 const MANUAL = hero.MANUAL, REDUCED = hero.REDUCED;
 const root = document.documentElement;
 
@@ -58,9 +61,12 @@ scrollTo(0, 0);
      auto-advance (idle)        ─┴─> target dT (clamped per gesture) -> d (damped + speed-limited) -> visual state
    Distance map (vh of scroll; desktop / phone):
      0 - 50          hero -> atmosphere: the hero type thins, the veil comes in, the sculpture defocuses and recedes
-     each statement  fade in 32 / 26 | FULLY VISIBLE 44 / 51 | fade out 40 / 32   (116 / 109 vh), 4 vh apart
-     after the last  the sculpture alone, the veil thins to ivory, the ground closes, the summary comes into focus (84 vh)
-     in all          ~490 / ~469 vh (was 556)
+     each statement  fade in 16 / 13 | FULLY VISIBLE 22 / 25 | fade out 18 / 16   (56 / 54 vh), 4 vh apart
+                     (all three: 176 / 170 vh; before 2026-10-12: 356 / 335)
+     after the last  kinetic INDEX: the veil thins to ivory and the ground closes while the giant type comes in, then
+                     the INDEX builds itself (KX_LEN = 120 vh, was 68). In all ~350 / ~344 vh.
+                     glass / classic INDEX: the sculpture alone, the veil thins to ivory, the ground closes, the summary
+                     comes into focus (84 vh). In all ~310 / ~304 vh.
    One gesture (wheel / trackpad events less than 260 ms apart, momentum included) can only travel to the next
    resting point — the middle of the next statement's hold, or the end — so a strong flick never skips a statement.
    Left alone inside the statements for AUTO.idle s, the sequence advances by itself to the next resting point at
@@ -73,18 +79,38 @@ for (const l of $$('#statement .l')) l.innerHTML = l.innerHTML.replace(/([、。
 const ST = $$('#statement .st').map(el => ({ el, lines: $$('.l', el), last: '' }));
 const S_A = 50, S_BLANK = 4, K_IN = S_A / 66;            // K_IN: the hero -> statement transition, scaled with S_A
 // fade in | hold | fade out, vh. Phones / portrait tablets keep a slightly longer hold (shorter screen, larger type).
-const SEG = { desk: [32, 44, 40], phone: [26, 51, 32] };
+// (halved 2026-10-12: was desk [32, 44, 40] / phone [26, 51, 32] — the text is read in the hold, the rest was waiting)
+const SEG = { desk: [16, 22, 18], phone: [13, 25, 16] };
+// the kinetic INDEX: how far the scroll that builds it runs (vh; was 68)
+const KX_LEN = 120;
 const AUTO = { idle: 2.5, speed: 45 };                   // s without input before advancing; vh / s while advancing
 const V_MAX = 150, V_FADE = 70;                          // vh / s: the scene's top speed, and its top speed inside a fade
 const PHONE = matchMedia('(max-width: 1023px) and (orientation: portrait)');
 const STOPS = [];
-let D_OBJ, D_IV, IV, D_COV, COV, D_WIN, WIN, D_END;
-const sumParts = $$('#summary .sp').map((el, k) => ({ el, d: k * 5, k: '' }));
+let D_OBJ, D_IV, IV, D_COV, COV, D_WIN, WIN, D_END, KX_A;
+// INDEX display mode (index.html: INDEX_MODE / ?index=): 'glass' = the five glass words, 'classic' = summary + rows
+const GLASS = document.documentElement.dataset.index === 'glass';
+let GX = null, gxStart = null;
+// 'kinetic' = the 2D kinetic typography INDEX (scripts/kinetic/kinetic-index.js): its entrance is scrubbed by the end of
+// this sequence (KX_A .. D_END), so nothing of it fades here
+const KINETIC = document.documentElement.dataset.index === 'kinetic';
+let KX = null, kxStart = null;
+const ALT = GLASS || KINETIC;                                   // an INDEX that handles its own items
+const sumParts = $$(GLASS ? '#summary .gx .sp' : KINETIC ? '#summary .kx .sp' : '#summary .fr .sp').map((el, k) => ({ el, d: k * 5, k: '' }));
 function setTimings() {
   const [fi, fh, fo] = PHONE.matches ? SEG.phone : SEG.desk, L = fi + fh + fo;
   ST.forEach((s, i) => { s.a = S_A + i * (L + S_BLANK); s.inEnd = s.a + fi; s.outStart = s.inEnd + fh; s.outEnd = s.a + L; s._k = null; });
-  D_OBJ = ST[ST.length - 1].outEnd; D_IV = D_OBJ + 12; IV = 30; D_COV = D_IV + 10; COV = 30; D_WIN = D_IV + 28; WIN = 28;
-  D_END = D_WIN + 12 + WIN + 4;
+  D_OBJ = ST[ST.length - 1].outEnd;
+  if (KINETIC) {
+    // no pause after the last statement: as it fades, the veil thins and the page's ground closes over the sculpture
+    // while the INDEX's giant type is already coming in; the rest of the scroll is the INDEX building itself
+    KX_A = D_OBJ + 2; D_IV = D_OBJ + 2; IV = 24; D_COV = D_OBJ + 6; COV = 26; D_WIN = D_OBJ; WIN = 1;
+    D_END = KX_A + KX_LEN;
+  } else {
+    D_IV = D_OBJ + 12; IV = 30; D_COV = D_IV + 10; COV = 30; D_WIN = D_IV + 28; WIN = 28;
+    D_END = D_WIN + 12 + WIN + 4;
+    KX_A = D_IV + 4;
+  }
   STOPS.length = 0; STOPS.push(0, ...ST.map(s => (s.inEnd + s.outStart) / 2), D_END);
 }
 setTimings();
@@ -104,6 +130,7 @@ function input(px, fresh = false) {
   stopAuto();                                                  // the hand always wins over the auto-advance
   if (mode === 'main') {
     if (!(scrollY <= 0 && px < 0)) return;
+    if (altCur()) return;                                      // an open item stays open (Esc / back closes it)
     mode = 'intro'; d = dT = D_END; ST_TW = null;              // back up into the sequence from the top of the page
   }
   const dv = px / Math.max(1, VH) * 100, dir = Math.sign(dv), now = performance.now();
@@ -164,7 +191,7 @@ function updateIntro(dt) {
     const vmax = ST.some(s => (d > s.a - 1 && d < s.inEnd + 1) || (d > s.outStart - 1 && d < s.outEnd + 1)) ? V_FADE : V_MAX;
     d += REDUCED ? step : clamp(step, -vmax * ddt, vmax * ddt);
     if (Math.abs(dT - d) < 0.02) d = dT;
-    if (d >= D_END - 0.02 && dT >= D_END) { mode = 'main'; d = dT = D_END; scrollTo({ top: 0, behavior: 'instant' }); }
+    if (d >= D_END - 0.02 && dT >= D_END) { mode = 'main'; d = dT = D_END; scrollTo({ top: 0, behavior: 'instant' }); if (afterIntro.length) { const q = afterIntro.splice(0); requestAnimationFrame(() => q.forEach(f => f())); } }
     else if (d <= 0.02 && dT <= 0) { mode = 'hero'; d = dT = 0; }
   }
   let typeF, fog, veilO, pageO, texts, ivory = 0, parts = null;
@@ -228,24 +255,26 @@ function updateIntro(dt) {
   else page.style.visibility = 'visible';
 }
 
-/* ---------------------------------------------------------------- closing wordmark (bottom edge of 案内) */
-// one line, ~102vw at every desktop width (fitted to the measured width, not a fixed size): the N and the last I
-// only lose a sliver at the edges (a little more on the left, so the last I stays readable); the feet sink ~11%
-const END = { width: 1.02, sink: 0.11, left: 0.62 };
+/* ---------------------------------------------------------------- footer wordmark (the final edge of the page) */
+// Fit the actual Archivo width after fonts load and on resize. Desktop is one slightly cropped line;
+// portrait screens use two lines with no horizontal or lower-edge crop.
+const END = { width: 1.015, left: 0.5 };
 function fitEnd() {
   const el = document.getElementById('endmark'); if (!el) return;
   const box = el.parentElement, avail = box.clientWidth; if (!avail) return;
+  const stacked = matchMedia('(max-width: 1023px) and (orientation: portrait)').matches;
   el.style.fontSize = '100px'; el.style.marginTop = '0'; el.style.marginLeft = '0'; box.style.height = '';
   const w = el.getBoundingClientRect().width; if (!w) return;
-  const F = 100 * avail * END.width / w; el.style.fontSize = F.toFixed(2) + 'px';
+  const F = 100 * avail * (stacked ? 0.96 : END.width) / w; el.style.fontSize = F.toFixed(2) + 'px';
   const wF = el.getBoundingClientRect().width;
-  el.style.marginLeft = (-(wF - avail) * END.left).toFixed(2) + 'px';
+  el.style.marginLeft = (stacked ? (avail - wF) / 2 : -(wF - avail) * END.left).toFixed(2) + 'px';
+  if (stacked) { box.style.height = Math.ceil(el.getBoundingClientRect().height) + 'px'; return; }
   const probe = document.createElement('i'); probe.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
   el.appendChild(probe); const base = probe.getBoundingClientRect().top - el.getBoundingClientRect().top; probe.remove();
   const c = document.createElement('canvas').getContext('2d'); c.font = `900 ${F}px Archivo`; if ('fontStretch' in c) c.fontStretch = 'extra-condensed';
   const asc = c.measureText('NOTOHITSUBA').actualBoundingBoxAscent || F * 0.72;
   el.style.marginTop = (-(base - asc)).toFixed(2) + 'px';
-  box.style.height = (asc * (1 - END.sink)).toFixed(2) + 'px';
+  box.style.height = (asc + F * 0.14).toFixed(2) + 'px';
 }
 
 /* ---------------------------------------------------------------- one programmatic scroll tween (anchor links) */
@@ -347,7 +376,6 @@ function updateAcc(dt) {
     page.style.paddingBottom = '';
     scrollTo({ top: A.endScroll, behavior: 'instant' });
     OPEN = to; A = null; locked = false;
-    if (OPEN && OPEN.id === 'info') fitEnd();
     setHash(OPEN ? OPEN.id : '');
     if (queued) { const q = queued; queued = null; toggle(q); }
   }
@@ -364,6 +392,7 @@ function setHash(id) {
 // footer SITE / SUPPORT links: travel to the INDEX, then open the row there (never a bare anchor jump)
 function navigateTo(x) {
   if (mode !== 'main') return;
+  if (ALT) { altStart().then(g => g ? g.open(x.id) : null); return; }    // the glass / kinetic INDEX handles its own items
   if (A) { queued = x; return; }
   if (OPEN === x) { scrollToY(docTop(x.row)); return; }
   const r = x.row.getBoundingClientRect().top;
@@ -373,6 +402,7 @@ function navigateTo(x) {
 // TOP: back to the top of the page (the summary). An open row closes on the way; the opening is not replayed.
 function toTop() {
   if (mode !== 'main') return;
+  const g = ALT && (GX || KX); if (g && g.current) { g.close().then(() => scrollToY(0, 1.0)); return; }
   if (A) { queued = null; return; }
   if (OPEN) toggle(OPEN, { endScroll: 0, hd: 1.0 });
   else scrollToY(0, 1.0);
@@ -385,6 +415,36 @@ document.addEventListener('click', (e) => {
   if (x) { navigateTo(x); return; }
   const t = document.getElementById(id); if (t) scrollToY(docTop(t));
 });
+// the glass INDEX (loaded after the opening, when the browser is idle; at once for a deep link)
+function startGlass() {
+  if (!GLASS) return Promise.resolve(null);
+  if (!gxStart) gxStart = import('./glass/glass-index.js')
+    .then(m => m.mountGlass($('#summary .gx'), {
+      scrollTo: (y, done) => scrollToY(y, 0.7, done),
+      onChange: (id) => { setHash(id || ''); if (id === 'info') requestAnimationFrame(fitEnd); },
+    }))
+    .then(g => { GX = g; window.__gx = g; return g; })
+    .catch(err => { console.error(err); document.documentElement.dataset.index = 'classic'; sumParts.forEach(p => { p.el.style.opacity = ''; p.el.style.filter = ''; }); return null; });
+  return gxStart;
+}
+// the kinetic INDEX (loaded at once: it is light, and its entrance is part of this sequence)
+const afterIntro = [];
+function startKinetic() {
+  if (!KINETIC) return Promise.resolve(null);
+  if (!kxStart) kxStart = import('./kinetic/kinetic-index.js')
+    .then(m => m.mountKinetic($('#summary .kx'), {
+      progress: () => mode === 'main' ? 1 : mode === 'hero' ? 0 : clamp01((d - KX_A) / (D_END - KX_A)),
+      // a click while the INDEX is still assembling: the sequence runs on to its end, then the item opens
+      finishIntro: (cb) => { if (mode === 'main') { cb(); return; } afterIntro.push(cb); stopAuto(); gesture = null; if (mode === 'hero') mode = 'intro'; dT = D_END; },
+      scrollTo: (y, done) => scrollToY(y, 0.7, done),
+      onChange: (id) => { setHash(id || ''); if (id === 'info') requestAnimationFrame(fitEnd); },
+    }))
+    .then(k => { KX = k; window.__kx = k; return k; })
+    .catch(err => { console.error(err); document.documentElement.dataset.index = 'classic'; return null; });
+  return kxStart;
+}
+const altStart = () => (GLASS ? startGlass() : startKinetic());
+const altCur = () => !!((GX && GX.current) || (KX && KX.current));
 addEventListener('keydown', (e) => { if (e.key === 'Escape' && OPEN && !A && mode === 'main') { const r = OPEN.row; toggle(OPEN); r.focus({ preventScroll: true }); } });
 // deep link (#noto ...): skip the opening and the statements, go straight to the INDEX with that row open
 const DEEP = byId(location.hash.slice(1)) || null;
@@ -444,15 +504,22 @@ function tick(now, dt, draw = true) {
   if (locked && !A && openingDone()) locked = false;
   if (DEEP && !locked && mode === 'hero') {
     mode = 'main'; updateIntro(0);
-    scrollTo({ top: docTop(indexEl), behavior: 'instant' });
-    toggle(DEEP, { instant: true }); updateAcc(0);
+    if (ALT) { scrollTo({ top: docTop(summary), behavior: 'instant' }); altStart().then(g => g && g.open(DEEP.id, { instant: true, noScroll: true })); }
+    else {
+      scrollTo({ top: docTop(indexEl), behavior: 'instant' });
+      toggle(DEEP, { instant: true }); updateAcc(0);
+    }
   }
+  if (GLASS && !gxStart && (warmed || mode !== 'hero')) startGlass();
+  if (KINETIC && !kxStart) startKinetic();
   maybeWarm();
   updateAcc(dt);
   updateTween(dt);
   updateIntro(REDUCED && mode !== 'main' ? dt * 3 : dt);
   syncHold();
   if (mode !== 'main') hero.step(now, dt, draw); else hero.hiddenTick();
+  if (KX) KX.frame(dt);
+  if (MANUAL) window.__cur?.frame(dt);
 }
 await document.fonts.ready;
 fitEnd();

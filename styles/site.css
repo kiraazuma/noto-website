@@ -220,28 +220,31 @@ body.booted #page{animation:none}
 .table .k{font:700 calc(13*var(--t))/1.7 var(--jp);letter-spacing:.1em;opacity:.65}
 .table .v{font:900 calc(20*var(--p))/1.5 var(--jp);letter-spacing:.02em}
 .table .v small{display:block;font:500 calc(14*var(--t))/1.6 var(--jp);letter-spacing:.03em;opacity:.7}
-#info .pin{padding-bottom:0}
-#info.open>.rl.bot{opacity:0}
-/* the closing line forms the bottom edge of 案内: one line across the full width (a hair of air at each side), the feet sunk below the edge */
-.end{grid-column:1/-1;position:relative;overflow:hidden;margin-top:calc(80*var(--p));padding:0;color:var(--ivory)}
+/* the footer wordmark bleeds past the link columns and closes the page at its lower edge */
+.end{position:relative;overflow:hidden;width:calc(100% + 2*var(--foot-pad));margin:calc(48*var(--p)) 0 0 calc(-1*var(--foot-pad));color:var(--paper)}
 #endmark{display:block;width:max-content;font-family:var(--lat);font-weight:900;font-stretch:62.5%;letter-spacing:-.04em;word-spacing:.06em;line-height:1;white-space:nowrap}
+.end-line{display:inline}
 
-/* ---------------------------------------------------------------- footer: utility */
-#foot{background:var(--paper);color:var(--cobalt);padding:calc(48*var(--p)) clamp(32px,calc(56*var(--p)),72px) calc(30*var(--p));position:relative}
+/* ---------------------------------------------------------------- footer: a full-bleed cobalt ending */
+#foot{--foot-pad:clamp(32px,calc(56*var(--p)),72px);background:var(--cobalt);color:var(--paper);padding:calc(48*var(--p)) var(--foot-pad) 0;position:relative}
 .fcols{display:grid;grid-template-columns:repeat(4,minmax(168px,360px)) 1fr;column-gap:clamp(20px,2.4vw,48px);align-items:start}
 .fcols .totop{justify-self:end}
-.fcol h4{margin:0 0 calc(18*var(--p));font:700 calc(11*var(--t))/1 var(--lat);letter-spacing:.18em;opacity:.55}
+.fcol h4{margin:0 0 calc(18*var(--p));font:700 calc(11*var(--t))/1 var(--lat);letter-spacing:.18em;opacity:.75}
 .fcol ul{list-style:none;margin:0;padding:0;display:grid;gap:calc(9*var(--p))}
 .fcol.site ul{grid-template-columns:repeat(5,auto);justify-content:start;column-gap:calc(22*var(--p))}
 .fcol a,.fcol span{white-space:nowrap;font:700 calc(14*var(--t))/1.4 var(--jp);letter-spacing:.04em;text-decoration:none}
-.fcol .na{opacity:.5;cursor:default}
+.fcol .na{opacity:.75;cursor:default}
 .fcol small{font:700 calc(9*var(--t))/1 var(--lat);letter-spacing:.12em;margin-left:calc(8*var(--p))}
-.fcol .h{font:700 calc(12*var(--t))/1 var(--lat);letter-spacing:.04em;opacity:.6;margin-right:calc(10*var(--p))}
+.fcol .h{font:700 calc(12*var(--t))/1 var(--lat);letter-spacing:.04em;opacity:.8;margin-right:calc(10*var(--p))}
 .fcol .ar{font:900 calc(11*var(--t))/1 var(--lat);font-style:normal;color:var(--orange);margin-left:calc(6*var(--p))}
 .totop{align-self:start;font:700 calc(11*var(--t))/1 var(--lat);letter-spacing:.18em;text-decoration:none;display:inline-flex;gap:calc(8*var(--p));opacity:.7}
 .totop b{color:var(--orange)}
 .totop:hover,.totop:focus-visible{opacity:1}
-.fbar{position:relative;display:flex;justify-content:space-between;margin-top:calc(44*var(--p));padding-top:calc(16*var(--p));font:500 calc(11*var(--t))/1.4 var(--jp);letter-spacing:.06em;opacity:.6}
+.fsponsors{display:grid;grid-template-columns:minmax(160px,22%) minmax(0,1fr);gap:clamp(20px,2.4vw,48px);margin-top:calc(64*var(--p));padding-top:calc(20*var(--p));border-top:1px solid currentColor}
+.fsponsors h4{margin:0;font:700 calc(11*var(--t))/1.4 var(--lat);letter-spacing:.18em;opacity:.75}
+.fsponsor-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:calc(14*var(--p)) clamp(20px,2.4vw,48px);list-style:none;margin:0;padding:0}
+.fsponsor-list li{font:700 clamp(18px,calc(22*var(--p)),28px)/1.35 var(--jp);letter-spacing:.04em;cursor:default}
+.fbar{position:relative;display:flex;justify-content:space-between;margin-top:calc(44*var(--p));padding-top:calc(16*var(--p));font:500 calc(11*var(--t))/1.4 var(--jp);letter-spacing:.06em;opacity:.8}
 .fbar .rl{left:0;top:0}
 
 /* ---------------------------------------------------------------- links: one language (text, orange rule, arrow)
@@ -255,6 +258,7 @@ body.booted #page{animation:none}
 .totop,.s-cue{padding:14px;margin:-14px}
 .fcol a:hover,.totop:hover,.s-cue:hover{text-decoration-color:var(--orange)}
 .fcol a:focus-visible,.totop:focus-visible,.s-cue:focus-visible{outline:none;color:var(--orange);text-decoration-color:var(--orange);text-decoration-thickness:2px}
+#foot .fcol a:focus-visible,#foot .totop:focus-visible{color:var(--paper);outline:2px solid var(--paper);outline-offset:3px}
 .row:focus-visible{outline:none}
 .row:focus-visible .rx{transform:none;background:var(--orange)}
 .row:focus-visible .num{color:var(--orange)}
@@ -368,10 +372,12 @@ body.booted #page{animation:none}
   .table .k { font-size: max(11.5px, calc(12 * var(--u))); }
   .table .v { font-size: calc(17.5 * var(--u)); }
   .table .v small { font-size: max(12.5px, calc(13 * var(--u))); }
-  .end { margin-top: calc(48 * var(--u)); }
+  .end { margin-top: calc(36 * var(--u)); }
+  .end-line { display: block; }
+  #endmark { line-height: .85; }
 
-  /* FOOTER — utility, readable sizes, every link a 44 px target, clear of the home indicator */
-  #foot { padding: calc(44 * var(--u)) var(--pad) calc(22px + env(safe-area-inset-bottom)); }
+  /* FOOTER — readable links above a two-line full-width wordmark */
+  #foot { --foot-pad: var(--pad); padding: calc(44 * var(--u)) var(--foot-pad) 0; }
   .fcols { grid-template-columns: minmax(0, 1fr); column-gap: calc(16 * var(--u)); row-gap: calc(26 * var(--u)); }
   .fcol.site, .fcols > .fcol:nth-child(2) { grid-column: 1 / -1; }
   .fcols .totop { grid-column: 1 / -1; justify-self: end; }
@@ -387,6 +393,10 @@ body.booted #page{animation:none}
   .fcol .ar { font-size: 11px; }
   .totop, #summary .s-cue { padding: 17px 14px; margin: -17px -14px; }
   .totop { font-size: 11px; }
+  .fsponsors { grid-template-columns: 1fr;gap:calc(12*var(--u));margin-top:calc(40*var(--u));padding-top:calc(18*var(--u)); }
+  .fsponsors h4 { font-size: 10.5px; }
+  .fsponsor-list { grid-template-columns: 1fr;gap:calc(12*var(--u)); }
+  .fsponsor-list li { font-size:20px; }
   .fbar { flex-direction: column; gap: 4px; margin-top: calc(24 * var(--u)); padding-top: 14px; font-size: 10.5px; }
 }
 
@@ -405,3 +415,572 @@ body.booted #page{animation:none}
 .cta-link:hover,.cta-link:focus-visible{text-decoration-color:var(--orange);outline:none}
 @media (max-width: 1023px) and (orientation: portrait) { .cta-link { font-size: max(13.5px, calc(14 * var(--u))); } }
 
+
+/* ---------------------------------------------------------------- GLASS INDEX (html[data-index="glass"])
+   The summary page as one poster: the five INDEX words as liquid glass in an upright column on the centre axis — the
+   odd one out — and flat type that builds the frame around them: the event, large, top left; a corner note top right;
+   two rules across the page; the three programmes as a numbered table bottom left; the dates bottom right.
+   A word opens its INDEX item beside it (the item itself is moved into .gx-body while it is read, then put back).
+   Back: the chosen glass word, any empty part of the page, the INDEX button, or Esc.
+   Switch: index.html INDEX_MODE or ?index=classic. In classic mode nothing here applies. */
+.gx{display:none}
+[data-index=glass] #summary{height:auto;min-height:var(--vh);overflow:clip}
+[data-index=glass] #summary .fr{display:none}
+[data-index=glass] #summary .gx{display:block;position:relative;--gx-top:calc(214*var(--p));--gx-bot:calc(206*var(--p));--gx-side:calc(50*var(--p))}
+[data-index=glass] #index{display:none}
+.gx-sticky{position:sticky;top:0;height:var(--vh);min-height:calc(560*var(--p));z-index:1}
+.gx-open .gx-sticky{cursor:pointer}
+#summary .gx-stage{position:absolute;inset:0}
+.gx-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* the frame: two rules across the page (they pass behind the glass) */
+#summary .gx-rule{position:absolute;left:var(--gx-side);right:calc(56*var(--p));height:2px;background:currentColor;pointer-events:none}
+.gx-rule.t{top:var(--gx-top)}.gx-rule.b{bottom:var(--gx-bot)}
+/* top left: the event, large */
+#summary .gx-title{position:absolute;left:var(--gx-side);top:calc(40*var(--p));margin:0;z-index:2;
+  font:900 calc(78*var(--p))/.98 var(--jp);letter-spacing:-.04em;white-space:nowrap}
+.gx-title .in{font-family:var(--lat);font-weight:800;font-stretch:72%;font-size:.8em;margin:0 .14em 0 0;letter-spacing:-.02em}
+/* top right: a small corner note */
+#summary .gx-corner{position:absolute;right:calc(56*var(--p));top:calc(48*var(--p));margin:0;z-index:2;display:flex;flex-direction:column;align-items:flex-end;
+  gap:calc(6*var(--p));font:700 calc(12*var(--t))/1.2 var(--lat);letter-spacing:.16em;text-transform:uppercase}
+.gx-corner span:first-child{font:900 calc(40*var(--p))/.9 var(--lat);font-stretch:68%;letter-spacing:0;margin-bottom:calc(6*var(--p))}
+/* bottom left: the three programmes, a numbered table */
+#summary .gx-prog{position:absolute;left:var(--gx-side);bottom:calc(36*var(--p));width:calc(470*var(--p));margin:0;padding:0;list-style:none;z-index:2;
+  font:900 calc(26*var(--p))/1.15 var(--jp);letter-spacing:-.01em;transition:opacity .4s var(--ease)}
+.gx-prog li{display:flex;align-items:baseline;gap:calc(18*var(--p));padding:calc(10*var(--p)) 0 calc(11*var(--p));border-bottom:1px solid currentColor}
+.gx-prog li:last-child{border-bottom:0}
+.gx-prog i{font:900 calc(26*var(--p))/1 var(--lat);font-stretch:68%;font-style:normal;min-width:calc(34*var(--p))}
+/* bottom right: the dates, large; admission and venue under a rule */
+#summary .gx-meta{position:absolute;right:calc(56*var(--p));bottom:calc(36*var(--p));margin:0;z-index:2;display:flex;flex-direction:column;align-items:flex-end;
+  text-align:right;transition:opacity .4s var(--ease)}
+.gx-meta .d{font:900 calc(104*var(--p))/.86 var(--lat);font-stretch:66%;letter-spacing:-.015em;white-space:nowrap}
+.gx-meta .m{display:flex;gap:calc(22*var(--p));align-items:baseline;margin-top:calc(14*var(--p));font:700 calc(19*var(--p))/1.3 var(--jp);letter-spacing:.04em}
+.gx-meta .m b{font-weight:900}
+.gx-open .gx-meta,.gx-open .gx-prog,.gx-open .gx-rule.b,.gx-open .gx-corner{opacity:0;pointer-events:none}
+.gx-rule.b,.gx-corner{transition:opacity .4s var(--ease)}
+/* the glass words: the hit areas follow the glass; each carries its English name, set beside it on the axis */
+.gx-words{position:absolute;inset:0;pointer-events:none}
+.gx-words button{position:absolute;left:0;top:0;width:0;height:0;margin:0;padding:0;border:0;background:none;color:var(--cobalt);cursor:pointer;
+  pointer-events:auto;font:700 10px/1 var(--lat);-webkit-tap-highlight-color:transparent}
+.gx-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.gx-lab,.gx-x{position:absolute;white-space:nowrap;font:700 calc(13*var(--t))/1 var(--lat);letter-spacing:.18em;text-transform:uppercase;transition:color .3s var(--ease),opacity .3s var(--ease)}
+.gx-lab{right:calc(100% + 26*var(--p));top:50%;transform:translateY(-50%);padding-right:calc(30*var(--p))}
+.gx-lab::after{content:"";position:absolute;right:0;top:50%;width:calc(20*var(--p));height:2px;background:currentColor}
+.gx-words button:hover .gx-lab,.gx-words button:focus-visible .gx-lab{color:var(--orange)}
+.gx-x{left:50%;top:calc(100% + 18*var(--p));transform:translateX(-50%);opacity:0;pointer-events:none;
+  text-decoration:underline;text-decoration-color:transparent;text-underline-offset:.45em;text-decoration-thickness:2px}
+.gx-x b{color:var(--orange);margin-left:.5em;font-weight:900}
+.gx-open .gx-lab{opacity:0}
+.gx-open .gx-words button[aria-expanded=true] .gx-x{opacity:1}
+.gx-words button[aria-expanded=true]:hover .gx-x,.gx-words button[aria-expanded=true]:focus-visible .gx-x{text-decoration-color:var(--orange)}
+.gx-words button:focus-visible{outline:2px solid var(--orange);outline-offset:8px;border-radius:2px}
+.gx:not(.gx-ready) .gx-words button{pointer-events:none}
+/* how to go back, said once, small (only while an item is open) */
+#summary .gx-hint{position:absolute;left:var(--gx-side);bottom:calc(36*var(--p));margin:0;z-index:2;opacity:0;pointer-events:none;
+  font:700 calc(13*var(--t))/1.4 var(--jp);letter-spacing:.06em;transition:opacity .4s var(--ease) .3s}
+.gx-hint b{color:var(--orange);margin-right:.6em}
+#summary .gx-open .gx-hint{opacity:1}
+/* the detail: right of the word (which stays on the left, sticky), the item's own content, scrolling with the page.
+   Only its content takes clicks: everything else on the page goes back to the INDEX. */
+.gx-detail{position:relative;z-index:2;margin-top:calc(-1*var(--vh));min-height:var(--vh);
+  padding:calc(var(--gx-top) - 96*var(--p)) calc(56*var(--p)) calc(110*var(--p)) 47vw;opacity:0;transform:translate3d(0,calc(18*var(--p)),0);
+  transition:opacity .45s var(--ease),transform .6s var(--ease);pointer-events:none}
+.gx-detail[hidden]{display:none}
+.gx-detail.gx-show{opacity:1;transform:none}
+.gx-detail.gx-show .gx-dhead,.gx-detail.gx-show .gx-body{pointer-events:auto;cursor:auto}
+/* the head: the number, very large, the English name, and INDEX (back) — sitting on the top rule */
+.gx-dhead{display:grid;grid-template-columns:auto 1fr auto;align-items:end;column-gap:calc(26*var(--p));padding-bottom:calc(12*var(--p));margin-bottom:calc(46*var(--p))}
+.gx-num{font:900 calc(150*var(--p))/.8 var(--lat);font-stretch:66%;letter-spacing:-.02em;color:var(--orange)}
+.gx-dt{display:flex;flex-direction:column;gap:calc(8*var(--p));padding-bottom:calc(4*var(--p));font:900 calc(34*var(--p))/1 var(--lat);font-stretch:72%;letter-spacing:.02em}
+.gx-of{font:700 calc(12*var(--t))/1 var(--lat);letter-spacing:.16em}
+.gx-back{align-self:end;margin:0 -12px -12px 0;padding:12px;border:0;background:none;color:inherit;cursor:pointer;
+  font:700 calc(13*var(--t))/1 var(--lat);letter-spacing:.18em;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:.45em;text-decoration-thickness:2px;transition:text-decoration-color .3s var(--ease)}
+.gx-back b{color:var(--orange);margin-left:.5em;font-weight:900}
+.gx-back:hover,.gx-back:focus-visible{text-decoration-color:var(--orange);outline:none}
+/* the moved INDEX item: its content only (no row), one column, set larger, in the page colours */
+.gx-body .item>.row,.gx-body .item>.rl.bot,.gx-body .item::before{display:none}
+.gx-body .item{color:var(--cobalt)}
+.gx-body .panel{height:auto;overflow:visible}
+.gx-body .pin{display:block;padding:0;opacity:1!important;transform:none!important}
+.gx-body .pin>*+*{margin-top:calc(56*var(--p))}
+.gx-body .c-r[style]{padding-top:0!important}
+.gx-body .item .pin .rl{color:currentColor;left:0}
+.gx-body .L{font-size:calc(104*var(--p))}
+.gx-body #asaichi .fig{font-size:calc(176*var(--p))}
+.gx-body .M{font-size:calc(34*var(--p));line-height:1.4}
+.gx-body .S{font-size:calc(16*var(--t));line-height:2}
+.gx-body .lab{font-size:calc(13*var(--t));margin-bottom:calc(18*var(--p))}
+.gx-body .lab b{font-size:calc(14*var(--t))}
+.gx-body #asaichi .goods .g{font-size:calc(38*var(--p))}
+.gx-body .prog3{display:block}
+.gx-body .prog3>div{display:grid;grid-template-columns:calc(120*var(--p)) 1fr;column-gap:calc(20*var(--p));padding:calc(22*var(--p)) 0 calc(28*var(--p))}
+.gx-body .prog3>div>.rl{height:2px}
+.gx-body .prog3 .no{grid-row:1/4;font-size:calc(104*var(--p))}
+.gx-body .prog3 .t{margin-top:0;font-size:calc(46*var(--p));line-height:1.15}
+.gx-body .prog3 .st{font-size:calc(18*var(--t))}
+.gx-body .prog3 .d{font-size:calc(15*var(--t))}
+.gx-body #noto .big{font-size:calc(66*var(--p))}
+.gx-body #noto .S{font-size:calc(17*var(--t))}
+.gx-body #support .M{font-size:calc(32*var(--p))}
+.gx-body .tiers .L{font-size:calc(66*var(--p))}
+.gx-body .table2{grid-template-columns:1fr;row-gap:0}
+.gx-body .table2 .list.table:first-child li:last-child{border-bottom:0}
+.gx-body .table .v{font-size:calc(28*var(--p))}
+/* no WebGL: the five words as flat type, in the same column */
+.gx-flat .gx-canvas{display:none}
+.gx-flat .gx-words{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;font-size:calc(110*var(--p))}
+.gx-flat .gx-words button{position:relative;inset:auto;width:auto!important;height:auto!important;left:auto!important;top:auto!important;font:900 1em/1.1 var(--jp);letter-spacing:-.02em}
+.gx-flat .gx-sr{position:static;width:auto;height:auto;clip:auto;overflow:visible}
+.gx-flat .gx-words button:hover,.gx-flat .gx-words button:focus-visible,.gx-flat .gx-words button[aria-expanded=true]{color:var(--orange)}
+.gx-flat.gx-open .gx-words button:not([aria-expanded=true]){display:none}
+.gx-flat.gx-open .gx-words{align-items:flex-start;padding-left:calc(56*var(--p))}
+
+/* narrower landscape screens (tablets, small laptops): the frame is the same; the glass column and the type keep their
+   weight (the type does not shrink with --p below a floor) */
+@media (min-width: 1024px) and (max-width: 1279px), (orientation: landscape) and (max-width: 1023px) {
+  #summary .gx-title { font-size: max(48px, calc(78 * var(--p))); }
+  .gx-meta .d { font-size: max(68px, calc(104 * var(--p))); }
+  #summary .gx-prog, .gx-prog i { font-size: max(17px, calc(26 * var(--p))); }
+  #summary .gx-prog { width: max(300px, calc(470 * var(--p))); }
+  .gx-meta .m { font-size: max(13px, calc(19 * var(--p))); }
+  .gx-detail { padding-left: 45vw; }
+}
+
+/* PHONE + PORTRAIT TABLET: a vertical poster. Title block on top (two lines) over a rule; the glass column in the
+   middle with its English names beside it; the programmes and the dates side by side at the foot, over a rule.
+   Detail: the chosen word stays at the top, its number and content run below it. */
+@media (max-width: 1023px) and (orientation: portrait) {
+  [data-index=glass] #summary { min-height: 100svh; }
+  [data-index=glass] #summary .gx { --gx-top: calc(128 * var(--u) + env(safe-area-inset-top)); --gx-bot: calc(176 * var(--u) + env(safe-area-inset-bottom)); --gx-side: var(--pad); }
+  .gx-sticky { height: 100svh; min-height: calc(600 * var(--u)); }
+  #summary .gx-rule { right: var(--pad); height: 2px; }
+  #summary .gx-title { top: calc(24 * var(--u) + env(safe-area-inset-top)); font-size: calc(44 * var(--u)); line-height: .98; }
+  #summary .gx-corner { right: var(--pad); top: calc(30 * var(--u) + env(safe-area-inset-top)); font-size: 9.5px; gap: 3px; }
+  .gx-corner span:first-child { font-size: calc(26 * var(--u)); margin-bottom: 2px; }
+  .gx-corner span:last-child { display: none; }
+  #summary .gx-prog { left: var(--pad); right: var(--pad); width: auto; bottom: calc(112 * var(--u) + env(safe-area-inset-bottom)); display: flex; flex-wrap: wrap; column-gap: 14px; font-size: calc(13.5 * var(--u)); }
+  .gx-prog li { gap: 6px; padding: 2px 0; border: 0; }
+  .gx-prog i { font-size: calc(15 * var(--u)); min-width: calc(18 * var(--u)); }
+  #summary .gx-meta { right: var(--pad); bottom: calc(20 * var(--u) + env(safe-area-inset-bottom)); }
+  #summary .gx-meta { left: var(--pad); align-items: stretch; text-align: left; }
+  .gx-meta .d { font-size: calc(62 * var(--u)); }
+  .gx-meta .m { justify-content: space-between; gap: 8px; margin-top: calc(8 * var(--u)); font-size: max(12px, calc(13 * var(--u))); }
+  .gx-lab { right: calc(100% + 10px); padding-right: 18px; font-size: 9.5px; letter-spacing: .14em; }
+  .gx-lab::after { width: 12px; }
+  .gx-x { font-size: 10px; top: calc(100% + 8px); }
+  #summary .gx-hint { display: none; }
+  .gx-detail { margin-top: -100svh; min-height: 100svh; padding: calc(40svh) var(--pad) calc(64 * var(--u));
+    background: linear-gradient(to bottom, transparent calc(40svh - 20px), var(--paper) calc(40svh - 20px)); }
+  .gx-dhead { column-gap: 12px; margin-bottom: calc(26 * var(--u)); border-top: 2px solid currentColor; padding-top: calc(12 * var(--u)); }
+  .gx-num { font-size: calc(84 * var(--u)); }
+  .gx-dt { font-size: calc(22 * var(--u)); gap: 6px; }
+  .gx-of, .gx-back { font-size: 10.5px; }
+  .gx-body .pin > * + * { margin-top: calc(40 * var(--u)); }
+  .gx-body .L { font-size: calc(60 * var(--u)); }
+  .gx-body #asaichi .fig { font-size: calc(104 * var(--u)); }
+  .gx-body .M, .gx-body #support .M { font-size: calc(21 * var(--u)); }
+  .gx-body .S, .gx-body #noto .S { font-size: max(14px, calc(14.5 * var(--u))); }
+  .gx-body #asaichi .goods .g { font-size: calc(22 * var(--u)); }
+  .gx-body .prog3 > div { grid-template-columns: calc(62 * var(--u)) 1fr; column-gap: 10px; padding: calc(16 * var(--u)) 0 calc(20 * var(--u)); }
+  .gx-body .prog3 .no { font-size: calc(54 * var(--u)); }
+  .gx-body .prog3 .t { font-size: calc(24 * var(--u)); }
+  .gx-body .prog3 .st { font-size: max(13px, calc(14 * var(--u))); }
+  .gx-body .prog3 .d { font-size: max(12.5px, calc(13 * var(--u))); }
+  .gx-body #noto .big { font-size: calc(34 * var(--u)); }
+  .gx-body .tiers .L { font-size: calc(40 * var(--u)); }
+  .gx-body .table .v { font-size: calc(19 * var(--u)); }
+  .gx-flat .gx-words { font-size: calc(58 * var(--u)); }
+}
+
+/* ================================================================ GLASS INDEX — LAYOUTS (html[data-gxl])
+   One component, three compositions (index.html GLASS_LAYOUT, or ?layout=monumental | editorial | current).
+   Where the glass goes is set here too: .gx-slot = the column at rest, .gx-dslot = the chosen word when open
+   (glass-index.js fits the 3D into these boxes); --gx-pitch on .gx-slot = the step between the words (em). */
+#summary .gx-slot,#summary .gx-dslot{position:absolute;pointer-events:none;visibility:hidden}
+.gx-title .w{display:inline}.gx-title .w4{display:block}
+#summary .gx-big,#summary .gx-run{display:none}
+
+/* ---- current (the previous version, unchanged in look) */
+[data-gxl=current] #summary .gx-slot{left:25%;width:50%;top:15%;height:70%}
+[data-gxl=current] #summary .gx-dslot{left:8.5%;width:30%;top:36%;height:40%}
+@media (max-width: 1023px) and (orientation: portrait) {
+  [data-gxl=current] #summary .gx-slot { left: 25%; width: 50%; top: 27%; height: 50%; }
+  [data-gxl=current] #summary .gx-dslot { left: 25%; width: 50%; top: 18.5%; height: 17%; }
+}
+
+/* shared by the two new layouts: no rules across the page, no corner note, no English labels beside the glass */
+:is([data-gxl=monumental],[data-gxl=editorial],[data-gxl=focus]) #summary :is(.gx-rule,.gx-corner),
+:is([data-gxl=monumental],[data-gxl=editorial],[data-gxl=focus]) .gx-lab{display:none}
+:is([data-gxl=monumental],[data-gxl=editorial],[data-gxl=focus]) #summary .gx-hint{display:none}
+:is([data-gxl=monumental],[data-gxl=editorial],[data-gxl=focus]) .gx-prog li{border:0}
+
+/* ================================================================ B — MONUMENTAL
+   The event name, monumental, stacked two characters a line on the left (出張 / 輪島 / 朝市) — the same two-character
+   rhythm as the glass column on the right. The 2D facts hang off the glass word they belong to: the three programmes
+   beside 催し (programme), the dates / admission / venue beside 案内 (information). Between them, open space.
+   Open: the name gives way to the item's number, monumental; the chosen word (orange glass) sits under it; the item
+   reads on the right; a running line keeps the event at the foot. */
+[data-gxl=monumental] #summary .gx{--m:calc(52*var(--p));--top:calc(40*var(--p));--bot:calc(40*var(--p));--colw:calc(286*var(--p))}
+[data-gxl=monumental] #summary .gx-slot{right:var(--m);width:var(--colw);top:var(--top);bottom:var(--bot);--gx-pitch:1.12}
+[data-gxl=monumental] #summary .gx-title{left:var(--m);top:calc(var(--top) - 26*var(--p));font:900 calc(250*var(--p))/.97 var(--jp);letter-spacing:-.05em;white-space:normal}
+[data-gxl=monumental] .gx-title .w{display:block}
+[data-gxl=monumental] .gx-title .w4{font-size:.4em;line-height:1;margin-top:.24em;letter-spacing:-.03em}
+[data-gxl=monumental] .gx-title .in{font-size:.78em;margin-right:.16em}
+/* programmes: right-aligned to the glass column, level with 催し */
+[data-gxl=monumental] #summary .gx-prog{left:auto;bottom:auto;right:calc(var(--m) + var(--colw) + 30*var(--p));top:calc(var(--top) + 6*var(--p));width:auto;
+  font:900 calc(31*var(--p))/1.2 var(--jp);text-align:right}
+[data-gxl=monumental] .gx-prog li{justify-content:flex-end;gap:calc(14*var(--p));padding:calc(3*var(--p)) 0}
+[data-gxl=monumental] .gx-prog i{order:2;min-width:calc(36*var(--p));font-size:calc(31*var(--p));text-align:right}
+/* dates: right-aligned to the glass column, level with 案内 */
+[data-gxl=monumental] #summary .gx-meta{right:calc(var(--m) + var(--colw) + 30*var(--p));bottom:calc(var(--bot) + 4*var(--p))}
+[data-gxl=monumental] .gx-meta .d{font-size:calc(124*var(--p))}
+[data-gxl=monumental] .gx-meta .m{font-size:calc(20*var(--p));margin-top:calc(12*var(--p))}
+/* open */
+[data-gxl=monumental] .gx-open .gx-title,[data-gxl=monumental] .gx-open .gx-prog,[data-gxl=monumental] .gx-open .gx-meta{opacity:0;pointer-events:none}
+[data-gxl=monumental] #summary .gx-title{transition:opacity .4s var(--ease)}
+[data-gxl=monumental] #summary .gx-big{display:flex;flex-direction:column;position:absolute;left:var(--m);top:calc(var(--top) - 10*var(--p));margin:0;z-index:2;opacity:0;pointer-events:none;transition:opacity .45s var(--ease) .15s}
+[data-gxl=monumental] .gx-big .n{font:900 calc(330*var(--p))/.78 var(--lat);font-stretch:62%;letter-spacing:-.03em}
+[data-gxl=monumental] .gx-big .e{font:900 calc(36*var(--p))/1 var(--lat);font-stretch:72%;letter-spacing:.04em;margin-top:calc(14*var(--p))}
+[data-gxl=monumental] #summary .gx-dslot{left:var(--m);width:calc(470*var(--p));top:calc(var(--top) + 360*var(--p));bottom:calc(var(--bot) + 70*var(--p))}
+[data-gxl=monumental] #summary .gx-run{display:flex;gap:calc(22*var(--p));align-items:baseline;position:absolute;left:var(--m);bottom:var(--bot);margin:0;z-index:2;opacity:0;pointer-events:none;
+  font:900 calc(20*var(--p))/1 var(--jp);letter-spacing:-.01em;transition:opacity .45s var(--ease) .15s}
+[data-gxl=monumental] .gx-run .in{font-family:var(--lat);font-weight:800;font-stretch:72%}
+[data-gxl=monumental] .gx-run .d{font:900 calc(20*var(--p))/1 var(--lat);font-stretch:68%}
+[data-gxl=monumental] #summary .gx-open .gx-big,[data-gxl=monumental] #summary .gx-open .gx-run{opacity:1}
+[data-gxl=monumental] .gx-open .gx-big .n{color:var(--cobalt)}
+[data-gxl=monumental] .gx-detail{padding:calc(var(--top) + 6*var(--p)) var(--m) calc(110*var(--p)) calc(640*var(--p))}
+[data-gxl=monumental] .gx-dhead{grid-template-columns:1fr auto;border-bottom:2px solid currentColor;margin-bottom:calc(40*var(--p))}
+[data-gxl=monumental] .gx-dhead .gx-num{display:none}
+[data-gxl=monumental] .gx-dt{flex-direction:row;align-items:baseline;gap:calc(14*var(--p));font-size:calc(22*var(--p))}
+
+/* B, narrower landscape (≈ 4:3 – 3:2): the name in two long lines across the top-left (出張輪島 / 朝市 in 一橋祭), so it
+   keeps its size; the facts stay with their glass words */
+@media (min-width: 700px) and (max-aspect-ratio: 3/2) and (orientation: landscape), (min-width: 1024px) and (max-width: 1279px) and (max-aspect-ratio: 16/10) {
+  [data-gxl=monumental] #summary .gx{--colw:calc(26vw)}
+  [data-gxl=monumental] #summary .gx-title{font-size:calc(11.4vw);line-height:.98}
+  [data-gxl=monumental] .gx-title .w{display:inline}
+  [data-gxl=monumental] .gx-title .w3::before{content:"\A";white-space:pre}
+  [data-gxl=monumental] .gx-title .w4{display:inline;font-size:.5em;margin-left:.3em}
+  [data-gxl=monumental] #summary .gx-prog{top:auto;bottom:calc(var(--bot) + 11vw);right:calc(var(--m) + var(--colw) + 3vw);font-size:max(15px,1.9vw)}
+  [data-gxl=monumental] .gx-prog i{font-size:max(15px,1.9vw)}
+  [data-gxl=monumental] .gx-meta .d{font-size:max(46px,7.4vw)}
+  [data-gxl=monumental] .gx-meta .m{font-size:max(12px,1.4vw)}
+  [data-gxl=monumental] .gx-detail{padding-left:47vw}
+  [data-gxl=monumental] #summary .gx-dslot{width:38vw}
+  [data-gxl=monumental] .gx-big .n{font-size:24vw}
+}
+
+/* B, phone: a vertical poster. The name across the top in two lines (出張輪島 / 朝市 in 一橋祭); the glass column on the
+   right half; the programmes beside 催し, admission / venue beside 案内; the dates across the foot, as large as fits.
+   Open: the number and the chosen word at the top, the item below. */
+@media (max-width: 1023px) and (orientation: portrait) {
+  [data-gxl=monumental] #summary .gx { --m: var(--pad); --top: calc(18 * var(--u) + env(safe-area-inset-top)); --bot: calc(20 * var(--u) + env(safe-area-inset-bottom)); }
+  [data-gxl=monumental] #summary .gx-title { font-size: calc(86 * var(--u)); line-height: .98; top: var(--top); }
+  [data-gxl=monumental] .gx-title .w { display: inline; }
+  [data-gxl=monumental] .gx-title .w3::before { content: "\A"; white-space: pre; }
+  [data-gxl=monumental] .gx-title .w4 { display: inline; font-size: .42em; margin-left: .25em; }
+  [data-gxl=monumental] #summary .gx-slot { left: 49%; right: var(--m); width: auto; top: calc(var(--top) + 200 * var(--u)); bottom: calc(var(--bot) + 92 * var(--u)); }
+  [data-gxl=monumental] #summary .gx-prog { right: 53%; left: var(--m); top: calc(var(--top) + 212 * var(--u)); font-size: calc(12.5 * var(--u)); white-space: nowrap; }
+  [data-gxl=monumental] .gx-prog li { padding: 3px 0; gap: 6px; }
+  [data-gxl=monumental] .gx-prog i { font-size: calc(12.5 * var(--u)); min-width: 1.2em; }
+  [data-gxl=monumental] #summary .gx-meta { left: var(--m); right: var(--m); bottom: var(--bot); align-items: stretch; text-align: left; }
+  [data-gxl=monumental] .gx-meta .d { font-size: calc(70 * var(--u)); order: 2; }
+  [data-gxl=monumental] .gx-meta .m { order: 1; flex-direction: column; align-items: flex-start; gap: 2px; margin: 0 0 calc(10 * var(--u)); width: 50%; white-space: nowrap;
+    font-size: max(11px, calc(11.5 * var(--u))); position: absolute; bottom: calc(100% + 18 * var(--u)); }
+  [data-gxl=monumental] #summary .gx-big { top: calc(var(--top) + 6 * var(--u)); }
+  [data-gxl=monumental] .gx-big .n { font-size: calc(150 * var(--u)); }
+  [data-gxl=monumental] .gx-big .e { font-size: calc(20 * var(--u)); margin-top: 8px; }
+  [data-gxl=monumental] #summary .gx-dslot { left: 45%; right: var(--m); width: auto; top: calc(var(--top) + 20 * var(--u)); bottom: auto; height: calc(130 * var(--u)); }
+  [data-gxl=monumental] #summary .gx-run { display: none; }
+  [data-gxl=monumental] .gx-detail { padding: calc(var(--top) + 196 * var(--u)) var(--m) calc(64 * var(--u)); background: linear-gradient(to bottom, transparent calc(var(--top) + 180 * var(--u)), var(--paper) calc(var(--top) + 180 * var(--u))); }
+  [data-gxl=monumental] .gx-dt { font-size: calc(16 * var(--u)); }
+}
+
+/* ================================================================ A — ASYMMETRIC EDITORIAL
+   The event and its dates as one block, top left (name / large dates / admission and venue). The glass column off
+   centre to the right and set lower, so the block and the column read as a diagonal; the three programmes as their own
+   numbered list, aligned to the foot of the column on its right. Open: the event block stays; the chosen word moves
+   under it, the item reads on the right. */
+[data-gxl=editorial] #summary .gx{--m:calc(56*var(--p));--top:calc(44*var(--p));--bot:calc(44*var(--p))}
+[data-gxl=editorial] #summary .gx-title{left:var(--m);top:var(--top);font:900 calc(96*var(--p))/1 var(--jp);letter-spacing:-.04em}
+[data-gxl=editorial] .gx-title .w4{margin-top:.04em}
+[data-gxl=editorial] #summary .gx-meta{left:var(--m);right:auto;top:calc(var(--top) + 214*var(--p));bottom:auto;align-items:flex-start;text-align:left}
+[data-gxl=editorial] .gx-meta .d{font-size:calc(172*var(--p))}
+[data-gxl=editorial] .gx-meta .m{font-size:calc(20*var(--p));margin-top:calc(16*var(--p))}
+[data-gxl=editorial] #summary .gx-slot{left:60%;width:calc(250*var(--p));top:calc(var(--top) + 214*var(--p));bottom:var(--bot);--gx-pitch:1.12}
+[data-gxl=editorial] #summary .gx-prog{left:calc(60% + 250*var(--p) + 44*var(--p));right:var(--m);width:auto;bottom:calc(var(--bot) + 6*var(--p));
+  font:900 calc(26*var(--p))/1.2 var(--jp)}
+[data-gxl=editorial] .gx-prog li{flex-direction:column;align-items:flex-start;gap:calc(4*var(--p));padding:calc(14*var(--p)) 0;border-top:2px solid currentColor}
+[data-gxl=editorial] .gx-prog i{font-size:calc(58*var(--p));line-height:.86}
+[data-gxl=editorial] .gx-open .gx-prog{opacity:0}
+/* open: the dates step back (the item is read beside the name) */
+[data-gxl=editorial] #summary .gx-dslot{left:var(--m);width:calc(470*var(--p));top:calc(var(--top) + 440*var(--p));bottom:calc(var(--bot) + 20*var(--p))}
+[data-gxl=editorial] .gx-detail{padding:calc(var(--top) + 196*var(--p) - 106*var(--p)) var(--m) calc(110*var(--p)) 50%}
+@media (min-width: 700px) and (max-aspect-ratio: 3/2) and (orientation: landscape) {
+  [data-gxl=editorial] #summary .gx-title{font-size:max(44px,7.4vw)}
+  [data-gxl=editorial] #summary .gx-meta{top:calc(var(--top) + 16vw)}
+  [data-gxl=editorial] .gx-meta .d{font-size:max(56px,9.6vw)}
+  [data-gxl=editorial] #summary .gx-slot{left:55%;width:19vw;top:calc(var(--top) + 30vw)}
+  [data-gxl=editorial] #summary .gx-prog{left:calc(55% + 19vw + 3vw);font-size:max(14px,1.65vw);white-space:nowrap}
+  [data-gxl=editorial] .gx-prog i{font-size:max(30px,4.4vw)}
+  [data-gxl=editorial] #summary .gx-dslot{top:calc(var(--top) + 36vw);width:36vw}
+}
+@media (max-width: 1023px) and (orientation: portrait) {
+  [data-gxl=editorial] #summary .gx { --m: var(--pad); --top: calc(22 * var(--u) + env(safe-area-inset-top)); --bot: calc(22 * var(--u) + env(safe-area-inset-bottom)); }
+  [data-gxl=editorial] #summary .gx-title { font-size: calc(44 * var(--u)); }
+  [data-gxl=editorial] #summary .gx-meta { top: calc(var(--top) + 102 * var(--u)); }
+  [data-gxl=editorial] .gx-meta .d { font-size: calc(70 * var(--u)); }
+  [data-gxl=editorial] .gx-meta .m { flex-direction: row; gap: 14px; font-size: max(12px, calc(13 * var(--u))); margin-top: 8px; }
+  [data-gxl=editorial] #summary .gx-slot { left: 46%; right: var(--m); width: auto; top: calc(var(--top) + 236 * var(--u)); bottom: var(--bot); }
+  [data-gxl=editorial] #summary .gx-prog { left: var(--m); right: 50%; bottom: var(--bot); display: block; font-size: calc(13.5 * var(--u)); white-space: nowrap; }
+  [data-gxl=editorial] .gx-prog li { padding: 8px 0 10px; display: flex; }
+  [data-gxl=editorial] .gx-prog i { font-size: calc(34 * var(--u)); }
+  [data-gxl=editorial] #summary .gx-dslot { left: var(--m); right: var(--m); width: auto; top: calc(var(--top) + 236 * var(--u)); height: calc(120 * var(--u)); bottom: auto; }
+  [data-gxl=editorial] .gx-detail { padding: calc(var(--top) + 372 * var(--u)) var(--m) calc(64 * var(--u)); background: linear-gradient(to bottom, transparent calc(var(--top) + 356 * var(--u)), var(--paper) calc(var(--top) + 356 * var(--u))); }
+}
+
+/* ================================================================ FOCUS (default) — the glass first
+   One group, centred on the page: the glass column, as tall as the screen allows, and beside it — one gap away —
+   the information, hung on the column's lines: the three programmes level with 催し (programme), the event name and
+   its dates as one block level with 朝市 – 能登, admission / venue level with 案内 (information). Nothing else.
+   All 2D sizes are set from the glass's own line (--em), so the order holds at every size: the glass (one line = 1 em,
+   transparent, the only volume) first; the name (0.42 em) and dates (0.74 em) second; the small facts (0.12 em) third.
+   Open: the item is what you read. The chosen word (orange glass) keeps the column's place, smaller, centred on it;
+   the item's own type runs beside it where the information was; one small line above it says where you are and how
+   to go back. No big numbers. */
+#summary .gx-adm{display:none}
+[data-gxl=focus] #summary .gx{
+  --vh0:var(--vh); --sh:calc(var(--vh0)*.86); --gt:calc((var(--vh0) - var(--sh)) / 2);
+  --colw:calc(var(--sh)*.337);                        /* the column's width for that height (1.86 / 5.52 em) */
+  --em:calc(var(--sh)/5.52);
+  --gap:calc(var(--em)*.62); --txw:calc(var(--em)*3.9);
+  --gl:max(calc(56*var(--p)),calc((100vw - var(--colw) - var(--gap) - var(--txw)) / 2));
+  --tx:calc(var(--gl) + var(--colw) + var(--gap)); --small:max(12px,calc(var(--em)*.122))}
+[data-gxl=focus] #summary .gx-slot{left:var(--gl);width:var(--colw);top:var(--gt);height:var(--sh);--gx-pitch:1.13}
+[data-gxl=focus] #summary :is(.gx-title,.gx-prog,.gx-meta,.gx-adm){left:var(--tx);right:auto;width:auto;bottom:auto}
+/* third: programmes, level with 催し */
+[data-gxl=focus] #summary .gx-prog{top:calc(var(--gt) + var(--em)*.1);font:700 var(--small)/1.55 var(--jp);letter-spacing:.04em;white-space:nowrap}
+[data-gxl=focus] .gx-prog li{padding:0;gap:.7em}
+[data-gxl=focus] .gx-prog i{font:700 .8em/1 var(--lat);letter-spacing:.08em;min-width:1.6em;opacity:.7}
+[data-gxl=focus] .gx-prog b{font-weight:700}
+/* second: name and dates, one block — the name's top level with 朝市, the dates under it */
+[data-gxl=focus] #summary .gx-title{top:calc(var(--gt) + var(--em)*1.2);font:900 calc(var(--em)*.42)/1.06 var(--jp);letter-spacing:-.035em}
+[data-gxl=focus] .gx-title .w{display:inline}
+[data-gxl=focus] .gx-title .w4{display:block}
+[data-gxl=focus] .gx-title .in{font-size:.8em;margin-right:.12em}
+[data-gxl=focus] #summary .gx-meta{top:calc(var(--gt) + var(--em)*2.2);align-items:flex-start;text-align:left}
+[data-gxl=focus] .gx-meta .d{font-size:calc(var(--em)*.62);line-height:.9}
+[data-gxl=focus] .gx-meta .m{display:none}
+/* third: admission / venue, level with 案内 */
+[data-gxl=focus] #summary .gx-adm{display:flex;flex-direction:column;position:absolute;margin:0;z-index:2;top:calc(var(--gt) + var(--sh) - var(--em)*.1 - var(--small)*3.1);
+  font:700 var(--small)/1.55 var(--jp);letter-spacing:.04em;white-space:nowrap}
+[data-gxl=focus] .gx-adm b{font-weight:900}
+/* open */
+[data-gxl=focus] #summary :is(.gx-title,.gx-prog,.gx-meta,.gx-adm){transition:opacity .4s var(--ease)}
+[data-gxl=focus] #summary .gx-open :is(.gx-title,.gx-prog,.gx-meta,.gx-adm){opacity:0;pointer-events:none}
+[data-gxl=focus] #summary .gx-dslot{left:calc(var(--gl) - var(--colw)*.1);width:calc(var(--colw)*1.2);top:calc(var(--gt) + var(--sh)*.36);height:calc(var(--sh)*.28)}
+[data-gxl=focus] .gx-detail{padding:calc(var(--gt) + 4*var(--p)) calc(56*var(--p)) calc(110*var(--p)) var(--tx)}
+[data-gxl=focus] .gx-dhead{grid-template-columns:auto 1fr auto;align-items:baseline;column-gap:calc(14*var(--p));padding-bottom:calc(12*var(--p));border-bottom:2px solid currentColor;margin-bottom:calc(40*var(--p))}
+[data-gxl=focus] .gx-num{font:900 max(15px,calc(22*var(--p)))/1 var(--lat);font-stretch:72%;letter-spacing:.04em}
+[data-gxl=focus] .gx-dt{flex-direction:row;align-items:baseline;gap:calc(12*var(--p));padding:0;font-size:max(15px,calc(22*var(--p)))}
+[data-gxl=focus] .gx-detail .gx-body{max-width:calc(820*var(--p))}
+
+/* phone (portrait): a vertical poster with the same order. The name and dates over the column (second), the column in
+   the middle, as large as fits (first), the programmes and admission / venue under it, side by side (third).
+   Open: the chosen word at the top, the item below it. */
+@media (max-width: 1023px) and (orientation: portrait) {
+  [data-gxl=focus] #summary .gx { --top: calc(22 * var(--u) + env(safe-area-inset-top)); --foot: calc(96 * var(--u) + env(safe-area-inset-bottom));
+    --gt: calc(var(--top) + 118 * var(--u)); --sh: min(calc(var(--vh0) - var(--gt) - var(--foot)), calc((100vw - 2 * var(--pad)) / .337 * .62));
+    --gl: calc((100vw - var(--colw)) / 2); --tx: var(--pad); --small: max(11.5px, calc(12.5 * var(--u))); }
+  [data-gxl=focus] #summary .gx-title { top: var(--top); font-size: calc(30 * var(--u)); }
+  [data-gxl=focus] .gx-title .w4 { display: inline; margin-left: .25em; }
+  [data-gxl=focus] #summary .gx-meta { top: calc(var(--top) + 42 * var(--u)); }
+  [data-gxl=focus] .gx-meta .d { font-size: calc(62 * var(--u)); }
+  [data-gxl=focus] #summary .gx-prog { top: auto; bottom: calc(22 * var(--u) + env(safe-area-inset-bottom)); display: block; }
+  [data-gxl=focus] .gx-prog li { display: flex; }
+  [data-gxl=focus] #summary .gx-adm { top: auto; left: auto; right: var(--pad); bottom: calc(22 * var(--u) + env(safe-area-inset-bottom)); align-items: flex-end; text-align: right; }
+  [data-gxl=focus] #summary .gx-dslot { left: 22%; width: 56%; top: calc(18 * var(--u) + env(safe-area-inset-top)); height: calc(var(--vh0) * .16); }
+  [data-gxl=focus] .gx-detail { padding: calc(var(--vh0) * .16 + 56 * var(--u) + env(safe-area-inset-top)) var(--pad) calc(64 * var(--u));
+    background: linear-gradient(to bottom, transparent calc(var(--vh0) * .16 + 40 * var(--u)), var(--paper) calc(var(--vh0) * .16 + 40 * var(--u))); }
+  [data-gxl=focus] .gx-num, [data-gxl=focus] .gx-dt { font-size: 15px; }
+  [data-gxl=focus] .gx-detail .gx-body { max-width: none; }
+  [data-gxl=focus] .gx-dhead { border-top: 0; padding-top: 0; }
+}
+
+/* ================================================================ POSTER (default) — the Hero's composition, continued
+   The same build as the Hero (NOTO top left / HITOTSUBASHI bottom right / the glass across them): the event name,
+   monumental, across the top (cut by the top edge, as NOTO); the dates, monumental, across the foot (cut by the bottom
+   edge, as HITOTSUBASHI); the five glass words as one slanting column from the name's right end down to the dates'
+   left end, in front of both — the glass refracts the type it passes over (one picture, two layers). The small facts
+   (programmes / admission / venue) sit in the open band between, as the Hero's orange lines do.
+   Order: the glass (the only volume, the only thing that moves, orange under the pointer) first; the name and the dates
+   second; the small facts third.
+   Open: the name and the dates stay where they are; the item's page slides over the right part of the screen (paper),
+   cutting them; the chosen word (orange glass) stays on the left, over the type, as the anchor. */
+[data-gxl=poster] #summary .gx-rule,[data-gxl=poster] #summary .gx-corner,[data-gxl=poster] .gx-lab,[data-gxl=poster] #summary .gx-hint{display:none}
+[data-gxl=poster] #summary .gx{
+  --vh0:var(--vh);
+  --ft:min(calc(var(--vh0)*.285),17.2vw);             /* the name: one line of six characters */
+  --fd:min(calc(var(--vh0)*.40),19.6vw);              /* the dates (Archivo, condensed) */
+  --em:calc(var(--vh0)*.9/5.52);                      /* one glass line */
+  --gcx:54vw; --small:max(12.5px,calc(var(--vh0)*.0175))}
+/* the 2D type lies under the glass (the stage, canvas and hit areas, comes after it) */
+[data-gxl=poster] #summary :is(.gx-title,.gx-meta,.gx-prog,.gx-adm){z-index:0}
+[data-gxl=poster] #summary .gx-stage{z-index:1}
+[data-gxl=poster] #summary .gx-title{left:calc(var(--ft)*-.045);top:calc(var(--ft)*-.17);width:100vw;font:900 var(--ft)/.9 var(--jp);letter-spacing:-.045em;white-space:nowrap}
+[data-gxl=poster] .gx-title .w{display:inline}
+/* "in 一橋祭": the Hero's orange line, middle right */
+[data-gxl=poster] .gx-title .w4{position:absolute;right:calc(3.4vw - var(--ft)*.045);top:calc(var(--vh0)*.36 + var(--ft)*.17);
+  font-size:calc(var(--vh0)*.085);line-height:1;letter-spacing:-.02em;color:var(--orange)}
+[data-gxl=poster] .gx-title .in{font-size:.86em;margin-right:.18em}
+[data-gxl=poster] #summary .gx-meta{left:auto;right:calc(var(--fd)*-.012);top:auto;bottom:calc(var(--fd)*-.13);align-items:flex-end}
+[data-gxl=poster] .gx-meta .d{font-size:var(--fd);line-height:.86;letter-spacing:-.02em}
+[data-gxl=poster] .gx-meta .m{display:none}
+/* the glass: a slanting column, nearly the screen's height */
+[data-gxl=poster] #summary .gx-slot{left:calc(var(--gcx) - var(--em)*2.4);width:calc(var(--em)*4.8);top:calc(var(--vh0)*.045);height:calc(var(--vh0)*.9);--gx-pitch:1.13;--gx-shear:.55}
+/* third: the programmes (middle left), admission / venue (under the orange line, right) */
+[data-gxl=poster] #summary .gx-prog{left:3.4vw;right:auto;bottom:auto;top:calc(var(--vh0)*.44);width:auto;font:700 var(--small)/1.6 var(--jp);letter-spacing:.04em;white-space:nowrap}
+[data-gxl=poster] .gx-prog li{padding:0;gap:.7em;border:0}
+[data-gxl=poster] .gx-prog i{font:700 .82em/1 var(--lat);letter-spacing:.08em;min-width:1.6em;opacity:.7}
+[data-gxl=poster] .gx-prog b{font-weight:700}
+[data-gxl=poster] #summary .gx-adm{display:flex;gap:1.2em;position:absolute;margin:0;right:3.4vw;top:calc(var(--vh0)*.36 + var(--vh0)*.085 + var(--small)*1.2);
+  font:700 var(--small)/1.6 var(--jp);letter-spacing:.04em;white-space:nowrap}
+[data-gxl=poster] .gx-adm b{font-weight:900}
+/* open */
+[data-gxl=poster] #summary :is(.gx-prog,.gx-adm){transition:opacity .4s var(--ease)}
+[data-gxl=poster] #summary .gx-open :is(.gx-prog,.gx-adm){opacity:0;pointer-events:none}
+[data-gxl=poster] #summary .gx-open .gx-meta{opacity:1}
+[data-gxl=poster] #summary .gx-dslot{left:4vw;width:calc(var(--em)*2.3);top:calc(var(--vh0)*.5 - var(--em)*.62);height:calc(var(--em)*1.24)}
+[data-gxl=poster] .gx-detail{--px:42vw;padding:calc(var(--vh0)*.09) calc(56*var(--p)) calc(110*var(--p)) calc(var(--px) + 60*var(--p));
+  background:linear-gradient(to right,transparent var(--px),var(--cobalt) var(--px),var(--cobalt) calc(var(--px) + 3px),var(--paper) calc(var(--px) + 3px))}
+[data-gxl=poster] .gx-dhead{grid-template-columns:auto 1fr auto;align-items:baseline;column-gap:calc(14*var(--p));padding-bottom:calc(12*var(--p));border-bottom:2px solid currentColor;margin-bottom:calc(40*var(--p))}
+[data-gxl=poster] .gx-num{font:900 max(15px,calc(22*var(--p)))/1 var(--lat);font-stretch:72%;letter-spacing:.04em}
+[data-gxl=poster] .gx-dt{flex-direction:row;align-items:baseline;gap:calc(12*var(--p));padding:0;font-size:max(15px,calc(22*var(--p)))}
+[data-gxl=poster] .gx-detail .gx-body{max-width:calc(820*var(--p))}
+/* no WebGL: the flat words keep a paper ground, so they read over the large type */
+[data-gxl=poster] .gx-flat .gx-words button{background:var(--paper);padding:0 .12em}
+[data-gxl=poster] .gx-flat.gx-open .gx-words{justify-content:center}
+
+/* poster, phone (portrait): the name in two lines across the top (出張輪島 / 朝市), the dates across the foot, the glass
+   column slanting between and over both; the orange line and the small facts at the sides of the column's middle.
+   Open: the chosen word stays at the top over the name; the item's page comes up from below it. */
+@media (max-width: 1023px) and (orientation: portrait) {
+  [data-gxl=poster] #summary .gx { --ft: 25.4vw; --fd: 31vw; --em: calc(var(--vh0) * .6 / 5.52); --gcx: 50vw; --small: max(11px, calc(11.5 * var(--u)));
+    --dtop: calc(var(--fd) * (.86 * 2 - .13) + env(safe-area-inset-bottom)); }
+  [data-gxl=poster] #summary .gx-title { top: calc(var(--ft) * -.14 + env(safe-area-inset-top)); line-height: .92; }
+  [data-gxl=poster] .gx-title .w3::before { content: "\A"; white-space: pre; }
+  /* the orange line: left, under the name (beside 催し) */
+  [data-gxl=poster] .gx-title .w4 { top: calc(var(--ft) * 1.93); left: calc(var(--pad) + var(--ft) * .045); right: auto; font-size: calc(27 * var(--u)); }
+  [data-gxl=poster] #summary .gx-slot { top: calc(var(--ft) * 1.5 + env(safe-area-inset-top)); height: calc(var(--vh0) * .6); --gx-shear: .45; }
+  /* the facts: right, in the space the slant leaves (beside 応援 and 案内), just over the dates */
+  [data-gxl=poster] #summary :is(.gx-prog,.gx-adm) { left: auto; right: var(--pad); top: auto; text-align: right; }
+  [data-gxl=poster] #summary .gx-adm { bottom: calc(var(--dtop) + 10px); flex-direction: column; gap: 0; align-items: flex-end; }
+  [data-gxl=poster] #summary .gx-prog { display: block; bottom: calc(var(--dtop) + 14px + var(--small) * 3.2); }
+  [data-gxl=poster] .gx-prog li { display: flex; justify-content: flex-end; }
+  [data-gxl=poster] .gx-prog i { order: 2; text-align: right; min-width: 1.4em; }
+  /* the dates in two lines, as large as the width allows */
+  [data-gxl=poster] #summary .gx-meta { bottom: calc(var(--fd) * -.13 + env(safe-area-inset-bottom)); }
+  [data-gxl=poster] .gx-meta .d { display: flex; flex-direction: column; align-items: flex-end; }
+  [data-gxl=poster] #summary .gx-dslot { left: 18%; width: 64%; top: calc(var(--ft) * .25 + env(safe-area-inset-top)); height: calc(var(--vh0) * .15); }
+  [data-gxl=poster] .gx-detail { --top0: calc(var(--ft) * .25 + var(--vh0) * .15 + 26 * var(--u) + env(safe-area-inset-top));
+    padding: calc(var(--top0) + 20 * var(--u)) var(--pad) calc(64 * var(--u));
+    background: linear-gradient(to bottom, transparent var(--top0), var(--cobalt) var(--top0), var(--cobalt) calc(var(--top0) + 3px), var(--paper) calc(var(--top0) + 3px)); }
+  [data-gxl=poster] .gx-num, [data-gxl=poster] .gx-dt { font-size: 15px; }
+  [data-gxl=poster] .gx-detail .gx-body { max-width: none; }
+}
+
+
+/* ================================================================ KINETIC INDEX (html[data-index="kinetic"], ?index=kinetic)
+   2D only. The INDEX is one sheet of very large type. Every piece of it (the five INDEX words, the event name in
+   parts, the dates, the small facts) is one absolutely placed element; scripts/kinetic/kinetic-index.js computes where
+   each one is and how large, for each state of the sheet (entering / INDEX / an item open), and moves the same
+   elements between them (transform only). The entrance is scrubbed by the scroll that ends the statements; a click
+   rebuilds the sheet around the chosen word. CSS here: the frame, the type, colours and the detail column. */
+.kx{display:none}
+[data-index=kinetic] #summary{height:auto;min-height:var(--vh);overflow:clip}
+[data-index=kinetic] #summary .fr,[data-index=kinetic] #summary .gx{display:none}
+[data-index=kinetic] #index{display:none}
+[data-index=kinetic] #summary .kx{display:block;position:relative}
+.kx-sticky{position:sticky;top:0;height:var(--vh);min-height:calc(480*var(--p));overflow:hidden;z-index:1}
+.kx-open .kx-sticky{cursor:pointer}
+.kx-ev,.kx-words{margin:0;position:absolute;inset:0;pointer-events:none}
+.kx-t{position:absolute;left:0;top:0;margin:0;transform-origin:0 0;white-space:nowrap;color:var(--cobalt)}
+.kx-jp{font-family:var(--jp);font-weight:900;line-height:1;letter-spacing:-.045em}
+.kx-lat{font-family:var(--lat);font-weight:900;font-stretch:66%;line-height:1;letter-spacing:-.015em}
+.kx-t .in{font-family:var(--lat);font-weight:800;font-stretch:72%;font-size:.86em;letter-spacing:-.01em;margin-right:.16em}
+.kx-moving{will-change:transform}
+/* the INDEX words: plain type, the whole word is the button; the pointer / focus turns it orange */
+/* the hit area is the word's own box: the type inside does not take the pointer (the glyphs' content area runs above /
+   below a line-height-1 box and would reach over the neighbouring words); a hover one-shot (scripts/cursor.js) moves
+   .kx-in / .kx-ch only, never the box the engine places */
+.kx-w{padding:0;border:0;background:none;cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:transparent;
+  font-family:var(--jp);font-weight:900;transition:color .28s var(--ease)}
+.kx-in{display:inline-block;pointer-events:none;transform-origin:50% 60%}
+.kx-ch{display:inline-block}
+.kx-w:focus-visible,.kx-w[aria-expanded=true]{color:var(--orange)}
+/* (no sticky hover after a tap; with the cursor modes on, the colour comes in as a circle instead) */
+@media (hover:hover){html:not(.cf-mode) .kx-w:hover{color:var(--orange)}}
+.kx-w:focus-visible{outline:3px solid var(--orange);outline-offset:6px}
+.kx:not(.kx-ready) .kx-w{pointer-events:none}
+/* the small facts: a block of small type (it moves, it does not scale) */
+.kx-facts{font:700 var(--kx-small,15px)/1.6 var(--jp);letter-spacing:.04em;white-space:nowrap}
+.kx-facts ol{margin:0 0 .7em;padding:0;list-style:none}
+.kx-facts i{font:700 .82em/1 var(--lat);letter-spacing:.08em;font-style:normal;display:inline-block;min-width:2.1em;opacity:.7}
+.kx-facts p{margin:0}
+.kx-facts b{font-weight:900;margin-right:1.1em}
+/* the detail: the item's own content, in the column the sheet opens for it (left edge from --kx-cx, top from
+   --kx-cy, both set by the script), scrolling with the page */
+.kx-detail{position:relative;z-index:2;margin-top:calc(-1*var(--vh));min-height:var(--vh);
+  padding:var(--kx-cy,12vh) calc(56*var(--p)) calc(110*var(--p)) var(--kx-cx,46vw);pointer-events:none;opacity:0}
+.kx-detail[hidden]{display:none}
+.kx-detail.kx-show .kx-dhead,.kx-detail.kx-show .kx-body{pointer-events:auto;cursor:auto}
+.kx-dhead{display:grid;grid-template-columns:auto auto 1fr auto;align-items:baseline;column-gap:calc(14*var(--p));padding-bottom:calc(12*var(--p));
+  border-bottom:2px solid currentColor;margin-bottom:calc(40*var(--p));font:900 max(15px,calc(22*var(--p)))/1 var(--lat);font-stretch:72%;letter-spacing:.04em}
+.kx-num{color:var(--orange)}
+.kx-of{font:700 calc(12*var(--t))/1 var(--lat);letter-spacing:.16em}
+.kx-back{justify-self:end;margin:0 -12px -12px 0;padding:12px;border:0;background:none;color:inherit;cursor:pointer;
+  font:700 calc(13*var(--t))/1 var(--lat);letter-spacing:.18em;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:.45em;text-decoration-thickness:2px;transition:text-decoration-color .3s var(--ease)}
+.kx-back b{color:var(--orange);margin-left:.5em;font-weight:900}
+.kx-back:hover,.kx-back:focus-visible{text-decoration-color:var(--orange);outline:none}
+.kx-detail .kx-body{max-width:calc(820*var(--p))}
+@media (max-width: 1023px) and (orientation: portrait) {
+  [data-index=kinetic] #summary { min-height: 100svh; }
+  .kx-sticky { height: 100svh; }
+  .kx-detail { margin-top: -100svh; min-height: 100svh; padding: var(--kx-cy, 30svh) var(--pad) calc(64 * var(--u));
+    background: linear-gradient(to bottom, transparent calc(var(--kx-cy, 30svh) - 18px), var(--paper) calc(var(--kx-cy, 30svh) - 18px)); }
+  .kx-detail .kx-body { max-width: none; }
+  .kx-dhead { font-size: 15px; margin-bottom: calc(26 * var(--u)); }
+  .kx-of, .kx-back { font-size: 10.5px; }
+}
+/* no script / reduced motion fall back to the same INDEX sheet, placed by the script without motion */
+.kx:not(.kx-ready) .kx-t{visibility:hidden}
+@media (max-width: 1023px) and (orientation: portrait) { .kx-facts b { display: block; margin: 0; } .kx-facts ol { margin-bottom: .5em; } }
+/* ================================================================ CURSOR (scripts/cursor.js; html[data-cur] = off | fill | a | b | c | random)
+   A small orange dot follows the system cursor tip (fine pointers only). Over something that can be chosen it sinks in:
+   the dot goes, and from where it entered, the type turns orange in a growing circle (the type's own glyphs are the
+   mask: background-clip:text with a radial gradient — no copy of the text). Leaving, the circle shrinks back out.
+   Nothing here changes the page at rest: these styles only exist while a circle is on. */
+#cur{position:fixed;left:0;top:0;z-index:1000;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--orange);
+  pointer-events:none;opacity:0;scale:1;transition:scale .2s var(--ease),opacity .15s linear}
+html.cur-on #cur.in{opacity:1}
+html.cur-on #cur.sunk{scale:0;transition:scale .14s var(--ease),opacity .15s linear}
+html.cur-on #cur.down{scale:.6}
+/* the circle: on the element while it is on (outside the circle: the element's own colour, --cfb) */
+.cf-on{color:transparent!important;-webkit-text-fill-color:transparent;-webkit-background-clip:text;background-clip:text;background-repeat:no-repeat;
+  background-image:radial-gradient(circle at var(--cfx) var(--cfy),var(--orange) var(--cfr),var(--cfb) calc(var(--cfr) + .6px))!important}
+/* the comparison panel (this experimental branch only): a small tab at the right edge, opening to the left */
+.cur-dev{position:fixed;right:0;top:34vh;z-index:1001;display:flex;align-items:flex-start;color:var(--cobalt);font:700 10.5px/1.2 var(--lat);letter-spacing:.08em}
+.cur-dev[hidden]{display:none}
+.cur-dev-t{order:2;writing-mode:vertical-rl;padding:10px 5px;border:1px solid var(--cobalt);border-right:0;background:var(--paper);color:inherit;font:inherit;letter-spacing:.18em;cursor:pointer}
+.cur-dev-t b{color:var(--orange);margin-top:6px}
+.cur-dev-b{order:1;display:none;width:252px;padding:10px 12px 12px;background:var(--paper);border:1px solid var(--cobalt)}
+.cur-dev.open .cur-dev-b{display:block}
+.cur-dev-h{letter-spacing:.14em;margin-bottom:8px}
+.cur-dev-m{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:6px}
+.cur-dev-m button{padding:6px 2px;border:1px solid var(--cobalt);background:none;color:inherit;font:inherit;letter-spacing:.04em;cursor:pointer}
+.cur-dev-m button[aria-pressed=true]{background:var(--cobalt);color:var(--paper)}
+.cur-dev label{display:grid;grid-template-columns:72px 1fr 44px;align-items:center;gap:6px;margin-top:4px;font-weight:600;letter-spacing:.04em}
+.cur-dev input{width:100%;accent-color:var(--orange)}
+.cur-dev output{text-align:right;font-variant-numeric:tabular-nums}
+.cur-dev-p{margin-top:8px;padding-top:6px;border-top:1px solid currentColor;letter-spacing:.1em;min-height:2.4em}
+.cur-dev-p b{color:var(--orange)}
+@media (hover: none), (pointer: coarse) { .cur-dev, #cur { display: none; } }

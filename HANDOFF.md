@@ -19,7 +19,7 @@ Event Summary  「出張輪島朝市 in 一橋祭」・日付・3企画。ここ
   ↓
 Accordion INDEX 01 朝市 / 02 催し / 03 能登 / 04 応援 / 05 案内
   ↓
-Footer         関連リンク・SNS・TOP へ戻る
+Footer         コバルトブルーの面に関連リンク・SNS・TOP へ戻る・協賛企業名・最後の巨大なワードマーク
 ```
 
 - Statement の区間は**スクロールした距離**で進みます。1回の強いスクロール（スワイプ）で文章を2つ以上飛ばさないよう、各文章の「読める状態」で一度止まる仕組みがあります。
@@ -37,8 +37,39 @@ INDEX の5行は、そのまま**内容の入れ物**です。
 - 閉じ方：同じ行をもう一度押す／右上の CLOSE／Esc キー
 - 開いている行は、番号がオレンジ・小さな四角・太い罫線で「現在地」が分かります
 - 背景色：01 朝市・03 能登・05 案内 は濃いコバルト、02 催し・04 応援 は生成り
-- 05 案内を開くと、最下部に大きな `NOTO meets HITOTSUBASHI` が出ます
+- `NOTO meets HITOTSUBASHI` は案内の詳細から独立し、青いフッターの最下部に一度だけ表示します（PC は1行、スマホ縦は2行）。サイズは `scripts/main.js` の `fitEnd()` がフォント読み込み後とリサイズ時に合わせます
 - スマホでは、各行の一言説明（PC ではマウスを乗せた時に出るもの）を常に表示します
+
+## 2b. INDEX の表示方式（試作：ガラスの5語）
+
+ブランチ `feat/glass-typography-index` のみ（main には入っていない）。Event Summary と INDEX を、5語（朝市・催し・能登・応援・案内）の liquid glass の文字に置き換えたもの。上から 催し・朝市・能登・応援・案内 の縦一列、中央揃え・正立・同じ大きさ・等間隔。形は液体のガラスが文字に流れ込んで固まったような丸み（細い線は丸く、太い線は表面張力のように平らに）、素材は淡く青い透明ガラスで、Hero のスタジオの色（コバルト・苔色・少しのオレンジ）を映す。
+
+- **切替**：`index.html` の `var INDEX_MODE = 'glass';` を `'classic'` にすると従来の表示に戻る。URL に `?index=classic` / `?index=glass` でも確認できる。classic のときは従来と完全に同じ。
+- **ファイル**：`scripts/glass/config.js`（配置・ガラスの色と厚み・浮遊・時間）、`scripts/glass/glass-index.js`（3D と操作）、`scripts/glass/tube.js`（文字の輪郭→丸みのある厚みの形）、`assets/glass/glyphs.json`（5語の文字の輪郭。Noto Sans JP Black ほか、SIL OFL）。
+- **操作**：ポインタ／キーボードのフォーカスでその語のガラスがほんのりオレンジに（わずかに手前へ）。クリック／タップ／Enter で他の4語が退場し、選んだ語が左（スマホは上）へ、右（下）に既存の INDEX の内容がそのまま出る。「← INDEX」・Esc・オレンジの語のクリックで戻る。フッターのリンクや `#noto` などの直リンクも同じ。
+- **レイアウト（比較用）**：`index.html` の `GLASS_LAYOUT`（既定 `'poster'`＝Hero の構図を引き継ぐ版：イベント名「出張輪島朝市」を上端で切れる巨大な1行、日付を下端で切れる巨大な数字、その上を5語のガラスが右上→左下へ斜めの列で重なる。「in 一橋祭」は Hero と同じオレンジの中段、企画3つ・入場無料・会場は小さく中段に）、または URL の `?layout=poster`／`?layout=focus`（前の既定：ガラスの列＋情報の群を中央に）／`?layout=monumental`（B案）／`?layout=editorial`（A案）／`?layout=current`（最初の版）。ガラスの位置は CSS の `.gx-slot`（列。`--gx-pitch` で行の間隔、`--gx-shear` で斜めの量）と `.gx-dslot`（開いた時の語）で決める（`styles/site.css` 末尾の LAYOUTS）。focus 版は `backup/glass-focus`、前の版は `backup/glass-layout-current`、A/B/CURRENT 比較版は `backup/glass-layouts-abc` ブランチにも保存。
+- **ガラスの質感**：既定は `engine: 'lab'`（`scripts/glass/config.js`）＝ Hero が画像レイヤー方式に移る前の「NOTO Glass Lab」v1 の素の liquid glass（drei の MeshTransmissionMaterial、`scripts/glass/mtm.js`。オフスクリーンの反射板（白いソフトボックス・コバルト・苔色・小さなオレンジ）を PMREM に焼いた環境、裏面→表面の2パス屈折）。ガラスの背後にはページの2D文字をそのまま描き直した面があり、ガラスは実際の文字を屈折して見せる。`lab` の主な値：ior 1.5 / roughness 0 / 色収差 0.04 / 環境 2.0（Lab と同じ）、厚み 0.7 / 0.35（Lab の 1.2 / 0.6 を文字の大きさに換算）、色 `tint`＋`tintDistance`（淡い空色）、`rimDepth`（縁ほど青い）、`core`（正面ほど明るい＝文字の上でも読める）。前の手作りシェーダは `?gxengine=custom` で比較できる。調整は URL の `?gxlab={"core":0.4}` などでも試せる。
+- **確認用**：`?gxflat`（WebGL なしの表示）、`?gxfont=mplus|zen|dela`（書体の比較）。
+
+## 2c. INDEX の表示方式（試作：2D Kinetic Typography）
+
+ブランチ `feat/glass-typography-index` のみ。`index.html` の `INDEX_MODE`（このブランチの既定は `'kinetic'`）、または URL の `?index=kinetic` / `?index=glass` / `?index=classic` で切り替え。ガラス版は `?index=glass` でそのまま見られる（復元用ブランチ `backup/glass-poster`）。
+
+- **ファイル**：`scripts/kinetic/kinetic-index.js`（配置と動きのすべて）、`styles/site.css` 末尾の KINETIC INDEX（書体・色・詳細欄）、`index.html` の `.kx`（文字の要素。各文字は1つの要素で、状態ごとに同じ要素が動く）。ライブラリは追加していない（transform による自前の補間。main.js と同じ1つの rAF ループで動く）。
+- **登場**：Statement の後の仮想スクロール（main.js の `KX_A`〜`D_END`、`KX_LEN` = 120vh。2026-10-12 に 68vh から延長）に同期。最後の Statement が消えると同時に始まる（間の静止区間なし）。Statement は `SEG`（PC 16/22/18、スマホ 13/25/16 vh：フェードイン／表示／フェードアウト）で、以前の約半分。逆スクロールで戻る。E0（画面外）→ E1（Hero の大きさ：能登が上端で切れ、「出張輪島朝市」が中央を横切り、日付が下端で切れる）→ I（INDEX：能登 左上・朝市 右下の巨大2語、間に 催し 応援 案内 の1行、右上にイベント名と日付、左下に企画・入場無料・会場）。中央の行が割れ、「出張輪島」は右上の情報へ、その「朝市」は右下に降りて INDEX の語になる。各要素の区間は `TRACK`。
+- **選択**：選んだ語がその位置から詳細の見出しへ移動・拡大、他の4語は選んだ語から遠ざかる方向へ退場、イベント名と日付は見出しの下の1行に畳まれ、空いた領域に既存の INDEX 項目の内容（DOM をそのまま移動）が出る。戻る：見出し・余白・INDEX↑・Esc。本文やリンクでは閉じない。
+- **配置の調整**：`layouts()`（PC / スマホの I・E1・E0）と `detailLayout()`。大きさは画面の高さと幅から計算（例：PC の巨大2語 = min(0.48×高さ, 0.29×幅)）。
+- **prefers-reduced-motion**：登場は完成状態をそのまま表示、選択・戻るは即時切り替え。
+
+## 2d. カーソルとホバー（試作、サイト全体）
+
+`scripts/cursor.js`。`index.html` の `CUR_MODE`（このブランチの既定 `'random'`）または URL の `?cursor=off|fill|a|b|c|random`。右端の「CURSOR」タブ（`CUR_PANEL`、`?panel=0` で非表示）で切替・調整でき、直前に再生されたワンショットも表示される（`?curlog` でコンソールにも出る）。
+
+- **カーソル**：システムの矢印を表示したまま、オレンジの小さな円（直径 12px）の中心が矢印の先端と重なるように遅れなく追従する。押すと少し縮む。タッチ端末・`prefers-reduced-motion` では円を出さない。
+- **円形ホバー**：選べるもの（INDEX の5語、フッターのリンク、INDEX↑、詳細本文のリンク、↺）に入ると、円がそこへ沈み、入った点から文字の塗りがオレンジの円で広がる（`background-clip:text` の放射グラデーション。文字の複製なし）。離れると出た点へ向かって縮む。INDEX の5語は1文字ずつ同じ円を持つ（文字ごとに動けるように）。
+- **ワンショット**（INDEX の5語だけ）：円が語を満たした瞬間に1回。A Squash & Pop（潰れて弾み戻る）／B Tilt & Bounce（進んできた方向へ傾き、戻りで小さく弾む）／C Spin & Settle（1文字ずつ縦軸で1回転）／random（A〜C、同じものは続けない）。満ちる前に離れたら再生しない、乗っている間は再実行しない、離れて戻れば次が再生される、押すと中止して開く動きを優先。動かすのは語の内側（`.kx-in` / `.kx-ch`）だけで、エンジンが配置する箱には触れない。
+- **調整**：`scripts/cursor.js` の `CUR`（fillIn / fillOut 秒、speed、strength、各ワンショットの dur）。対象は同ファイルの `MAIN` / `MINOR`。
+- 以前の Distortion / Elastic は削除（`backup/kinetic-fx-ab` ブランチに保存）。
 
 ## 3. 色
 

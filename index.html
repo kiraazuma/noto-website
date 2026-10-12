@@ -11,6 +11,19 @@
 <meta name="description" content="出張輪島朝市 in 一橋祭 — 2026.11.21–23 一橋大学 国立西キャンパス。能登の「いま」を東京へ。輪島朝市の出張販売・特別講演・復興応援フリーペーパー。">
 <meta name="theme-color" content="#FCFAEF">
 <link rel="stylesheet" href="styles/site.css">
+<script>
+  // EDIT: INDEX の表示方式（切替スイッチ）。'kinetic' = 2D Kinetic Typography（試作） / 'glass' = ガラスの5語 / 'classic' = 従来の Event Summary + アコーディオン INDEX。
+  // URL に ?index=kinetic / ?index=glass / ?index=classic を付けると、その表示で開けます（確認用）。
+  var INDEX_MODE = 'kinetic';
+  // ガラス INDEX のレイアウト（デザイン比較用）：'poster' = Hero の構図を引き継ぐ版（既定。巨大な名前と日付にガラスが重なる） / 'focus' = 前の既定 / 'current' = 最初の中央配置 / 'monumental' = B案 / 'editorial' = A案。?layout= で切替
+  var GLASS_LAYOUT = 'poster';
+  // カーソルとホバー（比較用）：'off' = なし（元のまま） / 'fill' = オレンジのカーソル＋円形に広がる色 / 'a' 'b' 'c' = それにワンショット
+  // （A Squash & Pop / B Tilt & Bounce / C Spin & Settle） / 'random' = A〜C から毎回1つ。?cursor= で切替。CUR_PANEL = true で右端に比較パネル（?panel=0 で非表示）。
+  // 時間と強さは scripts/cursor.js の CUR
+  var CUR_MODE = 'random';
+  var CUR_PANEL = true;
+  (function () { var m = INDEX_MODE, l = GLASS_LAYOUT; try { var u = new URLSearchParams(location.search), q = u.get('index'), r = u.get('layout'); if (q === 'glass' || q === 'classic' || q === 'kinetic') m = q; if (r === 'poster' || r === 'focus' || r === 'monumental' || r === 'editorial' || r === 'current') l = r; } catch (e) {} document.documentElement.setAttribute('data-index', m); document.documentElement.setAttribute('data-gxl', l); var x = CUR_MODE, pn = CUR_PANEL; try { var v = new URLSearchParams(location.search); if (/^(off|fill|a|b|c|random)$/.test(v.get('cursor') || '')) x = v.get('cursor'); if (v.get('panel') === '0') pn = false; if (v.get('panel') === '1') pn = true; } catch (e) {} document.documentElement.setAttribute('data-cur', x); document.documentElement.setAttribute('data-curpanel', pn ? '1' : '0'); })();
+</script>
 <script type="importmap">
 { "imports": { "three": "./vendor/three/three.module.js" } }
 </script>
@@ -60,6 +73,54 @@
       <ul class="sp s-band" aria-label="企画"><li><i>01</i><b>出張輪島朝市</b></li><li class="sl" aria-hidden="true"></li><li><i>02</i><b>特別講演</b></li><li class="sl" aria-hidden="true"></li><li><i>03</i><b>復興応援フリーペーパー</b></li></ul>
       <a class="sp s-cue" href="#index" aria-label="INDEXへ移動">INDEX<b aria-hidden="true">↓</b></a>
       <p class="sp s-meta">一橋大学 国立西キャンパス<br>JR国立駅 南口から徒歩約10分　<b>入場無料</b></p>
+    </div>
+    <!-- EDIT: INDEX（ガラスの5語）。配置・質感・動きは scripts/glass/config.js、文字の形は assets/glass/glyphs.json -->
+    <div class="gx">
+      <div class="gx-sticky">
+        <h2 class="sp gx-title"><span class="w">出張</span><span class="w">輪島</span><span class="w w3">朝市</span><span class="w4"><span class="in">in</span>一橋祭</span></h2>
+        <p class="gx-big" aria-hidden="true"><span class="n" data-gx="num"></span><span class="e" data-gx="en"></span></p>
+        <p class="gx-run" aria-hidden="true">出張輪島朝市 <span class="in">in</span> 一橋祭<span class="d">2026.11.21–23</span></p>
+        <p class="sp gx-corner" aria-hidden="true"><span>INDEX</span><span>05 ITEMS</span><span>NOTO meets HITOTSUBASHI</span></p>
+        <i class="sp gx-rule t" aria-hidden="true"></i><i class="sp gx-rule b" aria-hidden="true"></i>
+        <div class="sp gx-stage">
+          <i class="gx-slot" aria-hidden="true"></i><i class="gx-dslot" aria-hidden="true"></i>
+          <canvas class="gx-canvas" aria-hidden="true"></canvas>
+          <nav class="gx-words" aria-label="INDEX">
+            <button type="button" data-id="program" data-text="催し" data-label="催し（PROGRAM）" aria-label="催し（PROGRAM）を開く" aria-controls="gx-detail" aria-expanded="false"><span class="gx-sr">催し</span><span class="gx-lab" aria-hidden="true">PROGRAM</span><span class="gx-x" aria-hidden="true">CLOSE<b>×</b></span></button>
+            <button type="button" data-id="asaichi" data-text="朝市" data-label="朝市（ASAICHI）" aria-label="朝市（ASAICHI）を開く" aria-controls="gx-detail" aria-expanded="false"><span class="gx-sr">朝市</span><span class="gx-lab" aria-hidden="true">ASAICHI</span><span class="gx-x" aria-hidden="true">CLOSE<b>×</b></span></button>
+            <button type="button" data-id="noto" data-text="能登" data-label="能登（NOTO）" aria-label="能登（NOTO）を開く" aria-controls="gx-detail" aria-expanded="false"><span class="gx-sr">能登</span><span class="gx-lab" aria-hidden="true">NOTO</span><span class="gx-x" aria-hidden="true">CLOSE<b>×</b></span></button>
+            <button type="button" data-id="support" data-text="応援" data-label="応援（SUPPORT）" aria-label="応援（SUPPORT）を開く" aria-controls="gx-detail" aria-expanded="false"><span class="gx-sr">応援</span><span class="gx-lab" aria-hidden="true">SUPPORT</span><span class="gx-x" aria-hidden="true">CLOSE<b>×</b></span></button>
+            <button type="button" data-id="info" data-text="案内" data-label="案内（INFO）" aria-label="案内（INFO）を開く" aria-controls="gx-detail" aria-expanded="false"><span class="gx-sr">案内</span><span class="gx-lab" aria-hidden="true">INFO</span><span class="gx-x" aria-hidden="true">CLOSE<b>×</b></span></button>
+          </nav>
+        </div>
+        <ol class="sp gx-prog" aria-label="一橋祭で行うこと"><li><i>01</i><b>出張輪島朝市</b></li><li><i>02</i><b>特別講演</b></li><li><i>03</i><b>復興応援フリーペーパー</b></li></ol>
+        <p class="sp gx-adm"><b>入場無料</b><span>一橋大学 国立西キャンパス</span></p>
+        <p class="sp gx-meta"><span class="d"><span class="y">2026.</span><span class="md">11.21–23</span></span><span class="m"><b>入場無料</b><span>一橋大学 国立西キャンパス</span></span></p>
+        <p class="gx-hint" aria-hidden="true"><b>←</b>文字か余白をクリック／ESC で INDEX に戻る</p>
+      </div>
+      <div class="gx-detail" id="gx-detail" role="region" hidden>
+        <div class="gx-dhead"><span class="gx-num"></span><span class="gx-dt"><span class="gx-en"></span><span class="gx-of">/ 05</span></span><button type="button" class="gx-back">INDEX<b aria-hidden="true">↑</b></button></div>
+        <div class="gx-body"></div>
+      </div>
+    </div>
+    <!-- EDIT: INDEX（2D Kinetic Typography 版、?index=kinetic）。動きと配置は scripts/kinetic/kinetic-index.js -->
+    <div class="kx">
+      <div class="kx-sticky">
+        <h2 class="sr">出張輪島朝市 in 一橋祭 — INDEX</h2>
+        <p class="kx-ev"><span class="kx-t kx-jp" data-k="name1">出張輪島</span><span class="kx-t kx-jp" data-k="name2">朝市</span><span class="kx-t kx-jp" data-k="in"><span class="in">in</span>一橋祭</span><span class="kx-t kx-lat" data-k="date">2026.11.21–23</span></p>
+        <nav class="kx-words" aria-label="INDEX">
+          <button type="button" class="kx-t kx-jp kx-w" data-k="asaichi" data-id="asaichi" data-label="朝市" aria-label="01 朝市を開く" aria-controls="kx-detail" aria-expanded="false"><span class="kx-in" aria-hidden="true"><span class="kx-ch">朝</span><span class="kx-ch">市</span></span></button>
+          <button type="button" class="kx-t kx-jp kx-w" data-k="program" data-id="program" data-label="催し" aria-label="02 催しを開く" aria-controls="kx-detail" aria-expanded="false"><span class="kx-in" aria-hidden="true"><span class="kx-ch">催</span><span class="kx-ch">し</span></span></button>
+          <button type="button" class="kx-t kx-jp kx-w" data-k="noto" data-id="noto" data-label="能登" aria-label="03 能登を開く" aria-controls="kx-detail" aria-expanded="false"><span class="kx-in" aria-hidden="true"><span class="kx-ch">能</span><span class="kx-ch">登</span></span></button>
+          <button type="button" class="kx-t kx-jp kx-w" data-k="support" data-id="support" data-label="応援" aria-label="04 応援を開く" aria-controls="kx-detail" aria-expanded="false"><span class="kx-in" aria-hidden="true"><span class="kx-ch">応</span><span class="kx-ch">援</span></span></button>
+          <button type="button" class="kx-t kx-jp kx-w" data-k="info" data-id="info" data-label="案内" aria-label="05 案内を開く" aria-controls="kx-detail" aria-expanded="false"><span class="kx-in" aria-hidden="true"><span class="kx-ch">案</span><span class="kx-ch">内</span></span></button>
+        </nav>
+        <div class="kx-t kx-facts" data-k="facts"><ol aria-label="一橋祭で行うこと"><li><i>01</i>出張輪島朝市</li><li><i>02</i>特別講演</li><li><i>03</i>復興応援フリーペーパー</li></ol><p><b>入場無料</b>一橋大学 国立西キャンパス</p></div>
+      </div>
+      <div class="kx-detail" id="kx-detail" role="region" hidden>
+        <div class="kx-dhead"><span class="kx-num"></span><span class="kx-en"></span><span class="kx-of">/ 05</span><button type="button" class="kx-back">INDEX<b aria-hidden="true">↑</b></button></div>
+        <div class="gx-body kx-body"></div>
+      </div>
     </div>
   </section>
 
@@ -162,7 +223,6 @@
             <li><div class="rl"></div><span class="k">特別協力</span><span class="v">輪島朝市を応援する会</span></li>
           </ul>
         </div>
-        <div class="end" aria-hidden="true"><span id="endmark">NOTO meets HITOTSUBASHI</span></div>
       </div></div>
       <div class="rl bot"></div>
     </div>
@@ -177,7 +237,12 @@
       <div class="fcol"><h4>SOCIAL</h4><ul><li><a class="ext" href="https://x.com/hit_asaichi" target="_blank" rel="noopener noreferrer"><b class="h">X</b>@hit_asaichi<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li><li><a class="ext" href="https://www.instagram.com/hit_asaichi" target="_blank" rel="noopener noreferrer"><b class="h">Instagram</b>@hit_asaichi<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li></ul></div>
       <a class="totop" href="#summary" id="totop" aria-label="ページの先頭へ戻る">TOP<b aria-hidden="true">↑</b></a>
     </div>
+    <section class="fsponsors" aria-labelledby="fsponsors-title">
+      <h4 id="fsponsors-title">SPONSORS</h4>
+      <ul class="fsponsor-list"><li>株式会社農天気</li></ul>
+    </section>
     <div class="fbar"><div class="rl"></div><span>出張輪島朝市 in 一橋祭　主催：能登を応援する一橋有志の会</span><span>© 2026 能登を応援する一橋有志の会</span></div>
+    <div class="end" aria-hidden="true"><span id="endmark"><span class="end-line">NOTO meets</span> <span class="end-line">HITOTSUBASHI</span></span></div>
   </footer>
 </main>
 
