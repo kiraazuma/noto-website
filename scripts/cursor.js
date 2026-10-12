@@ -1,6 +1,6 @@
 // CURSOR — one cursor language for the whole site (index.html CUR_MODE or ?cursor=):
 //   off     the page as it was (the system cursor; INDEX words turn orange by a plain colour change)
-//   fill    a small orange dot is the cursor; over something that can be chosen it sinks in, and from where it entered
+//   fill    a small orange dot follows the system cursor tip; over something that can be chosen it sinks in, and from where it entered
 //           the type turns orange in a growing circle (the glyphs themselves are the mask — background-clip:text with a
 //           radial gradient, no copy of the text); leaving, the circle shrinks back out toward where it left
 //   a/b/c   fill + a one-shot on the five INDEX words, played once, the moment the word is entirely orange:
@@ -60,7 +60,7 @@ export function initCursor() {
   const fillOn = () => mode !== 'off' && FINE.matches;
   function applyMode() {
     html.dataset.cur = mode;
-    html.classList.toggle('cur-on', fillOn() && !REDUCED);   // the dot (and no system cursor)
+    html.classList.toggle('cur-on', fillOn() && !REDUCED);   // the dot over the system cursor tip
     html.classList.toggle('cf-mode', fillOn());              // the circle instead of the plain colour change
   }
 
