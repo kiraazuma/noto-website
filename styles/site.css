@@ -879,3 +879,63 @@ body.booted #page{animation:none}
   [data-gxl=poster] .gx-detail .gx-body { max-width: none; }
 }
 
+
+/* ================================================================ KINETIC INDEX (html[data-index="kinetic"], ?index=kinetic)
+   2D only. The INDEX is one sheet of very large type. Every piece of it (the five INDEX words, the event name in
+   parts, the dates, the small facts) is one absolutely placed element; scripts/kinetic/kinetic-index.js computes where
+   each one is and how large, for each state of the sheet (entering / INDEX / an item open), and moves the same
+   elements between them (transform only). The entrance is scrubbed by the scroll that ends the statements; a click
+   rebuilds the sheet around the chosen word. CSS here: the frame, the type, colours and the detail column. */
+.kx{display:none}
+[data-index=kinetic] #summary{height:auto;min-height:var(--vh);overflow:clip}
+[data-index=kinetic] #summary .fr,[data-index=kinetic] #summary .gx{display:none}
+[data-index=kinetic] #index{display:none}
+[data-index=kinetic] #summary .kx{display:block;position:relative}
+.kx-sticky{position:sticky;top:0;height:var(--vh);min-height:calc(480*var(--p));overflow:hidden;z-index:1}
+.kx-open .kx-sticky{cursor:pointer}
+.kx-ev,.kx-words{margin:0;position:absolute;inset:0;pointer-events:none}
+.kx-t{position:absolute;left:0;top:0;margin:0;transform-origin:0 0;white-space:nowrap;color:var(--cobalt)}
+.kx-jp{font-family:var(--jp);font-weight:900;line-height:1;letter-spacing:-.045em}
+.kx-lat{font-family:var(--lat);font-weight:900;font-stretch:66%;line-height:1;letter-spacing:-.015em}
+.kx-t .in{font-family:var(--lat);font-weight:800;font-stretch:72%;font-size:.86em;letter-spacing:-.01em;margin-right:.16em}
+.kx-moving{will-change:transform}
+/* the INDEX words: plain type, the whole word is the button; the pointer / focus turns it orange */
+.kx-w{padding:0;border:0;background:none;cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:transparent;
+  font-family:var(--jp);font-weight:900;transition:color .28s var(--ease)}
+.kx-w:focus-visible,.kx-w[aria-expanded=true]{color:var(--orange)}
+@media (hover:hover){.kx-w:hover{color:var(--orange)}}   /* no sticky hover after a tap */
+.kx-w:focus-visible{outline:3px solid var(--orange);outline-offset:6px}
+.kx:not(.kx-ready) .kx-w{pointer-events:none}
+/* the small facts: a block of small type (it moves, it does not scale) */
+.kx-facts{font:700 var(--kx-small,15px)/1.6 var(--jp);letter-spacing:.04em;white-space:nowrap}
+.kx-facts ol{margin:0 0 .7em;padding:0;list-style:none}
+.kx-facts i{font:700 .82em/1 var(--lat);letter-spacing:.08em;font-style:normal;display:inline-block;min-width:2.1em;opacity:.7}
+.kx-facts p{margin:0}
+.kx-facts b{font-weight:900;margin-right:1.1em}
+/* the detail: the item's own content, in the column the sheet opens for it (left edge from --kx-cx, top from
+   --kx-cy, both set by the script), scrolling with the page */
+.kx-detail{position:relative;z-index:2;margin-top:calc(-1*var(--vh));min-height:var(--vh);
+  padding:var(--kx-cy,12vh) calc(56*var(--p)) calc(110*var(--p)) var(--kx-cx,46vw);pointer-events:none;opacity:0}
+.kx-detail[hidden]{display:none}
+.kx-detail.kx-show .kx-dhead,.kx-detail.kx-show .kx-body{pointer-events:auto;cursor:auto}
+.kx-dhead{display:grid;grid-template-columns:auto auto 1fr auto;align-items:baseline;column-gap:calc(14*var(--p));padding-bottom:calc(12*var(--p));
+  border-bottom:2px solid currentColor;margin-bottom:calc(40*var(--p));font:900 max(15px,calc(22*var(--p)))/1 var(--lat);font-stretch:72%;letter-spacing:.04em}
+.kx-num{color:var(--orange)}
+.kx-of{font:700 calc(12*var(--t))/1 var(--lat);letter-spacing:.16em}
+.kx-back{justify-self:end;margin:0 -12px -12px 0;padding:12px;border:0;background:none;color:inherit;cursor:pointer;
+  font:700 calc(13*var(--t))/1 var(--lat);letter-spacing:.18em;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:.45em;text-decoration-thickness:2px;transition:text-decoration-color .3s var(--ease)}
+.kx-back b{color:var(--orange);margin-left:.5em;font-weight:900}
+.kx-back:hover,.kx-back:focus-visible{text-decoration-color:var(--orange);outline:none}
+.kx-detail .kx-body{max-width:calc(820*var(--p))}
+@media (max-width: 1023px) and (orientation: portrait) {
+  [data-index=kinetic] #summary { min-height: 100svh; }
+  .kx-sticky { height: 100svh; }
+  .kx-detail { margin-top: -100svh; min-height: 100svh; padding: var(--kx-cy, 30svh) var(--pad) calc(64 * var(--u));
+    background: linear-gradient(to bottom, transparent calc(var(--kx-cy, 30svh) - 18px), var(--paper) calc(var(--kx-cy, 30svh) - 18px)); }
+  .kx-detail .kx-body { max-width: none; }
+  .kx-dhead { font-size: 15px; margin-bottom: calc(26 * var(--u)); }
+  .kx-of, .kx-back { font-size: 10.5px; }
+}
+/* no script / reduced motion fall back to the same INDEX sheet, placed by the script without motion */
+.kx:not(.kx-ready) .kx-t{visibility:hidden}
+@media (max-width: 1023px) and (orientation: portrait) { .kx-facts b { display: block; margin: 0; } .kx-facts ol { margin-bottom: .5em; } }

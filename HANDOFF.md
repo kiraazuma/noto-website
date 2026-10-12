@@ -51,6 +51,16 @@ INDEX の5行は、そのまま**内容の入れ物**です。
 - **ガラスの質感**：既定は `engine: 'lab'`（`scripts/glass/config.js`）＝ Hero が画像レイヤー方式に移る前の「NOTO Glass Lab」v1 の素の liquid glass（drei の MeshTransmissionMaterial、`scripts/glass/mtm.js`。オフスクリーンの反射板（白いソフトボックス・コバルト・苔色・小さなオレンジ）を PMREM に焼いた環境、裏面→表面の2パス屈折）。ガラスの背後にはページの2D文字をそのまま描き直した面があり、ガラスは実際の文字を屈折して見せる。`lab` の主な値：ior 1.5 / roughness 0 / 色収差 0.04 / 環境 2.0（Lab と同じ）、厚み 0.7 / 0.35（Lab の 1.2 / 0.6 を文字の大きさに換算）、色 `tint`＋`tintDistance`（淡い空色）、`rimDepth`（縁ほど青い）、`core`（正面ほど明るい＝文字の上でも読める）。前の手作りシェーダは `?gxengine=custom` で比較できる。調整は URL の `?gxlab={"core":0.4}` などでも試せる。
 - **確認用**：`?gxflat`（WebGL なしの表示）、`?gxfont=mplus|zen|dela`（書体の比較）。
 
+## 2c. INDEX の表示方式（試作：2D Kinetic Typography）
+
+ブランチ `feat/glass-typography-index` のみ。`index.html` の `INDEX_MODE`（このブランチの既定は `'kinetic'`）、または URL の `?index=kinetic` / `?index=glass` / `?index=classic` で切り替え。ガラス版は `?index=glass` でそのまま見られる（復元用ブランチ `backup/glass-poster`）。
+
+- **ファイル**：`scripts/kinetic/kinetic-index.js`（配置と動きのすべて）、`styles/site.css` 末尾の KINETIC INDEX（書体・色・詳細欄）、`index.html` の `.kx`（文字の要素。各文字は1つの要素で、状態ごとに同じ要素が動く）。ライブラリは追加していない（transform による自前の補間。main.js と同じ1つの rAF ループで動く）。
+- **登場**：Statement の後の仮想スクロール（main.js の `KX_A`〜`D_END`、約68vh）に同期。逆スクロールで戻る。E0（画面外）→ E1（Hero の大きさ：能登が上端で切れ、「出張輪島朝市」が中央を横切り、日付が下端で切れる）→ I（INDEX：能登 左上・朝市 右下の巨大2語、間に 催し 応援 案内 の1行、右上にイベント名と日付、左下に企画・入場無料・会場）。中央の行が割れ、「出張輪島」は右上の情報へ、その「朝市」は右下に降りて INDEX の語になる。各要素の区間は `TRACK`。
+- **選択**：選んだ語がその位置から詳細の見出しへ移動・拡大、他の4語は選んだ語から遠ざかる方向へ退場、イベント名と日付は見出しの下の1行に畳まれ、空いた領域に既存の INDEX 項目の内容（DOM をそのまま移動）が出る。戻る：見出し・余白・INDEX↑・Esc。本文やリンクでは閉じない。
+- **配置の調整**：`layouts()`（PC / スマホの I・E1・E0）と `detailLayout()`。大きさは画面の高さと幅から計算（例：PC の巨大2語 = min(0.48×高さ, 0.29×幅)）。
+- **prefers-reduced-motion**：登場は完成状態をそのまま表示、選択・戻るは即時切り替え。
+
 ## 3. 色
 
 `styles/site.css` の先頭 `:root` で定義しています。

@@ -78,16 +78,22 @@ const AUTO = { idle: 2.5, speed: 45 };                   // s without input befo
 const V_MAX = 150, V_FADE = 70;                          // vh / s: the scene's top speed, and its top speed inside a fade
 const PHONE = matchMedia('(max-width: 1023px) and (orientation: portrait)');
 const STOPS = [];
-let D_OBJ, D_IV, IV, D_COV, COV, D_WIN, WIN, D_END;
+let D_OBJ, D_IV, IV, D_COV, COV, D_WIN, WIN, D_END, KX_A;
 // INDEX display mode (index.html: INDEX_MODE / ?index=): 'glass' = the five glass words, 'classic' = summary + rows
 const GLASS = document.documentElement.dataset.index === 'glass';
 let GX = null, gxStart = null;
-const sumParts = $$(GLASS ? '#summary .gx .sp' : '#summary .fr .sp').map((el, k) => ({ el, d: k * 5, k: '' }));
+// 'kinetic' = the 2D kinetic typography INDEX (scripts/kinetic/kinetic-index.js): its entrance is scrubbed by the end of
+// this sequence (KX_A .. D_END), so nothing of it fades here
+const KINETIC = document.documentElement.dataset.index === 'kinetic';
+let KX = null, kxStart = null;
+const ALT = GLASS || KINETIC;                                   // an INDEX that handles its own items
+const sumParts = $$(GLASS ? '#summary .gx .sp' : KINETIC ? '#summary .kx .sp' : '#summary .fr .sp').map((el, k) => ({ el, d: k * 5, k: '' }));
 function setTimings() {
   const [fi, fh, fo] = PHONE.matches ? SEG.phone : SEG.desk, L = fi + fh + fo;
   ST.forEach((s, i) => { s.a = S_A + i * (L + S_BLANK); s.inEnd = s.a + fi; s.outStart = s.inEnd + fh; s.outEnd = s.a + L; s._k = null; });
   D_OBJ = ST[ST.length - 1].outEnd; D_IV = D_OBJ + 12; IV = 30; D_COV = D_IV + 10; COV = 30; D_WIN = D_IV + 28; WIN = 28;
   D_END = D_WIN + 12 + WIN + 4;
+  KX_A = D_IV + 4;
   STOPS.length = 0; STOPS.push(0, ...ST.map(s => (s.inEnd + s.outStart) / 2), D_END);
 }
 setTimings();
@@ -107,6 +113,7 @@ function input(px, fresh = false) {
   stopAuto();                                                  // the hand always wins over the auto-advance
   if (mode === 'main') {
     if (!(scrollY <= 0 && px < 0)) return;
+    if (altCur()) return;                                      // an open item stays open (Esc / back closes it)
     mode = 'intro'; d = dT = D_END; ST_TW = null;              // back up into the sequence from the top of the page
   }
   const dv = px / Math.max(1, VH) * 100, dir = Math.sign(dv), now = performance.now();
@@ -167,7 +174,7 @@ function updateIntro(dt) {
     const vmax = ST.some(s => (d > s.a - 1 && d < s.inEnd + 1) || (d > s.outStart - 1 && d < s.outEnd + 1)) ? V_FADE : V_MAX;
     d += REDUCED ? step : clamp(step, -vmax * ddt, vmax * ddt);
     if (Math.abs(dT - d) < 0.02) d = dT;
-    if (d >= D_END - 0.02 && dT >= D_END) { mode = 'main'; d = dT = D_END; scrollTo({ top: 0, behavior: 'instant' }); }
+    if (d >= D_END - 0.02 && dT >= D_END) { mode = 'main'; d = dT = D_END; scrollTo({ top: 0, behavior: 'instant' }); if (afterIntro.length) { const q = afterIntro.splice(0); requestAnimationFrame(() => q.forEach(f => f())); } }
     else if (d <= 0.02 && dT <= 0) { mode = 'hero'; d = dT = 0; }
   }
   let typeF, fog, veilO, pageO, texts, ivory = 0, parts = null;
@@ -367,7 +374,7 @@ function setHash(id) {
 // footer SITE / SUPPORT links: travel to the INDEX, then open the row there (never a bare anchor jump)
 function navigateTo(x) {
   if (mode !== 'main') return;
-  if (GLASS) { startGlass().then(g => g ? g.open(x.id) : null); return; }    // the glass INDEX handles its own items
+  if (ALT) { altStart().then(g => g ? g.open(x.id) : null); return; }    // the glass / kinetic INDEX handles its own items
   if (A) { queued = x; return; }
   if (OPEN === x) { scrollToY(docTop(x.row)); return; }
   const r = x.row.getBoundingClientRect().top;
@@ -377,7 +384,7 @@ function navigateTo(x) {
 // TOP: back to the top of the page (the summary). An open row closes on the way; the opening is not replayed.
 function toTop() {
   if (mode !== 'main') return;
-  if (GLASS && GX && GX.current) { GX.close().then(() => scrollToY(0, 1.0)); return; }
+  const g = ALT && (GX || KX); if (g && g.current) { g.close().then(() => scrollToY(0, 1.0)); return; }
   if (A) { queued = null; return; }
   if (OPEN) toggle(OPEN, { endScroll: 0, hd: 1.0 });
   else scrollToY(0, 1.0);
@@ -402,6 +409,24 @@ function startGlass() {
     .catch(err => { console.error(err); document.documentElement.dataset.index = 'classic'; sumParts.forEach(p => { p.el.style.opacity = ''; p.el.style.filter = ''; }); return null; });
   return gxStart;
 }
+// the kinetic INDEX (loaded at once: it is light, and its entrance is part of this sequence)
+const afterIntro = [];
+function startKinetic() {
+  if (!KINETIC) return Promise.resolve(null);
+  if (!kxStart) kxStart = import('./kinetic/kinetic-index.js')
+    .then(m => m.mountKinetic($('#summary .kx'), {
+      progress: () => mode === 'main' ? 1 : mode === 'hero' ? 0 : clamp01((d - KX_A) / (D_END - KX_A)),
+      // a click while the INDEX is still assembling: the sequence runs on to its end, then the item opens
+      finishIntro: (cb) => { if (mode === 'main') { cb(); return; } afterIntro.push(cb); stopAuto(); gesture = null; if (mode === 'hero') mode = 'intro'; dT = D_END; },
+      scrollTo: (y, done) => scrollToY(y, 0.7, done),
+      onChange: (id) => { setHash(id || ''); if (id === 'info') requestAnimationFrame(fitEnd); },
+    }))
+    .then(k => { KX = k; window.__kx = k; return k; })
+    .catch(err => { console.error(err); document.documentElement.dataset.index = 'classic'; return null; });
+  return kxStart;
+}
+const altStart = () => (GLASS ? startGlass() : startKinetic());
+const altCur = () => !!((GX && GX.current) || (KX && KX.current));
 addEventListener('keydown', (e) => { if (e.key === 'Escape' && OPEN && !A && mode === 'main') { const r = OPEN.row; toggle(OPEN); r.focus({ preventScroll: true }); } });
 // deep link (#noto ...): skip the opening and the statements, go straight to the INDEX with that row open
 const DEEP = byId(location.hash.slice(1)) || null;
@@ -461,19 +486,21 @@ function tick(now, dt, draw = true) {
   if (locked && !A && openingDone()) locked = false;
   if (DEEP && !locked && mode === 'hero') {
     mode = 'main'; updateIntro(0);
-    if (GLASS) { scrollTo({ top: docTop(summary), behavior: 'instant' }); startGlass().then(g => g && g.open(DEEP.id, { instant: true, noScroll: true })); }
+    if (ALT) { scrollTo({ top: docTop(summary), behavior: 'instant' }); altStart().then(g => g && g.open(DEEP.id, { instant: true, noScroll: true })); }
     else {
       scrollTo({ top: docTop(indexEl), behavior: 'instant' });
       toggle(DEEP, { instant: true }); updateAcc(0);
     }
   }
   if (GLASS && !gxStart && (warmed || mode !== 'hero')) startGlass();
+  if (KINETIC && !kxStart) startKinetic();
   maybeWarm();
   updateAcc(dt);
   updateTween(dt);
   updateIntro(REDUCED && mode !== 'main' ? dt * 3 : dt);
   syncHold();
   if (mode !== 'main') hero.step(now, dt, draw); else hero.hiddenTick();
+  if (KX) KX.frame(dt);
 }
 await document.fonts.ready;
 fitEnd();

@@ -12,12 +12,12 @@
 <meta name="theme-color" content="#FCFAEF">
 <link rel="stylesheet" href="styles/site.css">
 <script>
-  // EDIT: INDEX の表示方式（切替スイッチ）。'glass' = ガラスの5語（新） / 'classic' = 従来の Event Summary + アコーディオン INDEX。
-  // URL に ?index=classic / ?index=glass を付けると、その表示で開けます（確認用）。
-  var INDEX_MODE = 'glass';
+  // EDIT: INDEX の表示方式（切替スイッチ）。'kinetic' = 2D Kinetic Typography（試作） / 'glass' = ガラスの5語 / 'classic' = 従来の Event Summary + アコーディオン INDEX。
+  // URL に ?index=kinetic / ?index=glass / ?index=classic を付けると、その表示で開けます（確認用）。
+  var INDEX_MODE = 'kinetic';
   // ガラス INDEX のレイアウト（デザイン比較用）：'poster' = Hero の構図を引き継ぐ版（既定。巨大な名前と日付にガラスが重なる） / 'focus' = 前の既定 / 'current' = 最初の中央配置 / 'monumental' = B案 / 'editorial' = A案。?layout= で切替
   var GLASS_LAYOUT = 'poster';
-  (function () { var m = INDEX_MODE, l = GLASS_LAYOUT; try { var u = new URLSearchParams(location.search), q = u.get('index'), r = u.get('layout'); if (q === 'glass' || q === 'classic') m = q; if (r === 'poster' || r === 'focus' || r === 'monumental' || r === 'editorial' || r === 'current') l = r; } catch (e) {} document.documentElement.setAttribute('data-index', m); document.documentElement.setAttribute('data-gxl', l); })();
+  (function () { var m = INDEX_MODE, l = GLASS_LAYOUT; try { var u = new URLSearchParams(location.search), q = u.get('index'), r = u.get('layout'); if (q === 'glass' || q === 'classic' || q === 'kinetic') m = q; if (r === 'poster' || r === 'focus' || r === 'monumental' || r === 'editorial' || r === 'current') l = r; } catch (e) {} document.documentElement.setAttribute('data-index', m); document.documentElement.setAttribute('data-gxl', l); })();
 </script>
 <script type="importmap">
 { "imports": { "three": "./vendor/three/three.module.js" } }
@@ -96,6 +96,25 @@
       <div class="gx-detail" id="gx-detail" role="region" hidden>
         <div class="gx-dhead"><span class="gx-num"></span><span class="gx-dt"><span class="gx-en"></span><span class="gx-of">/ 05</span></span><button type="button" class="gx-back">INDEX<b aria-hidden="true">↑</b></button></div>
         <div class="gx-body"></div>
+      </div>
+    </div>
+    <!-- EDIT: INDEX（2D Kinetic Typography 版、?index=kinetic）。動きと配置は scripts/kinetic/kinetic-index.js -->
+    <div class="kx">
+      <div class="kx-sticky">
+        <h2 class="sr">出張輪島朝市 in 一橋祭 — INDEX</h2>
+        <p class="kx-ev"><span class="kx-t kx-jp" data-k="name1">出張輪島</span><span class="kx-t kx-jp" data-k="name2">朝市</span><span class="kx-t kx-jp" data-k="in"><span class="in">in</span>一橋祭</span><span class="kx-t kx-lat" data-k="date">2026.11.21–23</span></p>
+        <nav class="kx-words" aria-label="INDEX">
+          <button type="button" class="kx-t kx-jp kx-w" data-k="asaichi" data-id="asaichi" data-label="朝市" aria-label="01 朝市を開く" aria-controls="kx-detail" aria-expanded="false">朝市</button>
+          <button type="button" class="kx-t kx-jp kx-w" data-k="program" data-id="program" data-label="催し" aria-label="02 催しを開く" aria-controls="kx-detail" aria-expanded="false">催し</button>
+          <button type="button" class="kx-t kx-jp kx-w" data-k="noto" data-id="noto" data-label="能登" aria-label="03 能登を開く" aria-controls="kx-detail" aria-expanded="false">能登</button>
+          <button type="button" class="kx-t kx-jp kx-w" data-k="support" data-id="support" data-label="応援" aria-label="04 応援を開く" aria-controls="kx-detail" aria-expanded="false">応援</button>
+          <button type="button" class="kx-t kx-jp kx-w" data-k="info" data-id="info" data-label="案内" aria-label="05 案内を開く" aria-controls="kx-detail" aria-expanded="false">案内</button>
+        </nav>
+        <div class="kx-t kx-facts" data-k="facts"><ol aria-label="一橋祭で行うこと"><li><i>01</i>出張輪島朝市</li><li><i>02</i>特別講演</li><li><i>03</i>復興応援フリーペーパー</li></ol><p><b>入場無料</b>一橋大学 国立西キャンパス</p></div>
+      </div>
+      <div class="kx-detail" id="kx-detail" role="region" hidden>
+        <div class="kx-dhead"><span class="kx-num"></span><span class="kx-en"></span><span class="kx-of">/ 05</span><button type="button" class="kx-back">INDEX<b aria-hidden="true">↑</b></button></div>
+        <div class="gx-body kx-body"></div>
       </div>
     </div>
   </section>
