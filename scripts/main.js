@@ -58,9 +58,12 @@ scrollTo(0, 0);
      auto-advance (idle)        ─┴─> target dT (clamped per gesture) -> d (damped + speed-limited) -> visual state
    Distance map (vh of scroll; desktop / phone):
      0 - 50          hero -> atmosphere: the hero type thins, the veil comes in, the sculpture defocuses and recedes
-     each statement  fade in 32 / 26 | FULLY VISIBLE 44 / 51 | fade out 40 / 32   (116 / 109 vh), 4 vh apart
-     after the last  the sculpture alone, the veil thins to ivory, the ground closes, the summary comes into focus (84 vh)
-     in all          ~490 / ~469 vh (was 556)
+     each statement  fade in 16 / 13 | FULLY VISIBLE 22 / 25 | fade out 18 / 16   (56 / 54 vh), 4 vh apart
+                     (all three: 176 / 170 vh; before 2026-10-12: 356 / 335)
+     after the last  kinetic INDEX: the veil thins to ivory and the ground closes while the giant type comes in, then
+                     the INDEX builds itself (KX_LEN = 120 vh, was 68). In all ~350 / ~344 vh.
+                     glass / classic INDEX: the sculpture alone, the veil thins to ivory, the ground closes, the summary
+                     comes into focus (84 vh). In all ~310 / ~304 vh.
    One gesture (wheel / trackpad events less than 260 ms apart, momentum included) can only travel to the next
    resting point — the middle of the next statement's hold, or the end — so a strong flick never skips a statement.
    Left alone inside the statements for AUTO.idle s, the sequence advances by itself to the next resting point at
@@ -73,7 +76,10 @@ for (const l of $$('#statement .l')) l.innerHTML = l.innerHTML.replace(/([、。
 const ST = $$('#statement .st').map(el => ({ el, lines: $$('.l', el), last: '' }));
 const S_A = 50, S_BLANK = 4, K_IN = S_A / 66;            // K_IN: the hero -> statement transition, scaled with S_A
 // fade in | hold | fade out, vh. Phones / portrait tablets keep a slightly longer hold (shorter screen, larger type).
-const SEG = { desk: [32, 44, 40], phone: [26, 51, 32] };
+// (halved 2026-10-12: was desk [32, 44, 40] / phone [26, 51, 32] — the text is read in the hold, the rest was waiting)
+const SEG = { desk: [16, 22, 18], phone: [13, 25, 16] };
+// the kinetic INDEX: how far the scroll that builds it runs (vh; was 68)
+const KX_LEN = 120;
 const AUTO = { idle: 2.5, speed: 45 };                   // s without input before advancing; vh / s while advancing
 const V_MAX = 150, V_FADE = 70;                          // vh / s: the scene's top speed, and its top speed inside a fade
 const PHONE = matchMedia('(max-width: 1023px) and (orientation: portrait)');
@@ -91,9 +97,17 @@ const sumParts = $$(GLASS ? '#summary .gx .sp' : KINETIC ? '#summary .kx .sp' : 
 function setTimings() {
   const [fi, fh, fo] = PHONE.matches ? SEG.phone : SEG.desk, L = fi + fh + fo;
   ST.forEach((s, i) => { s.a = S_A + i * (L + S_BLANK); s.inEnd = s.a + fi; s.outStart = s.inEnd + fh; s.outEnd = s.a + L; s._k = null; });
-  D_OBJ = ST[ST.length - 1].outEnd; D_IV = D_OBJ + 12; IV = 30; D_COV = D_IV + 10; COV = 30; D_WIN = D_IV + 28; WIN = 28;
-  D_END = D_WIN + 12 + WIN + 4;
-  KX_A = D_IV + 4;
+  D_OBJ = ST[ST.length - 1].outEnd;
+  if (KINETIC) {
+    // no pause after the last statement: as it fades, the veil thins and the page's ground closes over the sculpture
+    // while the INDEX's giant type is already coming in; the rest of the scroll is the INDEX building itself
+    KX_A = D_OBJ + 2; D_IV = D_OBJ + 2; IV = 24; D_COV = D_OBJ + 6; COV = 26; D_WIN = D_OBJ; WIN = 1;
+    D_END = KX_A + KX_LEN;
+  } else {
+    D_IV = D_OBJ + 12; IV = 30; D_COV = D_IV + 10; COV = 30; D_WIN = D_IV + 28; WIN = 28;
+    D_END = D_WIN + 12 + WIN + 4;
+    KX_A = D_IV + 4;
+  }
   STOPS.length = 0; STOPS.push(0, ...ST.map(s => (s.inEnd + s.outStart) / 2), D_END);
 }
 setTimings();

@@ -43,16 +43,18 @@ const WORDS = ['asaichi', 'program', 'noto', 'support', 'info'];
 const MID = ['program', 'support', 'info'];                  // the INDEX line between the two corner words
 
 // scrubbed tracks: for each piece, [from, to] windows of the entrance progress for E0 -> E1 and E1 -> I
+// (re-timed for the longer scroll, KX_LEN 120 vh: the opening third brings the Hero-scale wall in while the page's
+// ground closes, the middle third breaks it and moves the pieces, the last third settles the INDEX line by line)
 const TRACK = {
-  noto: [[0.00, 0.42], [0.46, 0.90]],
-  name1: [[0.04, 0.47], [0.50, 0.88]],
-  asaichi: [[0.04, 0.47], [0.50, 0.94]],
-  date: [[0.10, 0.49], [0.52, 0.95]],
-  program: [null, [0.56, 0.90]],
-  support: [null, [0.62, 0.94]],
-  info: [null, [0.68, 0.98]],
-  name2: [null, [0.72, 0.97]],
-  in: [null, [0.76, 0.99]],
+  noto: [[0.00, 0.34], [0.40, 0.84]],
+  name1: [[0.03, 0.38], [0.44, 0.82]],
+  asaichi: [[0.03, 0.38], [0.46, 0.90]],
+  date: [[0.08, 0.42], [0.48, 0.92]],
+  program: [null, [0.56, 0.88]],
+  support: [null, [0.62, 0.92]],
+  info: [null, [0.68, 0.96]],
+  name2: [null, [0.72, 0.96]],
+  in: [null, [0.76, 0.98]],
   facts: [null, [0.80, 1.00]],
 };
 
