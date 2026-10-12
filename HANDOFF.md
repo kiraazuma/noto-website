@@ -170,7 +170,7 @@ Hero・Statement の固定レイヤーの高さは **`100svh`**（Safari のバ�
 
 ### Opening（PC・スマホ共通ルール、`hero.js` `openingBands()`）
 
-PC・スマホとも、画面の高さを細い隙間2本をはさんで3等分し、NOTO / MEETS / HITOTSUBASHI の**実際の字形（インク）の高さ**をその帯の高さに合わせます。縦の倍率は3行で同じ、横だけを画面幅に合わせて個別に圧縮（HITOTSUBASHI が一番強く圧縮される）。どの画面サイズでも3行の字の高さが 1:1:1 に揃います（実測の差 スマホ 0.5px・PC 2.5px 以内）。PC は左右に幅の 1.2% ずつはみ出させ、隙間は高さの 1.2%（`DESK.BANDS`）、スマホははみ出しなし・隙間 0.9%（`MOB.BANDS`）。
+PC・スマホとも、画面の高さを細い隙間2本をはさんで3等分し、NOTO / MEETS / HITOTSUBASHI の**実際の字形（インク）の高さ**をその帯の高さに合わせます。縦の倍率は3行で同じ、横だけを画面幅に合わせて個別に圧縮（HITOTSUBASHI が一番強く圧縮される）。どの画面サイズでも3行の字の高さが 1:1:1 に揃います（実測の差 スマホ 0.5px・PC 2.5px 以内）。PC は左右に幅の 1.2% ずつ、スマホは 1.5% ずつはみ出させます（`DESK.BANDS` / `MOB.BANDS`）。隙間は PC 1.2%、スマホ 0.9%。Safari では Canvas の字形計測と表示された文字の左端に差が出るため、`openingBands()` が行ごとに左端を補正します。Hero の NOTO と HITOTSUBASHI も左右端を少しクロップする配置です。
 
 ### スマホの Hero（`hero.js` `MOB` / `solveMobileObject()`）
 

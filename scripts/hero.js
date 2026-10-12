@@ -24,6 +24,7 @@ const JP = '"Noto Sans JP", sans-serif', LAT = 'Archivo, sans-serif';
 
 /* ------------------------------------------------------------------ type */
 const mctx = document.createElement('canvas').getContext('2d');
+const canvasInkLag = !('fontStretch' in mctx);
 const STRETCH_KW = { 62.5: 'extra-condensed', 75: 'condensed', 87.5: 'semi-condensed', 100: 'normal', 125: 'expanded' };
 const fontOf = (it, px) => `${it.weight} ${px}px ${it.family}`;
 function setFont(ctx, it, px) { ctx.font = fontOf(it, px); if ('fontStretch' in ctx) ctx.fontStretch = STRETCH_KW[it.stretch || 100]; if ('letterSpacing' in ctx) ctx.letterSpacing = ((it.track || 0) * px) + 'px'; }
@@ -75,8 +76,8 @@ const OPEN = {
 //                 NOTO's bottom and HITOTSUBASHI's top; the glass stands between them
 const MID_GAP = 24;   // side margins for the orange line
 const REST = {
-  noto: { runs: [['NOTO', COBALT]], family: LAT, weight: 900, stretch: 62.5, track: -0.02, fit: 'box', box: [-10, 828, -64, 356] },
-  hito: { runs: [['HITOTSUBASHI', COBALT]], family: LAT, weight: 900, stretch: 62.5, track: -0.02, fit: 'box', box: [581.8, W + 1.8, 680, 942] },
+  noto: { runs: [['NOTO', COBALT]], family: LAT, weight: 900, stretch: 62.5, track: -0.02, fit: 'box', box: [-24, 828, -64, 356] },
+  hito: { runs: [['HITOTSUBASHI', COBALT]], family: LAT, weight: 900, stretch: 62.5, track: -0.02, fit: 'box', box: [581.8, W + 24, 680, 942] },
   // y is set from the measured gap (see centreLine())
   date: { runs: [['2026.11.21–23', ORANGE]], family: LAT, weight: 900, stretch: 87.5, h: 61.5, box: [MID_GAP, 0, 0, 0] },
   title: { runs: [['出張輪島朝市 in 一橋祭', ORANGE]], family: JP, weight: 900, track: -0.03, h: 61, box: [0, W - MID_GAP, 0, 0], align: 'r' },
@@ -110,8 +111,8 @@ const MOB = { name: 'mob', W: MW, H: MH, info: ['titleA', 'titleB', 'date'], mid
   REST: {
     // NOTO: top-left, its top cut by the edge, the last O touching the right edge
     noto: { runs: [['NOTO', COBALT]], family: LAT, weight: 900, stretch: 62.5, track: -0.02, fit: 'w', sx: 0.75, box: [-8, MW + 14, -26, 0], vAlign: 'top' },
-    // HITOTSUBASHI: along the bottom edge, the last I ~95 % visible (right edge at W + 1.5), feet just below the edge
-    hito: { runs: [['HITOTSUBASHI', COBALT]], family: LAT, weight: 900, stretch: 62.5, track: -0.02, fit: 'w', sx: 0.54, box: [-6, MW + 1.5, 0, MH + 8], vAlign: 'bottom' },
+    // HITOTSUBASHI: along the bottom edge, with the last I slightly past the right edge
+    hito: { runs: [['HITOTSUBASHI', COBALT]], family: LAT, weight: 900, stretch: 62.5, track: -0.02, fit: 'w', sx: 0.54, box: [-6, MW + 8, 0, MH + 8], vAlign: 'bottom' },
     // the orange information in the two corners the sculpture leaves free: title upper-left, date lower-right
     titleA: { runs: [['出張輪島朝市', ORANGE]], family: JP, weight: 900, track: -0.02, box: [18, 0, 214, 240] },
     titleB: { runs: [['in 一橋祭', ORANGE]], family: JP, weight: 900, track: -0.02, box: [18, 0, 250, 276] },
@@ -135,7 +136,7 @@ const MOB = { name: 'mob', W: MW, H: MH, info: ['titleA', 'titleB', 'date'], mid
   // so both stay whole words. Their width never changes. The title moves with NOTO, the date with HITOTSUBASHI.
   // Opening (phone): the three words stacked as three bands of ONE glyph height, each squeezed to the screen width
   // (see openingBands). gap: share of the screen height between bands (at least gapMin); crop: past the side edges.
-  BANDS: { gap: 0.009, gapMin: 4, crop: 0 },
+  BANDS: { gap: 0.009, gapMin: 4, crop: 0.015 },
   SQZ: { ref: 760, kT: 0.45, maxT: 0.2, kB: 0.25, maxB: 0.16, top: ['noto', 'titleA', 'titleB'], bot: ['hito', 'date'] },
   ANCHOR: { noto: [-1, -1], notoO: [-1, -1], hito: [1, 1], hitoO: [1, 1], titleA: [-1, -1], titleB: [-1, -1], date: [1, 1], meets: [0, 0] } };
 let LAY = DESK;
@@ -630,7 +631,11 @@ function openingBands() {
   const Z = LAY.BANDS, top = -AY, bot = H + AY, Hr = bot - top;
   const g = Math.max(Z.gapMin, Z.gap * Hr), h = (Hr - 2 * g) / 3;
   const Ws = W + 2 * AX, l = -AX - Ws * Z.crop, r = W + AX + Ws * Z.crop;
-  return { noto: [l, r, top, top + h], meets: [l, r, top + h + g, top + 2 * h + g], hito: [l, r, bot - h, bot], h, gap: g };
+  // WebKit's canvas cannot use the DOM's width axis. Scaling its ink side bearings by the advance ratio
+  // leaves different optical gaps for N, M and H; compensate at the mapped band in viewport proportions.
+  const lag = !canvasInkLag ? [0, 0, 0] : LAY === DESK ? [0.023, 0.019, 0.015] : [0.015, 0.015, 0.015];
+  return { noto: [l - Ws * lag[0], r, top, top + h], meets: [l - Ws * lag[1], r, top + h + g, top + 2 * h + g],
+    hito: [l - Ws * lag[2], r, bot - h, bot], h, gap: g };
 }
 function computeIntroMaps() {
   // map the resting ink boxes onto the Phase 1 bands
