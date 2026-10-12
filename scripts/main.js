@@ -256,25 +256,26 @@ function updateIntro(dt) {
 }
 
 /* ---------------------------------------------------------------- footer wordmark (the final edge of the page) */
-// Fit the actual Archivo width after fonts load and on resize. Desktop is one slightly cropped line;
-// portrait screens use two lines with no horizontal or lower-edge crop.
-const END = { width: 1.015, left: 0.5 };
+// Fit the actual Archivo width after fonts load and on resize. Sink the ink inside
+// the clipped footer edge without adding to the page's scrollable height.
+const END = { width: 1.015, left: 0.5, sink: 0.16 };
 function fitEnd() {
   const el = document.getElementById('endmark'); if (!el) return;
   const box = el.parentElement, avail = box.clientWidth; if (!avail) return;
   const stacked = matchMedia('(max-width: 1023px) and (orientation: portrait)').matches;
-  el.style.fontSize = '100px'; el.style.marginTop = '0'; el.style.marginLeft = '0'; box.style.height = '';
+  el.style.fontSize = '100px'; el.style.marginTop = '0'; el.style.marginLeft = '0'; el.style.transform = ''; box.style.height = '';
   const w = el.getBoundingClientRect().width; if (!w) return;
   const F = 100 * avail * (stacked ? 0.96 : END.width) / w; el.style.fontSize = F.toFixed(2) + 'px';
   const wF = el.getBoundingClientRect().width;
   el.style.marginLeft = (stacked ? (avail - wF) / 2 : -(wF - avail) * END.left).toFixed(2) + 'px';
-  if (stacked) { box.style.height = Math.ceil(el.getBoundingClientRect().height) + 'px'; return; }
+  if (stacked) { box.style.height = Math.ceil(el.getBoundingClientRect().height) + 'px'; el.style.transform = `translateY(${(F * END.sink).toFixed(2)}px)`; return; }
   const probe = document.createElement('i'); probe.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
   el.appendChild(probe); const base = probe.getBoundingClientRect().top - el.getBoundingClientRect().top; probe.remove();
   const c = document.createElement('canvas').getContext('2d'); c.font = `900 ${F}px Archivo`; if ('fontStretch' in c) c.fontStretch = 'extra-condensed';
   const asc = c.measureText('NOTOHITSUBA').actualBoundingBoxAscent || F * 0.72;
   el.style.marginTop = (-(base - asc)).toFixed(2) + 'px';
   box.style.height = (asc + F * 0.14).toFixed(2) + 'px';
+  el.style.transform = `translateY(${(F * END.sink).toFixed(2)}px)`;
 }
 
 /* ---------------------------------------------------------------- one programmatic scroll tween (anchor links) */

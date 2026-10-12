@@ -18,10 +18,10 @@
   // ガラス INDEX のレイアウト（デザイン比較用）：'poster' = Hero の構図を引き継ぐ版（既定。巨大な名前と日付にガラスが重なる） / 'focus' = 前の既定 / 'current' = 最初の中央配置 / 'monumental' = B案 / 'editorial' = A案。?layout= で切替
   var GLASS_LAYOUT = 'poster';
   // カーソルとホバー（比較用）：'off' = なし（元のまま） / 'fill' = オレンジのカーソル＋円形に広がる色 / 'a' 'b' 'c' = それにワンショット
-  // （A Squash & Pop / B Tilt & Bounce / C Spin & Settle） / 'random' = A〜C から毎回1つ。?cursor= で切替。CUR_PANEL = true で右端に比較パネル（?panel=0 で非表示）。
+  // （A Squash & Pop / B Tilt & Bounce / C Spin & Settle） / 'random' = A〜C から毎回1つ。?cursor= で切替。CUR_PANEL = true で右端に比較パネル（通常は false）。
   // 時間と強さは scripts/cursor.js の CUR
   var CUR_MODE = 'random';
-  var CUR_PANEL = true;
+  var CUR_PANEL = false;
   (function () { var m = INDEX_MODE, l = GLASS_LAYOUT; try { var u = new URLSearchParams(location.search), q = u.get('index'), r = u.get('layout'); if (q === 'glass' || q === 'classic' || q === 'kinetic') m = q; if (r === 'poster' || r === 'focus' || r === 'monumental' || r === 'editorial' || r === 'current') l = r; } catch (e) {} document.documentElement.setAttribute('data-index', m); document.documentElement.setAttribute('data-gxl', l); var x = CUR_MODE, pn = CUR_PANEL; try { var v = new URLSearchParams(location.search); if (/^(off|fill|a|b|c|random)$/.test(v.get('cursor') || '')) x = v.get('cursor'); if (v.get('panel') === '0') pn = false; if (v.get('panel') === '1') pn = true; } catch (e) {} document.documentElement.setAttribute('data-cur', x); document.documentElement.setAttribute('data-curpanel', pn ? '1' : '0'); })();
 </script>
 <script type="importmap">
