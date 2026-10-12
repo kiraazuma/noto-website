@@ -240,6 +240,10 @@ body.booted #page{animation:none}
 .totop{align-self:start;font:700 calc(11*var(--t))/1 var(--lat);letter-spacing:.18em;text-decoration:none;display:inline-flex;gap:calc(8*var(--p));opacity:.7}
 .totop b{color:var(--orange)}
 .totop:hover,.totop:focus-visible{opacity:1}
+.fsponsors{display:grid;grid-template-columns:minmax(160px,22%) minmax(0,1fr);gap:clamp(20px,2.4vw,48px);margin-top:calc(64*var(--p));padding-top:calc(20*var(--p));border-top:1px solid currentColor}
+.fsponsors h4{margin:0;font:700 calc(11*var(--t))/1.4 var(--lat);letter-spacing:.18em;opacity:.75}
+.fsponsor-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:calc(14*var(--p)) clamp(20px,2.4vw,48px);list-style:none;margin:0;padding:0}
+.fsponsor-list li{font:700 clamp(18px,calc(22*var(--p)),28px)/1.35 var(--jp);letter-spacing:.04em;cursor:default}
 .fbar{position:relative;display:flex;justify-content:space-between;margin-top:calc(44*var(--p));padding-top:calc(16*var(--p));font:500 calc(11*var(--t))/1.4 var(--jp);letter-spacing:.06em;opacity:.8}
 .fbar .rl{left:0;top:0}
 
@@ -389,6 +393,10 @@ body.booted #page{animation:none}
   .fcol .ar { font-size: 11px; }
   .totop, #summary .s-cue { padding: 17px 14px; margin: -17px -14px; }
   .totop { font-size: 11px; }
+  .fsponsors { grid-template-columns: 1fr;gap:calc(12*var(--u));margin-top:calc(40*var(--u));padding-top:calc(18*var(--u)); }
+  .fsponsors h4 { font-size: 10.5px; }
+  .fsponsor-list { grid-template-columns: 1fr;gap:calc(12*var(--u)); }
+  .fsponsor-list li { font-size:20px; }
   .fbar { flex-direction: column; gap: 4px; margin-top: calc(24 * var(--u)); padding-top: 14px; font-size: 10.5px; }
 }
 
