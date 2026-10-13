@@ -400,6 +400,25 @@ function navigateTo(x) {
   if (r > -VH * 0.1 && r < VH * 0.75) toggle(x);
   else scrollToY(docTop(x.row) - VH * 0.3, 0.95, () => toggle(x));
 }
+// The INDEX fact link opens the INFO detail before travelling to the map inside it.
+function navigateToAccess() {
+  if (mode !== 'main') return;
+  const info = byId('info'), map = document.getElementById('access-map');
+  if (ALT) {
+    altStart().then(g => g ? g.open('info').then(() => true) : false).then(opened => {
+      if (opened && map) scrollToY(docTop(map) - Math.min(28, VH * .035), .65);
+    });
+  } else {
+    navigateTo(info);
+    setTimeout(() => { if (OPEN === info && map) scrollToY(docTop(map) - 24, .65); }, 1400);
+  }
+}
+const campusMap = document.getElementById('campus-map');
+if (campusMap) {
+  const narrowMap = matchMedia('(max-width: 1023px) and (orientation: portrait)');
+  const frameMap = () => campusMap.setAttribute('viewBox', narrowMap.matches ? '8 40 270 228' : '0 22 350 252');
+  frameMap(); narrowMap.addEventListener('change', frameMap);
+}
 // TOP: back to the top of the page (the summary). An open row closes on the way; the opening is not replayed.
 function toTop() {
   if (mode !== 'main') return;
@@ -413,6 +432,7 @@ document.addEventListener('click', (e) => {
   const a = e.target.closest('a[href^="#"]'); if (!a || a.id === 'totop') return;
   const id = a.getAttribute('href').slice(1), x = byId(id);
   e.preventDefault();
+  if (id === 'access-map') { navigateToAccess(); return; }
   if (x) { navigateTo(x); return; }
   const t = document.getElementById(id); if (t) scrollToY(docTop(t));
 });

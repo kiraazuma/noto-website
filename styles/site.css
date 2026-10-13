@@ -922,11 +922,17 @@ body.booted #page{animation:none}
 .kx-w:focus-visible{outline:3px solid var(--orange);outline-offset:6px}
 .kx:not(.kx-ready) .kx-w{pointer-events:none}
 /* the small facts: a block of small type (it moves, it does not scale) */
-.kx-facts{font:700 var(--kx-small,15px)/1.6 var(--jp);letter-spacing:.04em;white-space:nowrap}
-.kx-facts ol{margin:0 0 .7em;padding:0;list-style:none}
-.kx-facts i{font:700 .82em/1 var(--lat);letter-spacing:.08em;font-style:normal;display:inline-block;min-width:2.1em;opacity:.7}
-.kx-facts p{margin:0}
+.kx-facts{font:700 clamp(16px,1.15vw,18px)/1.48 var(--jp);letter-spacing:.015em;white-space:nowrap}
+.kx-facts ol{margin:0;padding:0;list-style:none}
+.kx-facts li+li{margin-top:.14em}
+.kx-facts i{font:800 .83em/1 var(--lat);letter-spacing:.08em;font-style:normal;display:inline-block;min-width:2.15em;opacity:.8}
+.kx-facts p{margin:.65em 0 0;font-size:.88em}
 .kx-facts b{font-weight:900;margin-right:1.1em}
+.kx-map-link{display:inline-flex;align-items:baseline;gap:.38em;margin-top:.72em;text-decoration:none;color:var(--cobalt);font-weight:900;transition:color .2s ease}
+.kx-map-link span{display:inline-block;transition:transform .2s ease}
+.kx-map-link:hover,.kx-map-link:focus-visible{color:var(--orange)}
+.kx-map-link:hover span,.kx-map-link:focus-visible span{transform:translate(2px,-2px)}
+.kx-map-link:focus-visible{outline:2px solid currentColor;outline-offset:3px}
 /* the detail: the item's own content, in the column the sheet opens for it (left edge from --kx-cx, top from
    --kx-cy, both set by the script), scrolling with the page */
 .kx-detail{position:relative;z-index:2;margin-top:calc(-1*var(--vh));min-height:var(--vh);
@@ -953,7 +959,44 @@ body.booted #page{animation:none}
 }
 /* no script / reduced motion fall back to the same INDEX sheet, placed by the script without motion */
 .kx:not(.kx-ready) .kx-t{visibility:hidden}
-@media (max-width: 1023px) and (orientation: portrait) { .kx-facts b { display: block; margin: 0; } .kx-facts ol { margin-bottom: .5em; } }
+@media (max-width: 1023px) and (orientation: portrait) {
+  .kx-facts{font-size:clamp(12px,3.2vw,15px);line-height:1.42;letter-spacing:0}
+  .kx-facts b{display:block;margin:0}
+  .kx-facts p{margin-top:.45em;font-size:.9em}
+  .kx-map-link{margin-top:.52em}
+}
+
+/* ACCESS: the same traced campus plan is framed more tightly on narrow screens. */
+#info .access{display:grid;grid-template-columns:minmax(0,35fr) minmax(0,65fr);gap:clamp(28px,4vw,70px);align-items:start;color:var(--cobalt);margin:0 0 clamp(64px,7vw,110px)}
+#info .access-copy{min-width:0;padding-top:1.4em}
+.access-kicker{margin:0 0 clamp(24px,3vw,44px);font:800 clamp(13px,1.1vw,17px)/1 var(--lat);letter-spacing:.14em}
+.access-kicker span{color:var(--orange)}
+.access-copy h3{margin:0 0 clamp(30px,4vw,56px);font:900 clamp(40px,4.5vw,70px)/1.16 var(--jp);letter-spacing:-.075em;white-space:nowrap}
+.access-campus,.access-place{margin:0;font:700 clamp(15px,1.3vw,19px)/1.6 var(--jp)}
+.access-place{margin-top:.3em}
+.access-place strong{font-weight:900}
+.access-figure{min-width:0;margin:0}
+.access-figure svg{display:block;width:100%;height:auto;overflow:hidden}
+.access-walkways{fill:#EEF0EE}
+.access-buildings{fill:#DADDDD;stroke:#C7CACA;stroke-width:.65;stroke-linejoin:miter}
+.access-labels{fill:#434343;font:700 8px/1 var(--jp);letter-spacing:0}
+.access-pin circle{fill:var(--orange)}
+.access-pin text{fill:#fff;font:900 10px/1 var(--lat)}
+.access-figure figcaption{display:flex;align-items:center;gap:.55em;margin:.65em 0 0;font:700 clamp(13px,1.1vw,16px)/1.4 var(--jp);color:#434343}
+.access-figure figcaption strong{font:900 1.08em/1 var(--lat);color:var(--orange)}
+.access-dot{width:.62em;height:.62em;border-radius:50%;background:var(--orange)}
+[data-index=kinetic] .kx-body:has(#info){max-width:none}
+[data-index=kinetic] #info .access{width:calc(100vw - 96px);margin-left:calc(48px - var(--kx-cx));margin-top:36vh}
+@media (max-width: 1023px) and (orientation: portrait){
+  #info .access{display:block;margin-bottom:calc(56*var(--u))}
+  [data-index=kinetic] #info .access{width:auto;margin:0 0 calc(56*var(--u))}
+  #info .access-copy{padding-top:0}
+  .access-kicker{margin-bottom:calc(20*var(--u))}
+  .access-copy h3{font-size:clamp(38px,10vw,56px);margin-bottom:calc(20*var(--u))}
+  .access-campus,.access-place{font-size:clamp(14px,3.8vw,17px)}
+  .access-figure{margin-top:calc(26*var(--u))}
+  .access-figure figcaption{font-size:13px}
+}
 /* ================================================================ CIRCULAR HOVER (scripts/cursor.js; html[data-cur] = off | fill | a | b | c | random)
    From where the system cursor entered, the type turns orange in a growing circle (the type's own glyphs are the
    mask: background-clip:text with a radial gradient — no copy of the text). Leaving, the circle shrinks back out.
