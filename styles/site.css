@@ -523,7 +523,7 @@ body.booted #page{animation:none}
 .gx-body #noto .big{font-size:calc(66*var(--p))}
 .gx-body #noto .S{font-size:calc(17*var(--t))}
 .gx-body #support .M{font-size:calc(32*var(--p))}
-.gx-body .tiers .L{font-size:calc(66*var(--p))}
+.gx-body .tiers .L{font-size:calc(60*var(--p))}
 .gx-body .table2{grid-template-columns:1fr;row-gap:0}
 .gx-body .table2 .list.table:first-child li:last-child{border-bottom:0}
 .gx-body .table .v{font-size:calc(28*var(--p))}
