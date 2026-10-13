@@ -972,18 +972,22 @@ body.booted #page{animation:none}
 .access-label strong{font:900 1.05em/1 var(--lat)}
 .access-label span{opacity:.5}
 .access svg{display:block;width:100%;height:auto;overflow:hidden}
-.access-walkways{fill:#EEF0EE}
-.access-buildings{fill:#E1E3E1;stroke:#D0D3D0;stroke-width:.55;stroke-linejoin:miter}
-.access-labels{fill:#434343;font:700 8.5px/1 var(--jp);letter-spacing:0}
+.access-walkways{fill:#E9ECE9}
+.access-buildings{fill:#D9DDDA;stroke:#C9CFCA;stroke-width:.55;stroke-linejoin:miter}
+.access-frontage{fill:#D0D8D4;stroke:#C3CCC6;stroke-width:.55}
+.access-labels{fill:#434343;font:700 11px/1 var(--jp);letter-spacing:0}
+.access-labels .access-leader{fill:none;stroke:#8D9792;stroke-width:.7}
 .access-pin circle{fill:var(--orange)}
 .access-pin text{fill:#fff;font:900 10px/1 var(--lat)}
 [data-index=kinetic] #info .pin{position:relative}
 @media (min-width:1024px){
-  [data-index=kinetic] #info .access{position:absolute;top:36vh;left:calc(clamp(24px,3vw,70px) - var(--kx-cx));width:min(39vw,530px);max-width:none;margin:0}
+  [data-index=kinetic] #info .access{position:absolute;top:clamp(250px,30vh,265px);left:calc(clamp(24px,3vw,70px) - var(--kx-cx));width:min(39vw,450px);max-width:none;margin:0}
+  #info .access svg{width:auto;max-width:100%;height:min(30vh,240px)}
 }
 @media (max-width: 1023px) and (orientation: portrait){
   #info .access{max-width:none;margin:calc(36*var(--u)) 0 calc(40*var(--u))}
   .access-label{font-size:13px;margin-bottom:calc(10*var(--u))}
+  #info .access svg{width:100%;height:auto}
 }
 /* ================================================================ CIRCULAR HOVER (scripts/cursor.js; html[data-cur] = off | fill | a | b | c | random)
    From where the system cursor entered, the type turns orange in a growing circle (the type's own glyphs are the

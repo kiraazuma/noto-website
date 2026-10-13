@@ -418,12 +418,6 @@ function navigateToAccess() {
     setTimeout(() => { if (OPEN === info) revealMap(); }, 1400);
   }
 }
-const campusMap = document.getElementById('campus-map');
-if (campusMap) {
-  const narrowMap = matchMedia('(max-width: 1023px) and (orientation: portrait)');
-  const frameMap = () => campusMap.setAttribute('viewBox', narrowMap.matches ? '15 55 270 180' : '0 58 350 166');
-  frameMap(); narrowMap.addEventListener('change', frameMap);
-}
 // TOP: back to the top of the page (the summary). An open row closes on the way; the opening is not replayed.
 function toTop() {
   if (mode !== 'main') return;
