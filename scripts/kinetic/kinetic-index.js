@@ -240,6 +240,32 @@ export async function mountKinetic(root, hooks = {}) {
     D.facts = { ...I.facts, y: H + 0.05 * H };
     return { D, cx, cy };
   }
+  // Center the complete map group between the INFO heading and the event line.
+  // Both are separate moving layers, so their destination layout supplies the grid's bounds.
+  function placeInfoAccess(D) {
+    if (phone || !D.info) { root.classList.remove('kx-access-overflow'); return; }
+    const slot = root.querySelector('#info .access-slot');
+    const pin = slot?.closest('.pin');
+    if (!pin) return;
+    const origin = sticky.getBoundingClientRect().top;
+    // The absolute slot is positioned from the pin's padded content edge.
+    const pinTop = pin.getBoundingClientRect().top + parseFloat(getComputedStyle(pin).paddingTop);
+    const upper = origin + D.info.y + D.info.s;
+    const lower = origin + Math.min(...['name1', 'name2', 'in', 'date'].map(k => D[k].y));
+    slot.style.setProperty('--kx-access-top', `${(upper - pinTop).toFixed(1)}px`);
+    slot.style.setProperty('--kx-access-height', `${Math.max(0, lower - upper).toFixed(1)}px`);
+    const label = slot.querySelector('.access-label').getBoundingClientRect();
+    const link = slot.querySelector('.access-open').getBoundingClientRect();
+    const overflow = link.bottom - label.top + 16 > lower - upper;
+    if (overflow) {
+      const eventBottom = origin + Math.max(...['name1', 'name2', 'in', 'date'].map(k => D[k].y + D[k].s));
+      const flowTop = eventBottom + clamp(H * 0.025, 12, 24);
+      const figureHeight = slot.querySelector('.access').getBoundingClientRect().height;
+      slot.style.setProperty('--kx-access-flow-top', `${(flowTop - pinTop).toFixed(1)}px`);
+      root.style.setProperty('--kx-access-flow-height', `${Math.ceil(flowTop + figureHeight + 40 - detail.getBoundingClientRect().top)}px`);
+    }
+    root.classList.toggle('kx-access-overflow', overflow);
+  }
   const center = (k, l) => { const p = P[k]; return { x: l.x + (p.block ? p.bw : p.r * l.s) / 2, y: l.y + (p.block ? p.bh : l.s) / 2 }; };
 
   // ---------------------------------------------------------------- the scrubbed entrance
@@ -317,6 +343,7 @@ export async function mountKinetic(root, hooks = {}) {
         const { D, cx, cy } = (dLay = detailLayout(id));
         root.style.setProperty('--kx-cx', cx.toFixed(1) + 'px'); root.style.setProperty('--kx-cy', cy.toFixed(1) + 'px');
         root.classList.add('kx-open'); detail.hidden = false;
+        if (id === 'info') placeInfoAccess(D);
         for (const k of WORDS) {
           btn[k].setAttribute('aria-expanded', k === id ? 'true' : 'false');
           btn[k].tabIndex = k === id ? 0 : -1; if (k !== id) btn[k].setAttribute('aria-hidden', 'true');
@@ -350,7 +377,7 @@ export async function mountKinetic(root, hooks = {}) {
       toSection(() => {});
       later(instant ? 0 : 0.23, () => {
         detail.hidden = true; unmountItem(); current = null; dLay = null;
-        root.classList.remove('kx-open');
+        root.classList.remove('kx-open', 'kx-access-overflow');
         for (const k of WORDS) { btn[k].setAttribute('aria-expanded', 'false'); btn[k].tabIndex = 0; btn[k].removeAttribute('aria-hidden'); }
         btn[id].setAttribute('aria-label', label0[id]);
         hooks.onChange?.(null);
@@ -423,7 +450,7 @@ export async function mountKinetic(root, hooks = {}) {
   // ---------------------------------------------------------------- size
   function onResize() {
     measure();
-    if (current) { dLay = detailLayout(current); for (const k in P) if (!tw[k]) P[k].c = { ...dLay.D[k] ?? L.I[k] }; root.style.setProperty('--kx-cx', dLay.cx.toFixed(1) + 'px'); root.style.setProperty('--kx-cy', dLay.cy.toFixed(1) + 'px'); }
+    if (current) { dLay = detailLayout(current); for (const k in P) if (!tw[k]) P[k].c = { ...dLay.D[k] ?? L.I[k] }; root.style.setProperty('--kx-cx', dLay.cx.toFixed(1) + 'px'); root.style.setProperty('--kx-cy', dLay.cy.toFixed(1) + 'px'); if (current === 'info') placeInfoAccess(dLay.D); }
     dirty = true; lastP = -1;
   }
   measure();
