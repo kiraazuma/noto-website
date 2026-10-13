@@ -244,7 +244,11 @@ body.booted #page{animation:none}
 .fsponsors h4{margin:0;font:700 calc(11*var(--t))/1.4 var(--lat);letter-spacing:.18em;opacity:.75}
 .fsponsor-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:calc(14*var(--p)) clamp(20px,2.4vw,48px);list-style:none;margin:0;padding:0}
 .fsponsor-list li{font:700 clamp(18px,calc(22*var(--p)),28px)/1.35 var(--jp);letter-spacing:.04em;cursor:default}
-.fbar{position:relative;display:flex;justify-content:space-between;margin-top:calc(44*var(--p));padding-top:calc(16*var(--p));font:500 calc(11*var(--t))/1.4 var(--jp);letter-spacing:.06em;opacity:.8}
+.fbar{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:clamp(20px,2.4vw,40px);margin-top:calc(44*var(--p));padding-top:calc(16*var(--p));font:500 calc(11*var(--t))/1.4 var(--jp);letter-spacing:.06em}
+.fbar>span,.fbar>.rl{opacity:.8}
+.fbar>span:nth-of-type(2){white-space:nowrap}
+.footer-seal{width:clamp(76px,6.67vw,100px);aspect-ratio:1;justify-self:end;display:grid;place-items:center;background:#FCFAEF}
+.footer-seal img{display:block;width:100%;height:auto;object-fit:contain}
 .fbar .rl{left:0;top:0}
 
 /* ---------------------------------------------------------------- links: one language (text, orange rule, arrow)
@@ -398,7 +402,8 @@ body.booted #page{animation:none}
   .fsponsors h4 { font-size: 10.5px; }
   .fsponsor-list { grid-template-columns: 1fr;gap:calc(12*var(--u)); }
   .fsponsor-list li { font-size:20px; }
-  .fbar { flex-direction: column; gap: 4px; margin-top: calc(24 * var(--u)); padding-top: 14px; font-size: 10.5px; }
+  .fbar { grid-template-columns:1fr;gap:4px;margin-top:calc(24 * var(--u));padding-top:14px;font-size:10.5px; }
+  .footer-seal{width:clamp(70px,19.5vw,80px);margin-top:12px}
 }
 
 /* phones held sideways get the desktop composition; nothing may push the page wider than the screen */
@@ -1031,19 +1036,20 @@ body.booted #page{animation:none}
   .documentary-photos{--photo-gap:32px;--photo-top:40px;padding-top:20px}
 }
 
-/* Photo windows live inside .kx-ch; no changes to the INDEX engine's placement/transform boxes.
-   Set each glyph's crop here. The orange circle stays below the synchronized photo crossfade. */
+/* One glyph paints both orange and photo: no duplicated text/baseline or independent mask box. */
+@property --kx-photo-mix{syntax:'<number>';inherits:false;initial-value:0}
 .kx-w[data-id=asaichi] .kx-ch:nth-child(1){--kx-photo-position:42% 50%}
 .kx-w[data-id=asaichi] .kx-ch:nth-child(2){--kx-photo-position:53% 54%}
 .kx-w[data-id=noto] .kx-ch:nth-child(1){--kx-photo-position:58% 58%}
 .kx-w[data-id=noto] .kx-ch:nth-child(2){--kx-photo-position:55% 58%}
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
-  .kx-ch[data-photo]{position:relative}
-  .kx-ch[data-photo]::after{content:attr(data-glyph);position:absolute;inset:0;pointer-events:none;
-    padding:inherit;box-sizing:border-box;
-    color:transparent;-webkit-text-fill-color:transparent;background-image:var(--kx-photo);
-    background-origin:content-box;background-size:cover;background-position:var(--kx-photo-position,50% 50%);background-repeat:no-repeat;
-    -webkit-background-clip:text;background-clip:text;opacity:0;transition:none}
-  .kx-photo-on[aria-expanded=false] .kx-ch[data-photo]::after{opacity:1;transition:opacity .15s ease}
-  .kx-photo-sync[aria-expanded=false] .kx-ch[data-photo]::after{transition:none}
+  .kx-ch[data-photo]{--kx-photo-mix:0;transition:none}
+  .kx-photo-on[aria-expanded=false] .kx-ch[data-photo]{--kx-photo-mix:1;
+    color:transparent!important;-webkit-text-fill-color:transparent;
+    -webkit-background-clip:text;background-clip:text;
+    background-image:linear-gradient(color-mix(in srgb,var(--orange) calc((1 - var(--kx-photo-mix))*100%),transparent),color-mix(in srgb,var(--orange) calc((1 - var(--kx-photo-mix))*100%),transparent)),var(--kx-photo)!important;
+    background-origin:padding-box;background-size:100% 100%,cover;
+    background-position:0 0,var(--kx-photo-position,50% 50%);background-repeat:no-repeat;
+    transition:--kx-photo-mix .15s linear}
+  .kx-photo-sync[aria-expanded=false] .kx-ch[data-photo]{transition:none}
 }

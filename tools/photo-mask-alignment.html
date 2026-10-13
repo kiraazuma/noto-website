@@ -1,0 +1,34 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Single-glyph photo mask comparison</title>
+<style>body{margin:0;background:#fcfaef}iframe{display:block;border:0;height:900px}#status{font:14px system-ui;color:#0130e2}</style>
+<div id="status">Preparing identical glyph comparison…</div>
+<iframe title="Photo mask alignment"></iframe>
+<script type="module">
+// Compare ?paint=solid&photo=off with ?paint=solid at the same width/mask/stage.
+// A solid orange replacement photograph must render exactly the same ink as the orange circle.
+const q=new URL(location.href).searchParams, f=document.querySelector('iframe');
+const width=Number(q.get('width'))||1440, mask=q.get('mask')==='noto'?'noto':'asaichi', stage=q.get('stage')||'rest';
+f.style.width=width+'px'; f.src='../?manual&cursor='+(q.get('motion')||'a');
+const wait=async fn=>{const end=performance.now()+20000;while(!fn()){if(performance.now()>end)throw Error('timeout');await new Promise(r=>setTimeout(r,20));}};
+const flush=()=>new Promise(r=>setTimeout(r,0));
+try{
+ await wait(()=>f.contentWindow.__kx&&f.contentWindow.__m);
+ const w=f.contentWindow,d=w.document; w.__m.seek(30);w.__m.toEnd(120);
+ await wait(()=>{w.__m.step(2);return w.__kx.rest()});
+ const el=d.querySelector(`.kx-w[data-id=${mask}]`);
+ if(stage==='return'){awaitOpen();w.__m.step(300);await flush();w.__kx.close();w.__m.step(16);await flush();}
+ if(stage==='resize'){f.style.width=(width+160)+'px';await flush();w.__m.step(200);f.style.width=width+'px';await flush();w.__m.step(200);}
+ function awaitOpen(){return w.__kx.open(mask)}
+ const r=el.getBoundingClientRect();el.dispatchEvent(new w.PointerEvent('pointerover',{bubbles:true,pointerType:'mouse',clientX:r.x+r.width/2,clientY:r.y+r.height/2}));
+ await wait(()=>{w.__m.step(2);return el.classList.contains('kx-photo-on')});
+ if(stage==='shot'){for(const a of el.getAnimations({subtree:true}))a.currentTime=75;}
+ else {w.__m.step(150);await flush();}
+ if(q.get('paint')==='solid')for(const ch of el.querySelectorAll('.kx-ch'))ch.style.setProperty('--kx-photo','linear-gradient(var(--orange),var(--orange))');
+ if(q.get('photo')==='off'){el.classList.remove('kx-photo-on');for(const a of el.getAnimations({subtree:true}))if(a.effect.getKeyframes().some(k=>'--kx-photo-mix' in k))a.cancel();}
+ if(stage==='open'){el.click();w.__m.step(8);await flush();}
+ document.documentElement.dataset.geometry=JSON.stringify([...d.querySelectorAll('.kx-w,.kx-in,.kx-ch')].map(ch=>{const s=w.getComputedStyle(ch),r=ch.getBoundingClientRect();return [r.x,r.y,r.width,r.height,s.font,s.letterSpacing,s.padding,s.margin,s.transform]}));
+ document.querySelector('#status').textContent=`READY ${width}px / ${mask} / ${stage} / DPR ${w.devicePixelRatio}`;
+ document.documentElement.dataset.result='pass';
+}catch(e){document.querySelector('#status').textContent='FAIL '+e.message;document.documentElement.dataset.result='fail';}
+</script>

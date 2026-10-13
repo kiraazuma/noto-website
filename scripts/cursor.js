@@ -113,13 +113,13 @@ export function initCursor() {
       if (!ready || ticket !== t.photoTicket || t.anims !== running || !photoEligible(t)
         || motions.every(m => m.playState === 'finished')) return;
       // Both photographs start at the circle-full trigger, alongside the first motion (no C stagger).
-      // Animate only the pseudo-layer opacity. It inherits the existing character/word transforms.
+      // Crossfade the backgrounds on the original glyph, sharing its exact ink and transforms.
       t.photoShown = true; t.el.classList.add('kx-photo-on', 'kx-photo-sync');
       const motion = motions[0];
       t.layers.forEach(layer => {
         const fade = layer.animate([
-          { opacity: 0 }, { opacity: 1 },
-        ], { pseudoElement: '::after', duration: CUR.photo.duration * 1000, easing: 'linear', fill: 'both' });
+          { '--kx-photo-mix': '0' }, { '--kx-photo-mix': '1' },
+        ], { duration: CUR.photo.duration * 1000, easing: 'linear', fill: 'both' });
         // Image.decode may finish after motion start: join its timeline at the current position.
         if (MANUAL) { fade.pause(); fade.currentTime = motion.currentTime || 0; }
         else if (motion.startTime != null) fade.startTime = motion.startTime;
@@ -248,7 +248,7 @@ export function initCursor() {
     const motions = running.slice();
     const done = () => {
       if (t.anims !== running || !running.every(a => a.playState === 'finished')) return;
-      // The synchronized layer already holds opacity 1. Never schedule a new fade after motion completion.
+      // The class holds mix 1 after cancellation. Never start a new fade after motion completion.
       stop(t);
     };
     for (const a of t.anims) a.onfinish = done;

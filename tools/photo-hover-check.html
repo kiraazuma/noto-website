@@ -30,7 +30,7 @@ try {
     const b = el.getBoundingClientRect();
     el.dispatchEvent(new w.PointerEvent(type, { bubbles: true, pointerType: 'mouse', clientX: b.x + b.width / 2, clientY: b.y + b.height / 2, relatedTarget: null }));
   }
-  const photoOpacity = el => [...el.querySelectorAll('.kx-ch[data-photo]')].map(ch => parseFloat(w.getComputedStyle(ch, '::after').opacity));
+  const photoOpacity = el => [...el.querySelectorAll('.kx-ch[data-photo]')].map(ch => parseFloat(w.getComputedStyle(ch).getPropertyValue('--kx-photo-mix')));
   const hasPhoto = el => el.classList.contains('kx-photo-on') && photoOpacity(el).some(alpha => alpha > 0);
 
   // Four decodes start at INDEX entrance, before the first hover; hold them to simulate a slow connection.
@@ -54,7 +54,7 @@ try {
       const line = parseFloat(cs.lineHeight), base = py + (line + m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2;
       const bounds = {left:px-m.actualBoundingBoxLeft,right:px+m.actualBoundingBoxRight,top:base-m.actualBoundingBoxAscent,bottom:base+m.actualBoundingBoxDescent};
       check(bounds.left >= -1 && bounds.right <= ch.offsetWidth+1 && bounds.top >= -1 && bounds.bottom <= ch.offsetHeight+1, `${label}/${ch.textContent}: complete ink fits the paint box`);
-      check(px > 0 && py > 0 && w.getComputedStyle(ch,'::after').paddingLeft === cs.paddingLeft, `${label}/${ch.textContent}: photo layer shares padded paint coordinates`);
+      check(px > 0 && py > 0 && w.getComputedStyle(ch,'::after').content === 'none', `${label}/${ch.textContent}: original glyph is the only photo mask`);
       const contentWidth = ch.offsetWidth - px * 2;
       if (m.actualBoundingBoxRight > contentWidth + 1) report(`EVIDENCE ${label}/${ch.textContent}: ink right ${m.actualBoundingBoxRight.toFixed(1)} exceeds old text box ${contentWidth.toFixed(1)}`);
     }
@@ -130,7 +130,7 @@ try {
       w.__cur.setMode(mode);
       const el = word(id); pointer(el, 'pointerover'); w.__m.step(20); await flush();
       const all = el.getAnimations({subtree:true});
-      const fades = all.filter(a => a.effect.pseudoElement === '::after');
+      const fades = all.filter(a => a.effect.getKeyframes().some(k => '--kx-photo-mix' in k));
       const motions = all.filter(a => a.effect.getKeyframes().some(k => k.transform));
       check(fades.length === 2 && motions.length === (mode === 'c' ? 2 : 1), `${mode}/${id}/${speed}x: photograph effects share existing motion layers`);
       fades.forEach((a, i) => {
