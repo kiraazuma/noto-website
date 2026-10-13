@@ -404,19 +404,24 @@ function navigateTo(x) {
 function navigateToAccess() {
   if (mode !== 'main') return;
   const info = byId('info'), map = document.getElementById('access-map');
+  const revealMap = () => {
+    if (!map) return;
+    const r = map.getBoundingClientRect();
+    if (r.top < 12 || r.bottom > VH - 24) scrollToY(docTop(map) - Math.min(28, VH * .035), .65);
+  };
   if (ALT) {
     altStart().then(g => g ? g.open('info').then(() => true) : false).then(opened => {
-      if (opened && map) scrollToY(docTop(map) - Math.min(28, VH * .035), .65);
+      if (opened) revealMap();
     });
   } else {
     navigateTo(info);
-    setTimeout(() => { if (OPEN === info && map) scrollToY(docTop(map) - 24, .65); }, 1400);
+    setTimeout(() => { if (OPEN === info) revealMap(); }, 1400);
   }
 }
 const campusMap = document.getElementById('campus-map');
 if (campusMap) {
   const narrowMap = matchMedia('(max-width: 1023px) and (orientation: portrait)');
-  const frameMap = () => campusMap.setAttribute('viewBox', narrowMap.matches ? '8 40 270 228' : '0 22 350 252');
+  const frameMap = () => campusMap.setAttribute('viewBox', narrowMap.matches ? '15 55 270 180' : '0 58 350 166');
   frameMap(); narrowMap.addEventListener('change', frameMap);
 }
 // TOP: back to the top of the page (the summary). An open row closes on the way; the opening is not replayed.
