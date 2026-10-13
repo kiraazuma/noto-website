@@ -1,0 +1,29 @@
+<!doctype html><meta charset="utf-8"><title>Mobile Kinetic INDEX check</title>
+<style>body{margin:0;background:#fcfaef;color:#0130e2;font:12px system-ui}iframe{display:block;border:0}pre{white-space:pre-wrap}</style>
+<iframe title="Mobile INDEX preview"></iframe><pre>Preparing…</pre>
+<script type="module">
+const q=new URL(location.href).searchParams,f=document.querySelector('iframe'),width=Number(q.get('width'))||390,height=Number(q.get('height'))||664,p=q.has('progress')?Number(q.get('progress')):1;
+f.style.width=width+'px';f.style.height=height+'px';f.src='../?manual';
+const wait=async fn=>{const end=performance.now()+20000;while(!fn()){if(performance.now()>end)throw Error('timeout');await new Promise(r=>setTimeout(r,25));}};
+try{
+ await wait(()=>f.contentWindow.__m&&f.contentWindow.__kx);const w=f.contentWindow,d=w.document;
+ const css=d.createElement('style');css.textContent='html{scrollbar-width:none!important}::-webkit-scrollbar{width:0!important;display:none}';d.head.append(css);await new Promise(r=>setTimeout(r,180));
+ w.__m.seek(30);w.__m.toEnd(300);
+ await new Promise(r=>setTimeout(r,180));w.__m.step(300);
+ if(p===1)await wait(()=>{w.__m.step(2);return w.__kx.rest()});
+ if(p<1){
+  // Drive the real entrance track independently of main.js's scroll/hold state machine.
+  const script=d.createElement('script');script.type='module';script.textContent=`import {mountKinetic} from './scripts/kinetic/kinetic-index.js';window.__indexTrack=await mountKinetic(document.querySelector('.kx'),{progress:()=>${p}});`;
+  d.body.append(script);await wait(()=>w.__indexTrack);w.__kx=w.__indexTrack;for(let i=0;i<300;i++)w.__kx.frame(1/60);
+ }
+ if(q.has('resize')){f.style.height=(height+180)+'px';await new Promise(r=>setTimeout(r,180));w.__m.step(300);f.style.height=height+'px';await new Promise(r=>setTimeout(r,180));w.__m.step(300);}
+ const sticky=d.querySelector('.kx-sticky').getBoundingClientRect(),ctx=d.createElement('canvas').getContext('2d'),rects={};
+ for(const el of d.querySelectorAll('.kx [data-k]')){
+  const r=el.getBoundingClientRect(),s=w.getComputedStyle(el),size=parseFloat(s.fontSize),inner=el.querySelector('.kx-in');
+  let top=r.top-sticky.top,bot=r.bottom-sticky.top;
+  if(inner){ctx.font=`${s.fontWeight} 100px ${s.fontFamily}`;const m=ctx.measureText(inner.textContent),base=.5+((m.fontBoundingBoxAscent??88)-(m.fontBoundingBoxDescent??12))/200;top+= (base-m.actualBoundingBoxAscent/100)*r.height;bot=r.top-sticky.top+(base+m.actualBoundingBoxDescent/100)*r.height;}
+  rects[el.dataset.k]={x:r.x-sticky.x,y:r.y-sticky.y,width:r.width,height:r.height,inkTop:top,inkBot:bot,font:size};
+ }
+ const result={width,height,progress:w.__kx.debug().p,rects,layout:w.__kx.debug()};document.documentElement.dataset.measurements=JSON.stringify(result);document.documentElement.dataset.result='pass';document.querySelector('pre').textContent=JSON.stringify(result,null,2);
+}catch(e){document.documentElement.dataset.result='fail';document.querySelector('pre').textContent=e.stack;}
+</script>

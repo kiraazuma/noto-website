@@ -89,6 +89,12 @@ export async function mountKinetic(root, hooks = {}) {
       const m = cv.measureText(n.dataset.k === 'date' ? '2026.11.21–23' : '出張輪島朝市催能登応援案内一橋祭');
       const fa = (m.fontBoundingBoxAscent ?? 88) / 100, fd = (m.fontBoundingBoxDescent ?? 12) / 100, base = 0.5 + (fa - fd) / 2;
       p.it = base - (m.actualBoundingBoxAscent ?? 80) / 100; p.ib = base + (m.actualBoundingBoxDescent ?? 8) / 100;
+      if (p.k === 'noto') {
+        // Keep the existing shared layout metrics; measure 能登 itself for its mobile edge crop.
+        const word = cv.measureText(n.querySelector('.kx-in').textContent);
+        p.wordIt = base - (word.actualBoundingBoxAscent ?? 80) / 100;
+        p.wordIb = base + (word.actualBoundingBoxDescent ?? 8) / 100;
+      }
       n.style.fontSize = p.F ? p.F + 'px' : ''; n.style.transform = t0;
     }
     L = layouts();
@@ -165,7 +171,9 @@ export async function mountKinetic(root, hooks = {}) {
       // ---- phone. I: 能登 top left, 朝市 bottom right (both cut by the edges); between them two columns: 催し 応援 案内
       // stacked on the left, the event block and the facts on the right
       const G = Math.min(0.5 * W, 0.3 * H);
-      I.noto = at('noto', G, { x: -0.05 * G, inkTop: -0.1 * G });
+      // Convert the actual word's crop to at()'s shared ink reference, without changing its size or side bleed.
+      const notoTop = (s, crop) => -(crop * (P.noto.wordIb - P.noto.wordIt) + P.noto.wordIt - P.noto.it) * s;
+      I.noto = at('noto', G, { x: -0.05 * G, inkTop: notoTop(G, 0.03) });
       I.asaichi = at('asaichi', G, { right: W + 0.03 * G, inkBot: H + 0.06 * G });
       const nb = ink('noto', I.noto).bot, at0 = ink('asaichi', I.asaichi).top;
       const M = Math.min(0.2 * W, (at0 - nb - 0.08 * H) / 3.5), gap = 0.2 * M, ih = (P.program.ib - P.program.it) * M;
@@ -183,7 +191,7 @@ export async function mountKinetic(root, hooks = {}) {
       if (over > 0) { const up = Math.min(over, Math.max(0, top - nb - 0.03 * H)); for (const k of [...MID, 'name1', 'name2', 'in', 'date', 'facts']) I[k] = { ...I[k], y: I[k].y - up }; }
       // E1
       const G1 = 1.3 * G;
-      E1.noto = at('noto', G1, { x: -0.07 * G1, inkTop: -0.2 * G1 });
+      E1.noto = at('noto', G1, { x: -0.07 * G1, inkTop: notoTop(G1, 0.06) });
       const Lf = 0.36 * W, lineW = (P.name1.r + P.asaichi.r) * Lf, lx = W - lineW + 0.3 * Lf;
       const lineTop = ink('noto', E1.noto).bot + 0.06 * H;
       E1.name1 = at('name1', Lf, { x: lx, inkTop: lineTop });
