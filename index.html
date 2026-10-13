@@ -33,7 +33,7 @@
 <link rel="modulepreload" href="scripts/field.js">
 <link rel="modulepreload" href="vendor/three/three.module.js">
 <link rel="modulepreload" href="vendor/three/three.core.js">
-<noscript><style>body.intro #page{visibility:visible!important;animation:none!important}</style></noscript>
+<noscript><style>body.intro #page{visibility:visible!important;animation:none!important}#support>.panel{height:auto;overflow:visible}</style></noscript>
 <script>
   // Safety net: if a script fails to load or throws before the page has started, show the page instead of leaving it
   // hidden behind the opening.
@@ -210,7 +210,11 @@
             <div><span class="t">PLATINUM</span><span class="L">¥100,000</span><span class="u">1口・特別協賛</span></div>
             <p class="S note">企業・団体協賛を募集しています。協賛趣意書・請求書払いのご相談は随時承っております。</p>
           </div>
-          <a class="cta-link sponsor-contact" href="mailto:hit.fornoto@gmail.com?subject=%E5%87%BA%E5%BC%B5%E8%BC%AA%E5%B3%B6%E6%9C%9D%E5%B8%82%20%E5%8D%94%E8%B3%9B%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6">協賛に関するお問い合わせ<b aria-hidden="true">↗</b></a>
+          <div class="email-contact email-contact--sponsor">
+            <a class="cta-link sponsor-contact" href="mailto:hit.fornoto@gmail.com?subject=%E5%87%BA%E5%BC%B5%E8%BC%AA%E5%B3%B6%E6%9C%9D%E5%B8%82%20%E5%8D%94%E8%B3%9B%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6">協賛に関するお問い合わせ<b aria-hidden="true">↗</b></a>
+            <div class="email-row"><span class="email-address">hit.fornoto@gmail.com</span><button class="email-copy" type="button" aria-label="協賛問い合わせのメールアドレスをコピー" hidden>COPY</button></div>
+            <span class="email-status" role="status" aria-live="polite" aria-atomic="true"></span>
+          </div>
         </div>
       </div></div>
       <div class="rl bot"></div>
@@ -250,7 +254,7 @@
       <div class="fcol site"><h4>SITE</h4><ul><li><a href="#asaichi">朝市</a></li><li><a href="#program">催し</a></li><li><a href="#noto">能登</a></li><li><a href="#support">応援</a></li><li><a href="#info">案内</a></li></ul></div>
       <div class="fcol"><h4>RELATED</h4><ul><li><a class="ext" href="https://wajima-asaichi.info/" target="_blank" rel="noopener noreferrer">輪島朝市公式<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li><li><a class="ext" href="https://s-wajima-asaichi.com/" target="_blank" rel="noopener noreferrer">輪島朝市を応援する会<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li><li><a class="ext" href="https://wajima2024.stores.jp/" target="_blank" rel="noopener noreferrer">公式オンラインストア<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li></ul></div>
       <div class="fcol"><h4>SUPPORT</h4><ul><li><span class="na">クラウドファンディング<small>URL未設定</small></span></li><li><a href="#support">企業・団体協賛</a></li></ul></div>
-      <div class="fcol"><h4>SOCIAL</h4><ul><li><a class="ext" href="https://x.com/hit_asaichi" target="_blank" rel="noopener noreferrer"><b class="h">X</b>@hit_asaichi<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li><li><a class="ext" href="https://www.instagram.com/hit_asaichi" target="_blank" rel="noopener noreferrer"><b class="h">Instagram</b>@hit_asaichi<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li><li><a class="contact-link" href="mailto:hit.fornoto@gmail.com?subject=%E5%87%BA%E5%BC%B5%E8%BC%AA%E5%B3%B6%E6%9C%9D%E5%B8%82%E3%81%B8%E3%81%AE%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B">CONTACT<i class="ar" aria-hidden="true">↗</i></a></li></ul></div>
+      <div class="fcol"><h4>SOCIAL</h4><ul><li><a class="ext" href="https://x.com/hit_asaichi" target="_blank" rel="noopener noreferrer"><b class="h">X</b>@hit_asaichi<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li><li><a class="ext" href="https://www.instagram.com/hit_asaichi" target="_blank" rel="noopener noreferrer"><b class="h">Instagram</b>@hit_asaichi<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li><li class="email-contact email-contact--footer"><a class="contact-link" href="mailto:hit.fornoto@gmail.com?subject=%E5%87%BA%E5%BC%B5%E8%BC%AA%E5%B3%B6%E6%9C%9D%E5%B8%82%E3%81%B8%E3%81%AE%E3%81%8A%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B">CONTACT<i class="ar" aria-hidden="true">↗</i></a><div class="email-row"><span class="email-address">hit.fornoto@gmail.com</span><button class="email-copy" type="button" aria-label="問い合わせのメールアドレスをコピー" hidden>COPY</button></div><span class="email-status" role="status" aria-live="polite" aria-atomic="true"></span></li></ul></div>
       <a class="totop" href="#summary" id="totop" aria-label="ページの先頭へ戻る">TOP<b aria-hidden="true">↑</b></a>
     </div>
     <section class="fsponsors" aria-labelledby="fsponsors-title">
@@ -263,5 +267,6 @@
 </main>
 
 <script type="module" src="scripts/main.js"></script>
+<script type="module" src="scripts/contact.js"></script>
 </body>
 </html>

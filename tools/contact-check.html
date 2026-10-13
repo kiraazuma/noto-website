@@ -1,0 +1,34 @@
+<!doctype html><meta charset="utf-8"><title>Contact copy check</title>
+<style>body{margin:0;background:#fcfaef;color:#0130e2;font:12px system-ui}iframe{display:block;border:0}pre{white-space:pre-wrap}</style>
+<iframe title="Contact preview"></iframe><pre>Preparing…</pre>
+<script type="module">
+const q=new URL(location.href).searchParams,f=document.querySelector('iframe'),width=Number(q.get('width'))||1440,height=Number(q.get('height'))||1100,section=q.get('section')||'footer';
+f.style.width=width+'px';f.style.height=height+'px';f.src='../?manual';
+const wait=async fn=>{const end=performance.now()+20000;while(!fn()){if(performance.now()>end)throw Error('timeout');await new Promise(r=>setTimeout(r,25));}};
+const flush=()=>new Promise(r=>setTimeout(r,0));
+try{
+ await wait(()=>f.contentWindow.__m&&f.contentWindow.__kx&&!f.contentDocument.querySelector('.email-copy').hidden);const w=f.contentWindow,d=w.document;
+ const css=d.createElement('style');css.textContent='html{scrollbar-width:none!important}::-webkit-scrollbar{width:0!important;display:none}';d.head.append(css);
+ await new Promise(r=>setTimeout(r,180));w.__m.seek(30);w.__m.toEnd(300);await new Promise(r=>setTimeout(r,180));w.__m.step(300);
+ const results=[];const check=(ok,label)=>{if(!ok)throw Error(label);results.push('PASS '+label)};
+ if(q.has('test')){
+  const original=Object.getOwnPropertyDescriptor(w.navigator,'clipboard'),written=[];
+  const stub=value=>Object.defineProperty(w.navigator,'clipboard',{configurable:true,value});
+  try{
+   stub({writeText:async value=>written.push(value)});
+   for(const el of d.querySelectorAll('.email-contact')){const b=el.querySelector('button');b.click();await flush();check(b.textContent==='COPIED'&&!b.disabled,'success feedback');}
+   check(written.length===2&&written.every(x=>x==='hit.fornoto@gmail.com'),'both contacts copy only the email');
+   await new Promise(r=>setTimeout(r,3100));check([...d.querySelectorAll('.email-copy')].every(x=>x.textContent==='COPY'),'temporary feedback resets');
+   for(const value of [undefined,{writeText:async()=>{throw Error('permission denied')}}]){
+    stub(value);const el=d.querySelector('.email-contact--footer');el.querySelector('button').click();await flush();check(w.getSelection().toString()==='hit.fornoto@gmail.com'&&el.querySelector('.email-status').textContent.includes('手動'),'unavailable/denied clipboard keeps manual copy');
+   }
+   w.getSelection().removeAllRanges();await new Promise(r=>setTimeout(r,3100));
+  }finally{if(original)Object.defineProperty(w.navigator,'clipboard',original);else delete w.navigator.clipboard;}
+ }
+ if(section==='support'){w.__kx.open('support');w.__m.step(300);await flush();await wait(()=>{w.__m.step(2);return !w.__kx.debug().busy});const el=d.querySelector('.kx-body .email-contact');w.__m.scroll(w.scrollY+el.getBoundingClientRect().top-height*.58,5);}
+ else w.__m.scroll(w.__m.top('foot'),10);
+ const target=d.querySelector(section==='support'?'.kx-body .email-contact':'#foot'),r=target.getBoundingClientRect();
+ const contacts=[...d.querySelectorAll('.email-contact')].filter(x=>x.getBoundingClientRect().height).map(x=>{const a=x.querySelector('.email-address').getBoundingClientRect(),b=x.querySelector('.email-copy').getBoundingClientRect();return{addressRight:a.right,buttonRight:b.right,overlap:a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom}});
+ document.documentElement.dataset.result='pass';document.documentElement.dataset.measurements=JSON.stringify({width,height,section,rect:{x:r.x,y:r.y,width:r.width,height:r.height},overflow:d.documentElement.scrollWidth>w.innerWidth,contacts,results});document.querySelector('pre').textContent=results.join('\n')||'READY';
+}catch(e){document.documentElement.dataset.result='fail';document.querySelector('pre').textContent=e.stack;}
+</script>

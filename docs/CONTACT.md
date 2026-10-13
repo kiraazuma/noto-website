@@ -1,0 +1,9 @@
+# メールアドレス表示とコピー
+
+フッターSOCIAL/CONTACTと応援の協賛問い合わせに共通のメールアドレスを静的HTMLの通常テキストで掲載。mailtoは補助リンクとして維持。アドレスはuser-select:textで手動コピーできる。
+
+scripts/contact.jsはアニメーションの起動に依存しない別モジュール。COPYはnavigator.clipboard.writeTextでアドレスの文字列だけを書き込み、COPIEDとlive regionの成功表示を3秒後に戻す。APIなし・権限拒否時は見えているテキストを選択して手動コピーを案内する。コピー中はボタンを無効化し重複処理を防ぐ。documentへのイベント委譲なので、応援コンテンツがKinetic/Glass詳細へ移動しても動作する。
+
+JS無効時はCOPYボタンをhiddenのままにし、noscriptで応援パネルも表示。フッターと協賛のアドレスはJavaScriptに依存しない。外部フォーム・API・バックエンドなし。
+
+検証: /tools/contact-check.html?testで両箇所のコピー文字列、成功フィードバックのリセット、API未対応と権限拒否時の手動選択を検証（Clipboardスタブ、終了後に元へ復元）。実ボタンクリックでも成功表示を確認。width=1440/390、section=footer/supportで表示確認し、ボタン・アドレスの重なりと横スクロールなし。サイトのscriptを除去しnoscriptスタイルを適用した一時プレビューでも両アドレスの表示・user-select:textを確認した。

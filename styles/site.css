@@ -420,6 +420,15 @@ body.booted #page{animation:none}
 .cta-link b{color:var(--orange);font-weight:900}
 .cta-link:hover,.cta-link:focus-visible{text-decoration-color:var(--orange);outline:none}
 .sponsor-contact:hover,.sponsor-contact:focus-visible{color:var(--orange)}
+.email-contact{min-width:0;max-width:100%}
+.email-row{display:flex;align-items:center;gap:4px 10px;max-width:100%}
+.email-contact--sponsor .email-row{margin-top:12px}
+.email-contact--footer .email-row{margin-top:6px}
+.email-contact .email-address{min-width:0;white-space:normal;overflow-wrap:anywhere;user-select:text;-webkit-user-select:text;font:700 clamp(14px,1.1vw,16px)/1.5 var(--jp);letter-spacing:.01em}
+.email-copy{flex:0 0 auto;min-width:64px;min-height:32px;padding:0 4px;border:0;border-bottom:1px solid currentColor;background:none;color:inherit;font:700 11px/1 var(--lat);letter-spacing:.08em;cursor:pointer}
+.email-copy:disabled{cursor:wait}
+.email-contact .email-status{display:block;min-height:2.8em;max-width:100%;white-space:normal;font:500 10.5px/1.4 var(--jp);letter-spacing:0;opacity:.8}
+@media (max-width:1023px) and (orientation:portrait){.email-row{flex-wrap:wrap}.email-copy{min-height:44px}}
 @media (max-width: 1023px) and (orientation: portrait) { .cta-link { font-size: max(13.5px, calc(14 * var(--u))); } }
 
 
