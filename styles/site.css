@@ -1014,3 +1014,34 @@ body.booted #page{animation:none}
 .cur-dev-p{margin-top:8px;padding-top:6px;border-top:1px solid currentColor;letter-spacing:.1em;min-height:2.4em}
 .cur-dev-p b{color:var(--orange)}
 @media (hover: none), (pointer: coarse) { .cur-dev { display: none; } }
+
+/* Documentary photographs: after the existing text, full aspect ratio, one column in every INDEX mode.
+   Separate section classes leave width/spacing easy to tune without changing the content or motion engine. */
+.documentary-photos{--photo-width:100%;--photo-gap:clamp(28px,4vw,56px);--photo-top:clamp(40px,5vw,72px);
+  width:var(--photo-width);max-width:100%;min-width:0;margin-top:var(--photo-top);padding-top:clamp(20px,2vw,32px);border-top:1px solid currentColor}
+.pin>.documentary-photos{margin-top:var(--photo-top)}
+.documentary-photo{margin:0;min-width:0}
+.documentary-photo+.documentary-photo{margin-top:var(--photo-gap)}
+.documentary-photo img{display:block;width:100%;height:auto;border-radius:0}
+.documentary-photo figcaption{margin-top:10px;font:500 clamp(12px,1vw,14px)/1.5 var(--jp);letter-spacing:.04em}
+/* classic's dark panel needs the same readable type as its existing body; kinetic/glass use cobalt on ivory. */
+.gx-body .documentary-photo figcaption{color:var(--cobalt)}
+@media (max-width:1023px) and (orientation:portrait){
+  .documentary-photos{--photo-gap:32px;--photo-top:40px;padding-top:20px}
+}
+
+/* Photo windows live inside .kx-ch; no changes to the INDEX engine's placement/transform boxes.
+   Set each glyph's crop here. The orange circle stays below the synchronized photo crossfade. */
+.kx-w[data-id=asaichi] .kx-ch:nth-child(1){--kx-photo-position:42% 50%}
+.kx-w[data-id=asaichi] .kx-ch:nth-child(2){--kx-photo-position:53% 54%}
+.kx-w[data-id=noto] .kx-ch:nth-child(1){--kx-photo-position:58% 58%}
+.kx-w[data-id=noto] .kx-ch:nth-child(2){--kx-photo-position:55% 58%}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .kx-ch[data-photo]{position:relative}
+  .kx-ch[data-photo]::after{content:attr(data-glyph);position:absolute;inset:0;pointer-events:none;
+    color:transparent;-webkit-text-fill-color:transparent;background-image:var(--kx-photo);
+    background-size:cover;background-position:var(--kx-photo-position,50% 50%);background-repeat:no-repeat;
+    -webkit-background-clip:text;background-clip:text;opacity:0;transition:none}
+  .kx-photo-on[aria-expanded=false] .kx-ch[data-photo]::after{opacity:1;transition:opacity .15s ease}
+  .kx-photo-sync[aria-expanded=false] .kx-ch[data-photo]::after{transition:none}
+}

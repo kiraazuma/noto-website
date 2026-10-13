@@ -18,6 +18,7 @@ export const CUR = {
   fillOut: 0.24,     // and shrinking back out
   speed: 1,          // one-shot speed (2 = twice as fast)
   strength: 1,       // one-shot amplitude
+  photo: { duration: 0.15 }, // seconds, starting at the circle-full trigger alongside the one-shot
   shots: {
     a: { name: 'Squash & Pop', dur: 0.48 },
     b: { name: 'Tilt & Bounce', dur: 0.56 },
@@ -56,8 +57,58 @@ export function initCursor() {
     let t = T.get(el); if (t) return t;
     const main = el.matches(MAIN);
     t = { el, main, inner: main ? el.querySelector('.kx-in') : null, layers: main ? [...el.querySelectorAll('.kx-ch')] : [el],
-      phase: 'idle', t: 0, r: 0, r0: 0, R: 1, x: 0, y: 0, ex: 0, ey: 0, sx: 0, sy: 0, fired: false, anims: [], k: '' };
+      phase: 'idle', t: 0, r: 0, r0: 0, R: 1, x: 0, y: 0, ex: 0, ey: 0, sx: 0, sy: 0, fired: false, anims: [], k: '',
+      pointerHovered: false, photoShown: false, photoTicket: 0, photoReady: null };
     T.set(el, t); return t;
+  }
+  // Only these two kinetic words have photographic glyphs. Preload on pointer entry, not during the Hero.
+  const photoWord = t => t.main && ['asaichi', 'noto'].includes(t.el.dataset.id);
+  function preparePhotos(t) {
+    if (!photoWord(t) || t.photoReady) return;
+    t.photoReady = Promise.all(t.layers.map(l => {
+      if (!l.dataset.photo) return false;
+      l.style.setProperty('--kx-photo', `url("${new URL(l.dataset.photo, document.baseURI).href}")`);
+      const image = new Image(); image.src = l.dataset.photo;
+      return image.decode().then(() => true, () => false);
+    })).then(ready => (t.photosDecoded = ready.every(Boolean)));
+  }
+  function hidePhotos(t) {
+    t.photoTicket++; t.photoShown = false; t.el.classList.remove('kx-photo-on', 'kx-photo-sync');
+  }
+  const photoEligible = t => photoWord(t) && !REDUCED && fillOn() && t.pointerHovered && t.phase === 'full'
+    && t.el.getAttribute('aria-expanded') !== 'true' && (window.__kx?.rest ? window.__kx.rest() : true);
+  function revealPhotos(t) {
+    const eligible = () => photoEligible(t);
+    if (!eligible() || !t.photoReady) return;
+    const ticket = t.photoTicket;
+    t.photoReady.then(ready => {
+      // A late image/animation completion must never repaint a word after leave, press or opening.
+      if (!ready || ticket !== t.photoTicket || !eligible()) return;
+      t.photoShown = true; t.el.classList.add('kx-photo-on');
+    });
+  }
+  function syncPhotos(t, motions, running, done) {
+    if (!photoEligible(t) || !t.photoReady) return;
+    const ticket = t.photoTicket;
+    const start = ready => {
+      if (!ready || ticket !== t.photoTicket || t.anims !== running || !photoEligible(t)
+        || motions.every(m => m.playState === 'finished')) return;
+      // Both photographs start at the circle-full trigger, alongside the first motion (no C stagger).
+      // Animate only the pseudo-layer opacity. It inherits the existing character/word transforms.
+      t.photoShown = true; t.el.classList.add('kx-photo-on', 'kx-photo-sync');
+      const motion = motions[0];
+      t.layers.forEach(layer => {
+        const fade = layer.animate([
+          { opacity: 0 }, { opacity: 1 },
+        ], { pseudoElement: '::after', duration: CUR.photo.duration * 1000, easing: 'linear', fill: 'both' });
+        // Image.decode may finish after motion start: join its timeline at the current position.
+        if (MANUAL) { fade.pause(); fade.currentTime = motion.currentTime || 0; }
+        else if (motion.startTime != null) fade.startTime = motion.startTime;
+        else fade.currentTime = motion.currentTime || 0;
+        fade.onfinish = done; running.push(fade);
+      });
+    };
+    if (t.photosDecoded) start(true); else t.photoReady.then(start);
   }
   // the element's own (untransformed) box, and a client point in it
   function local(t, cx, cy) {
@@ -85,11 +136,15 @@ export function initCursor() {
     kick();
   }
   function end(t, cx, cy) {
+    t.pointerHovered = false;
+    const hadPhoto = t.photoShown; hidePhotos(t);
+    if (hadPhoto || photoWord(t)) { stop(t); clear(t); return; } // cancel even during the 150ms crossfade
     if (t.phase === 'idle') return;
     if (cx != null) { const L = local(t, cx, cy); t.ex = L.x; t.ey = L.y; } else { t.ex = t.x; t.ey = t.y; }
     t.sx = t.x; t.sy = t.y; t.r0 = t.r; t.t = 0; t.phase = 'out'; kick();
   }
   function clear(t) {
+    hidePhotos(t); t.pointerHovered = false;
     // back to the element's own colour at once (its own colour transition would fade the type in from transparent)
     for (const l of t.layers) { l.style.transition = 'none'; l.classList.remove('cf-on'); for (const p of ['--cfx', '--cfy', '--cfr', '--cfb']) l.style.removeProperty(p); }
     void t.layers[0].offsetWidth; getComputedStyle(t.layers[0]).color;
@@ -111,7 +166,7 @@ export function initCursor() {
       if (t.phase === 'in') {
         t.t += dt; const k = clamp(t.t / Math.max(0.01, CUR.fillIn), 0, 1);
         t.r = t.r0 + (t.R - t.r0) * E_IN(k);
-        if (k >= 1) { t.r = t.R; t.phase = 'full'; if (t.main && !t.fired) { t.fired = true; shot(t); } }
+        if (k >= 1) { t.r = t.R; t.phase = 'full'; if (t.main && !t.fired) { t.fired = true; if (!shot(t)) revealPhotos(t); } }
         else busy = true;
         draw(t);
       } else if (t.phase === 'out') {
@@ -129,7 +184,7 @@ export function initCursor() {
   let lastShot = '';
   const canShot = (t) => !REDUCED && ['a', 'b', 'c', 'random'].includes(mode) && t.el.getAttribute('aria-expanded') !== 'true' && (window.__kx?.rest ? window.__kx.rest() : true);
   function shot(t) {
-    if (!canShot(t)) return;
+    if (!canShot(t)) return false;
     let s = mode;
     if (s === 'random') { const pool = ['a', 'b', 'c'].filter(x => x !== lastShot); s = pool[Math.floor(Math.random() * pool.length)]; }
     lastShot = s;
@@ -169,8 +224,16 @@ export function initCursor() {
     }
     if (MANUAL) for (const a of t.anims) a.pause();
     played(s, t);
-    const done = () => { if (t.anims.every(a => a.playState === 'finished' || a.playState === 'idle')) stop(t); };
+    const running = t.anims;
+    const motions = running.slice();
+    const done = () => {
+      if (t.anims !== running || !running.every(a => a.playState === 'finished')) return;
+      // The synchronized layer already holds opacity 1. Never schedule a new fade after motion completion.
+      stop(t);
+    };
     for (const a of t.anims) a.onfinish = done;
+    syncPhotos(t, motions, running, done);
+    return true;
   }
   function stop(t) { for (const a of t.anims) a.cancel(); t.anims = []; if (t.inner) t.inner.style.transformOrigin = ''; for (const l of t.layers) l.style.transformOrigin = ''; }
 
@@ -180,7 +243,9 @@ export function initCursor() {
     if (!fillOn() || (e.pointerType !== 'mouse' && e.pointerType !== 'pen')) return;
     const el = isTarget(e.target); if (!el) return;
     if (e.relatedTarget && el.contains(e.relatedTarget)) return;            // moving inside it
-    begin(target(el), e.clientX, e.clientY);
+    const t = target(el); hidePhotos(t); t.pointerHovered = true;
+    if (!REDUCED) preparePhotos(t);
+    begin(t, e.clientX, e.clientY);
   });
   document.addEventListener('pointerout', (e) => {
     if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
@@ -189,7 +254,12 @@ export function initCursor() {
     const t = T.get(el); if (t) end(t, e.clientX, e.clientY);
   });
   // a press: the item's own motion has the word now
-  document.addEventListener('pointerdown', (e) => { const el = isTarget(e.target); const t = el && T.get(el); if (t) { t.fired = true; stop(t); } }, true);
+  function press(e) {
+    const el = isTarget(e.target), t = el && T.get(el);
+    if (t) { t.pointerHovered = false; hidePhotos(t); t.fired = true; stop(t); }
+  }
+  document.addEventListener('pointerdown', press, true);
+  document.addEventListener('click', press, true);  // keyboard activation also clears before the INDEX click listener
   // opened / closed by the INDEX: drop the circle at once (the open word is orange by its own style)
   // (all the INDEX words at once: the others leave the screen with the open motion, with no circle to repaint)
   new MutationObserver((ms) => { for (const m of ms) { const t = T.get(m.target); if (!t) continue; for (const u of t.main ? [...T.values()].filter(x => x.main) : [t]) { stop(u); clear(u); u.fired = true; } } })
@@ -197,7 +267,9 @@ export function initCursor() {
   // keyboard: the focused one fills from its middle (no one-shot)
   document.addEventListener('focusin', (e) => { if (!fillOn()) return; const el = isTarget(e.target); if (el && el.matches(':focus-visible')) { const t = target(el); begin(t); t.fired = true; } });
   document.addEventListener('focusout', (e) => { const el = isTarget(e.target); const t = el && T.get(el); if (t && !el.matches(':hover')) end(t); });
-  FINE.addEventListener?.('change', applyMode);
+  function clearAll() { for (const t of T.values()) { stop(t); clear(t); } }
+  FINE.addEventListener?.('change', () => { clearAll(); applyMode(); });
+  addEventListener('blur', clearAll);
 
   // ---------------------------------------------------------------- switching + the comparison panel
   function setMode(m) {

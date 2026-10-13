@@ -1,0 +1,148 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Photo hover regression check</title>
+<style>body{margin:0;font:14px system-ui;background:#fcfaef;color:#0130e2}#results{padding:12px;white-space:pre-wrap;max-height:70px;overflow:auto}iframe{display:block;border:0;width:1440px;height:900px}</style>
+<div id="results">Checking the existing manual clock…</div>
+<iframe title="Kinetic INDEX under test" src="../?manual&amp;cursor=a&amp;panel=1"></iframe>
+<script type="module">
+// Local browser regression check, no dependencies. Open /tools/photo-hover-check.html.
+// Pointer events are synthesized; rendering, Image.decode and Web Animations use the actual browser.
+const frame = document.querySelector('iframe'), output = document.querySelector('#results');
+const lines = [];
+const report = text => { lines.push(text); output.textContent = lines.join('\n'); };
+function check(condition, message) { if (!condition) throw new Error(message); report('PASS ' + message); }
+const wait = async condition => {
+  const until = performance.now() + 20000;
+  while (!condition()) { if (performance.now() > until) throw new Error('Readiness timeout'); await new Promise(r => setTimeout(r, 25)); }
+};
+const flush = () => new Promise(r => setTimeout(r, 0));
+try {
+  await wait(() => frame.contentWindow.__kx && frame.contentWindow.__m);
+  const w = frame.contentWindow, d = w.document;
+  d.querySelector('.cur-dev').hidden = true;
+  w.__m.seek(30); w.__m.toEnd(120);
+  await wait(() => { w.__m.step(2); return w.__kx.rest(); });
+  check(w.matchMedia('(hover:hover) and (pointer:fine)').matches, 'desktop fine pointer');
+  const word = id => d.querySelector(`.kx-w[data-id="${id}"]`);
+  function pointer(el, type) {
+    const b = el.getBoundingClientRect();
+    el.dispatchEvent(new w.PointerEvent(type, { bubbles: true, pointerType: 'mouse', clientX: b.x + b.width / 2, clientY: b.y + b.height / 2, relatedTarget: null }));
+  }
+  const photoOpacity = el => [...el.querySelectorAll('.kx-ch[data-photo]')].map(ch => parseFloat(w.getComputedStyle(ch, '::after').opacity));
+  const hasPhoto = el => el.classList.contains('kx-photo-on') && photoOpacity(el).some(alpha => alpha > 0);
+
+  // Decode completes after leaving: the stale completion must not repaint the INDEX.
+  const nativeImage = w.Image, gates = [];
+  w.Image = class extends nativeImage { decode() { return super.decode().then(() => new Promise(resolve => gates.push(resolve))); } };
+  const noto = word('noto'); pointer(noto, 'pointerover'); w.__m.step(70);
+  await wait(() => gates.length === 2);
+  check(!hasPhoto(noto), 'wait for both photograph decodes');
+  gates.forEach(resolve => resolve()); await flush(); w.__m.step(30);
+  check(!hasPhoto(noto), 'late decode never starts a new fade after motion completion');
+  pointer(noto, 'pointerout');
+  gates.length = 0;
+  const pending = word('asaichi'); pointer(pending, 'pointerover'); w.__m.step(70);
+  await wait(() => gates.length === 2);
+  pointer(pending, 'pointerout'); gates.forEach(resolve => resolve()); w.Image = nativeImage; await flush(); w.__m.step(30);
+  check(!hasPhoto(pending), 'late decode after leave stays blue');
+
+  for (const mode of ['a', 'b', 'c', 'random', 'fill']) {
+    w.__cur.setMode(mode);
+    for (const id of ['asaichi', 'noto']) {
+      const el = word(id); pointer(el, 'pointerover');
+      w.__m.step(10);
+      check(!hasPhoto(el), `${mode}/${id}: no photograph before orange fill`);
+      await Promise.all([...el.querySelectorAll('[data-photo]')].map(async ch => { const img = new w.Image(); img.src = ch.dataset.photo; await img.decode(); }));
+      await flush();
+      w.__m.step(10);
+      check(el.querySelector('.cf-on'), `${mode}/${id}: existing orange circle`);
+      if (mode !== 'fill') check(hasPhoto(el), `${mode}/${id}: photograph starts with the circle-full one-shot`);
+      w.__m.step(80); await wait(() => hasPhoto(el));
+      check([...el.querySelectorAll('.kx-ch')].every(ch => getComputedStyle(ch).getPropertyValue('--kx-photo').includes(ch.dataset.photo)), `${mode}/${id}: independent glyph images`);
+      pointer(el, 'pointerout');
+      check(!hasPhoto(el) && !el.querySelector('.cf-on'), `${mode}/${id}: leave immediately restores blue`);
+    }
+  }
+  // Scrub the actual WAAPI effects at milliseconds from the shared circle-full trigger.
+  // Speeds use the existing comparison panel's input handler (the real CUR.speed).
+  const speedInput = d.querySelectorAll('.cur-dev input')[2];
+  for (const speed of [0.5, 1, 2]) {
+    speedInput.value = speed; speedInput.dispatchEvent(new w.Event('input', {bubbles:true}));
+    for (const mode of ['a', 'b', 'c']) for (const id of ['asaichi', 'noto']) {
+      w.__cur.setMode(mode);
+      const el = word(id); pointer(el, 'pointerover'); w.__m.step(20); await flush();
+      const all = el.getAnimations({subtree:true});
+      const fades = all.filter(a => a.effect.pseudoElement === '::after');
+      const motions = all.filter(a => a.effect.getKeyframes().some(k => k.transform));
+      check(fades.length === 2 && motions.length === (mode === 'c' ? 2 : 1), `${mode}/${id}/${speed}x: photograph effects share existing motion layers`);
+      fades.forEach((a, i) => {
+        const ft = a.effect.getTiming();
+        check(ft.duration === 150 && ft.delay === 0 && Math.abs(a.currentTime - motions[0].currentTime) < 0.01, `${mode}/${id}/${speed}x/glyph${i}: 150ms fade shares the first motion clock with no delay`);
+      });
+      const sample = time => { for (const a of all) a.currentTime = time; return photoOpacity(el); };
+      check(sample(0).every(a => a < 0.01), `${mode}/${id}/${speed}x: orange at the circle-full trigger`);
+      check(sample(15).every(a => a > 0.09), `${mode}/${id}/${speed}x: photograph begins immediately`);
+      check(sample(75).every(a => Math.abs(a - 0.5) < 0.02), `${mode}/${id}/${speed}x: halfway through the 150ms crossfade`);
+      check(sample(150).every(a => a > 0.99) && motions.every(a => a.playState !== 'finished'), `${mode}/${id}/${speed}x: photograph complete while original motion continues`);
+      if (mode === 'c') {
+        check(motions[1].effect.getTiming().delay > 0 && fades.every(a => a.effect.getTiming().delay === 0), `${id}/${speed}x: C keeps its motion stagger; both photos share the fill trigger`);
+      }
+      sample(75); pointer(el, 'pointerout'); await flush();
+      check(!el.classList.contains('kx-photo-on') && el.getAnimations({subtree:true}).length === 0, `${mode}/${id}/${speed}x: leaving mid-crossfade cancels all effects`);
+    }
+  }
+  speedInput.value = 1; speedInput.dispatchEvent(new w.Event('input', {bubbles:true}));
+  for (const id of ['program', 'support', 'info']) {
+    const el = word(id); pointer(el, 'pointerover'); w.__m.step(100); await flush();
+    check(!hasPhoto(el), `${id}: no photo treatment`); pointer(el, 'pointerout'); w.__m.step(30);
+  }
+  w.__cur.setMode('c');
+  const asaichi = word('asaichi'); pointer(asaichi, 'pointerover'); w.__m.step(20);
+  pointer(asaichi, 'pointerout'); w.__m.step(100); await flush();
+  check(!hasPhoto(asaichi), 'leave during spin prevents late photo reveal');
+
+  pointer(asaichi, 'pointerover'); w.__m.step(20); await flush();
+  for (const a of asaichi.getAnimations({subtree:true})) a.currentTime = 75;
+  check(hasPhoto(asaichi), 'click test starts during the photographic crossfade');
+  pointer(asaichi, 'pointerdown');
+  check(!hasPhoto(asaichi) && asaichi.getAnimations({subtree:true}).length === 0, 'pointer press during crossfade clears photos and motion before opening');
+  asaichi.click(); await flush(); w.__m.step(180); await flush();
+  check(w.__kx.current === 'asaichi' && !d.querySelector('.kx-photo-on'), 'click opens original detail without photo residue');
+  d.querySelector('.kx-body .documentary-photos').scrollIntoView(); w.__m.step(3);
+  await wait(() => [...d.querySelectorAll('.kx-body img')].every(img => img.complete && img.naturalWidth));
+  check(d.querySelectorAll('.kx-body .documentary-photo').length === 2, 'original detail contains both photographs');
+  w.__kx.close(); w.__m.step(180); await flush(); w.__m.step(120);
+  await wait(() => w.__kx.rest());
+  pointer(asaichi, 'pointerover'); w.__m.step(100); await wait(() => hasPhoto(asaichi));
+  asaichi.click();
+  check(!hasPhoto(asaichi), 'keyboard-style click clears photos synchronously');
+  await flush(); w.__m.step(180); await flush();
+  w.__kx.close(); w.__m.step(180); await flush(); w.__m.step(120);
+  await wait(() => w.__kx.rest());
+  pointer(asaichi, 'pointerover'); w.__m.step(100); await wait(() => hasPhoto(asaichi));
+  w.dispatchEvent(new w.Event('blur'));
+  check(!hasPhoto(asaichi), 'window blur clears hover state');
+
+  asaichi.dispatchEvent(new w.PointerEvent('pointerover', { bubbles:true, pointerType:'touch' }));
+  w.__m.step(100); await flush();
+  check(!hasPhoto(asaichi), 'touch does not enter the photographic hover');
+  asaichi.focus(); w.__m.step(100); await flush();
+  check(!hasPhoto(asaichi), 'keyboard focus keeps the existing color treatment');
+
+  // End with one hovered word, as on the site. ?mask=noto selects the other preview.
+  d.activeElement?.blur();
+  w.__cur.setMode('a');
+  const mask = new URL(location.href).searchParams.get('mask') === 'noto' ? 'noto' : 'asaichi';
+  pointer(word(mask), 'pointerover');
+  const previewTime = Number(new URL(location.href).searchParams.get('time'));
+  if (previewTime > 0 && previewTime < 150) {
+    w.__m.step(20); await flush();
+    for (const a of word(mask).getAnimations({subtree:true})) a.currentTime = previewTime;
+  } else { w.__m.step(100); await wait(() => hasPhoto(word(mask))); }
+  await new Promise(r => setTimeout(r, 300));
+  report('DONE — synthesized events passed; inspect the mask below.');
+  document.documentElement.dataset.result = 'pass';
+} catch (error) {
+  report('FAIL ' + error.message); document.documentElement.dataset.result = 'fail'; console.error(error);
+}
+</script>
