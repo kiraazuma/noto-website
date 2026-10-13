@@ -257,6 +257,7 @@ body.booted #page{animation:none}
 .fcol.site a{padding:11px 8px;margin:-11px -8px}
 .totop,.s-cue{padding:14px;margin:-14px}
 .fcol a:hover,.totop:hover,.s-cue:hover{text-decoration-color:var(--orange)}
+.fcol .contact-link:hover{color:var(--orange)}
 .fcol a:focus-visible,.totop:focus-visible,.s-cue:focus-visible{outline:none;color:var(--orange);text-decoration-color:var(--orange);text-decoration-thickness:2px}
 #foot .fcol a:focus-visible,#foot .totop:focus-visible{color:var(--paper);outline:2px solid var(--paper);outline-offset:3px}
 .row:focus-visible{outline:none}
@@ -413,6 +414,7 @@ body.booted #page{animation:none}
   text-decoration:underline;text-decoration-color:transparent;text-underline-offset:.32em;transition:text-decoration-color .45s var(--ease);padding:11px 0;margin-bottom:-11px}
 .cta-link b{color:var(--orange);font-weight:900}
 .cta-link:hover,.cta-link:focus-visible{text-decoration-color:var(--orange);outline:none}
+.sponsor-contact:hover,.sponsor-contact:focus-visible{color:var(--orange)}
 @media (max-width: 1023px) and (orientation: portrait) { .cta-link { font-size: max(13.5px, calc(14 * var(--u))); } }
 
 

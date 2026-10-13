@@ -1,7 +1,14 @@
 # リンク一覧
 
-外部リンクはすべて新しいタブで開きます（`target="_blank" rel="noopener noreferrer"`）。
-場所はすべて `index.html` のフッター（`EDIT: フッター` で検索）です。
+外部ウェブリンクは新しいタブで開きます（`target="_blank" rel="noopener noreferrer"`）。
+メールリンクは標準メールアプリで新規メールを開きます。
+
+## お問い合わせ
+
+| 場所 | 宛先 | 件名 |
+|---|---|---|
+| フッター「CONTACT ↗」 | hit.fornoto@gmail.com | 出張輪島朝市へのお問い合わせ |
+| 04 応援「協賛に関するお問い合わせ ↗」 | hit.fornoto@gmail.com | 出張輪島朝市 協賛について |
 
 ## Official
 
@@ -63,4 +70,4 @@
 ## 参照元
 
 - 文言と情報の出典：https://deluxe-peony-99b583.netlify.app/
-- 元サイトにあった協賛問い合わせメール `noto.hitotsubashi@example.com` はダミーのアドレスのため、このサイトには載せていません。
+- 元サイトにあった協賛問い合わせメール `noto.hitotsubashi@example.com` はダミーのため使用せず、上記のアドレスに統一しています。
