@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>Mobile HERO check</title>
+<style>body{margin:0;background:#fcfaef;color:#0130e2;font:12px system-ui}#status{white-space:pre-wrap}iframe{display:block;border:0}</style>
+<iframe title="Mobile HERO preview"></iframe><div id="status">Preparing…</div>
+<script type="module">
+const q=new URL(location.href).searchParams,f=document.querySelector('iframe'),width=Number(q.get('width'))||390,height=Number(q.get('height'))||664,time=q.has('time')?Number(q.get('time')):3.5;
+f.style.width=width+'px';f.style.height=height+'px';f.src='../?manual';
+const wait=async fn=>{const end=performance.now()+20000;while(!fn()){if(performance.now()>end)throw Error('timeout');await new Promise(r=>setTimeout(r,25));}};
+try{
+ await wait(()=>f.contentWindow.__m);const w=f.contentWindow,d=w.document;
+ const css=d.createElement('style');css.textContent='html{scrollbar-width:none!important}::-webkit-scrollbar{width:0!important;display:none}'+(q.has('bars')?'#stage{height:calc(100svh - 180px)}':'');d.head.append(css);
+ const s=d.createElement('script');s.type='module';s.textContent="import {hero} from './scripts/hero.js';window.__heroCheck=hero;";d.body.append(s);
+ await wait(()=>w.__heroCheck);await w.__heroCheck.ready;await new Promise(r=>setTimeout(r,180));w.__m.seek(time);
+ if(q.has('resize')){f.style.height=(height+180)+'px';await new Promise(r=>setTimeout(r,180));w.__m.step();f.style.height=height+'px';await new Promise(r=>setTimeout(r,180));w.__m.step();}
+ const hero=w.__heroCheck,v=hero.view(),rects={};
+ for(const n of ['notoO','hitoO','noto','hito','titleA','titleB','date']){
+  const it=hero.items[n];if(!it)continue;const b=it.ts.ink,m=it.m,o=it.off||[0,0];
+  rects[n]={opacity:it.o,ink:[v.ox+(m[0]*b[0]+m[4]+o[0])*v.s,v.oy+(m[3]*b[1]+m[5]+o[1])*v.s,v.ox+(m[0]*b[2]+m[4]+o[0])*v.s,v.oy+(m[3]*b[3]+m[5]+o[1])*v.s],font:it.ts.px};
+ }
+ const result={width,height,time,view:v,rects,fit:hero.fit(),bands:hero.bands(),stage:d.querySelector('#stage').clientHeight};
+ document.documentElement.dataset.measurements=JSON.stringify(result);document.documentElement.dataset.result='pass';document.querySelector('#status').textContent=JSON.stringify(result,null,2);
+}catch(e){document.documentElement.dataset.result='fail';document.querySelector('#status').textContent=e.stack;}
+</script>

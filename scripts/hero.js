@@ -110,9 +110,9 @@ const MOB = { name: 'mob', W: MW, H: MH, info: ['titleA', 'titleB', 'date'], mid
   MEETS: { runs: [['MEETS', ORANGE]], family: LAT, weight: 900, stretch: 62.5, track: -0.02, fit: 'w', sx: 0.75, box: [-26, MW + 26, 0, 0], vAlign: 'center', yc: MH / 2 },
   REST: {
     // NOTO: top-left, its top cut by the edge, the last O touching the right edge
-    noto: { runs: [['NOTO', COBALT]], family: LAT, weight: 900, stretch: 62.5, track: -0.02, fit: 'w', sx: 0.75, box: [-8, MW + 14, -26, 0], vAlign: 'top' },
+    noto: { runs: [['NOTO', COBALT]], family: LAT, weight: 900, stretch: 62.5, track: -0.02, fit: 'w', sx: 0.75, box: [-11, MW + 11, -26, 0], vAlign: 'top' },
     // HITOTSUBASHI: along the bottom edge, with the last I slightly past the right edge
-    hito: { runs: [['HITOTSUBASHI', COBALT]], family: LAT, weight: 900, stretch: 62.5, track: -0.02, fit: 'w', sx: 0.54, box: [-6, MW + 8, 0, MH + 8], vAlign: 'bottom' },
+    hito: { runs: [['HITOTSUBASHI', COBALT]], family: LAT, weight: 900, stretch: 62.5, track: -0.02, fit: 'w', sx: 0.54, box: [-7, MW + 7, 0, MH + 8], vAlign: 'bottom' },
     // the orange information in the two corners the sculpture leaves free: title upper-left, date lower-right
     titleA: { runs: [['出張輪島朝市', ORANGE]], family: JP, weight: 900, track: -0.02, box: [18, 0, 214, 240] },
     titleB: { runs: [['in 一橋祭', ORANGE]], family: JP, weight: 900, track: -0.02, box: [18, 0, 250, 276] },
@@ -130,14 +130,12 @@ const MOB = { name: 'mob', W: MW, H: MH, info: ['titleA', 'titleB', 'date'], mid
     gap: 8,        // clear space kept between the glass and every orange line
     edge: 6,       // the glass is never cut by the screen edges
   },
-  // Short screens (iPhone SE in Safari: 375 x ~550): before the glass has to shrink, the two words give up some of
-  // their height to the band — NOTO rises further past the top edge, HITOTSUBASHI sinks a little past the bottom —
-  // continuously, from `ref` (design px of height) down, and never more than the given share of their own height,
-  // so both stay whole words. Their width never changes. The title moves with NOTO, the date with HITOTSUBASHI.
   // Opening (phone): the three words stacked as three bands of ONE glyph height, each squeezed to the screen width
   // (see openingBands). gap: share of the screen height between bands (at least gapMin); crop: past the side edges.
   BANDS: { gap: 0.009, gapMin: 4, crop: 0.015 },
-  SQZ: { ref: 760, kT: 0.45, maxT: 0.2, kB: 0.25, maxB: 0.16, top: ['noto', 'titleA', 'titleB'], bot: ['hito', 'date'] },
+  // HERO only: keep 1.8% of each measured glyph height past its edge, even on short screens.
+  // Signed offsets also carry the title/date inward; the existing glass solver fits the resulting band.
+  SQZ: { cropT: 0.018, cropB: 0.018, top: ['noto', 'titleA', 'titleB'], bot: ['hito', 'date'] },
   ANCHOR: { noto: [-1, -1], notoO: [-1, -1], hito: [1, 1], hitoO: [1, 1], titleA: [-1, -1], titleB: [-1, -1], date: [1, 1], meets: [0, 0] } };
 let LAY = DESK;
 const pickLayout = (vw, vh) => (vw < 700 && vh > vw ? MOB : DESK);
@@ -573,6 +571,18 @@ function deskInfo(vw, vh) {
 // layout source of truth: the size of the fixed, full-viewport stage as laid out (clientWidth / clientHeight are
 // untransformed, so the stage's own blur-scale never leaks in). Falls back to innerWidth only if it has no box yet.
 function viewport() { return [stageEl.clientWidth || innerWidth, stageEl.clientHeight || innerHeight]; }
+let mobileHeroPane = false;
+function syncHeroPane() {
+  // Keep the original 100svh opening. Once it has finished, the HERO follows Safari's visible pane.
+  // Ignore pinch zoom: zooming must not recompose the poster.
+  const vv = window.visualViewport;
+  if (mobileHeroPane && vv && Math.abs(vv.scale - 1) >= 0.01) return false;
+  const mobile = pickLayout(innerWidth, innerHeight) === MOB;
+  const height = mobileHeroPane && mobile ? (vv && Math.abs(vv.scale - 1) < 0.01 ? vv.height : innerHeight) : 0;
+  const css = height ? `${height}px` : '';
+  if (stageEl.style.height === css) return false;
+  stageEl.style.height = css; return true;
+}
 function layout() {
   const [vw, vh] = viewport();
   const want = pickLayout(vw, vh);
@@ -589,9 +599,10 @@ function layout() {
   if (LAY === DESK) { bleedX = 0; deskInfo(vw, vh); }
   design.style.transform = hinfo.style.transform = `translate(${view.ox}px, ${view.oy}px) scale(${s})`;
   if (LAY === MOB && items.noto) {
-    const Z = LAY.SQZ, short = Math.max(0, Z.ref - (H + 2 * AY));                // H + 2·AY = the region height, design px
+    const Z = LAY.SQZ;
     const hn = items.noto.ts.ink[3] - items.noto.ts.ink[1], hh = items.hito.ts.ink[3] - items.hito.ts.ink[1];
-    SQ.t = Math.min(Z.maxT * hn, Z.kT * short); SQ.b = Math.min(Z.maxB * hh, Z.kB * short);
+    SQ.t = items.noto.ts.ink[1] + Z.cropT * hn;
+    SQ.b = H - items.hito.ts.ink[3] + Z.cropB * hh;
     computeIntroMaps(); lastApplied = -1;                                       // the opening letters land on the moved words
     solveMobileObject();
   } else { SQ.t = SQ.b = 0; if (LAY.BANDS && items.noto) { computeIntroMaps(); lastApplied = -1; } if (items.noto) sizeDeskObject(vh); }
@@ -765,6 +776,8 @@ function heroStep(now, dt, draw = true) {
     if (tt > T.hold) { if (holdFrom < 0) holdFrom = now; if (now - holdFrom < HOLD_MAX * 1000) t0 = now - T.hold * 1000; }
   }
   const t = heroTime(now);
+  mobileHeroPane = t >= T.end;
+  if (syncHeroPane()) layout();
   // (lastApplied is set first: the refracted copy's redraw check must see the time being applied, not the previous one)
   const tc = Math.min(t, T.end); if (tc !== lastApplied) { lastApplied = tc; applyTimeline(tc); }
   const sig = JSON.stringify([ctl.pre.toFixed(4), ctl.exit, ctl.typeFade.toFixed(3)]);
@@ -827,11 +840,15 @@ document.fonts.addEventListener('loadingdone', () => { const sig = typeSig(); if
 // Re-laid out at most every 120 ms while the size is moving, and once more when it settles.
 let rlLast = 0, rlT = 0;
 function scheduleLayout() {
+  syncHeroPane();
   const now = performance.now(); clearTimeout(rlT);
   if (now - rlLast > 120) { rlLast = now; relayout(); } else rlT = setTimeout(() => { rlLast = performance.now(); relayout(); }, 120);
 }
 if ('ResizeObserver' in window) new ResizeObserver(scheduleLayout).observe(stageEl);
 else addEventListener('resize', scheduleLayout, { passive: true });
+window.visualViewport?.addEventListener('resize', () => {
+  if (mobileHeroPane && Math.abs(window.visualViewport.scale - 1) < 0.01) scheduleLayout();
+}, { passive: true });
 start(REDUCED || qs.has('skip'));
 
 export const hero = {
