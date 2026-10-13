@@ -968,26 +968,22 @@ body.booted #page{animation:none}
 
 /* ACCESS stays in INFO's left margin; the existing detail type and right-hand table keep their positions. */
 #info .access{max-width:560px;margin:clamp(32px,4vw,56px) 0 0;color:var(--cobalt)}
-.access-label{display:flex;align-items:baseline;gap:.55em;margin:0 0 10px;font:800 clamp(13px,1vw,16px)/1.3 var(--jp);letter-spacing:.02em}
-.access-label strong{font:900 1.05em/1 var(--lat)}
-.access-label span{opacity:.5}
-.access svg{display:block;width:100%;height:auto;overflow:hidden}
-.access-walkways{fill:#E9ECE9}
-.access-buildings{fill:#D9DDDA;stroke:#C9CFCA;stroke-width:.55;stroke-linejoin:miter}
-.access-frontage{fill:#D0D8D4;stroke:#C3CCC6;stroke-width:.55}
-.access-labels{fill:#434343;font:700 11px/1 var(--jp);letter-spacing:0}
-.access-labels .access-leader{fill:none;stroke:#8D9792;stroke-width:.7}
-.access-pin circle{fill:var(--orange)}
-.access-pin text{fill:#fff;font:900 10px/1 var(--lat)}
+.access-label{margin:0 0 10px;font:800 clamp(13px,1vw,16px)/1.3 var(--jp);letter-spacing:.02em}
+.access iframe{display:block;width:100%;height:min(32vh,280px);border:0}
+.access-open{display:inline-block;margin-top:9px;color:var(--cobalt);font:800 12px/1.3 var(--lat),var(--jp);text-decoration:none;transition:color .2s ease}
+.access-open:hover,.access-open:focus-visible{color:var(--orange)}
+.access-open:focus-visible{outline:2px solid currentColor;outline-offset:3px}
 [data-index=kinetic] #info .pin{position:relative}
 @media (min-width:1024px){
-  [data-index=kinetic] #info .access{position:absolute;top:clamp(250px,30vh,265px);left:calc(clamp(24px,3vw,70px) - var(--kx-cx));width:min(39vw,450px);max-width:none;margin:0}
-  #info .access svg{width:auto;max-width:100%;height:min(30vh,240px)}
+  [data-index=kinetic] #info .access{position:absolute;top:265px;left:calc(clamp(24px,3vw,70px) - var(--kx-cx));width:min(39vw,560px);max-width:none;margin:0}
+}
+@media (min-width:1024px) and (max-height:759px){
+  [data-index=kinetic] #info .access{top:205px}
 }
 @media (max-width: 1023px) and (orientation: portrait){
   #info .access{max-width:none;margin:calc(36*var(--u)) 0 calc(40*var(--u))}
   .access-label{font-size:13px;margin-bottom:calc(10*var(--u))}
-  #info .access svg{width:100%;height:auto}
+  .access iframe{height:clamp(280px,38vh,320px)}
 }
 /* ================================================================ CIRCULAR HOVER (scripts/cursor.js; html[data-cur] = off | fill | a | b | c | random)
    From where the system cursor entered, the type turns orange in a growing circle (the type's own glyphs are the
