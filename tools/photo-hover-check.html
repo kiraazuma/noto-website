@@ -20,6 +20,8 @@ try {
   await wait(() => frame.contentWindow.__kx && frame.contentWindow.__m);
   const w = frame.contentWindow, d = w.document;
   d.querySelector('.cur-dev').hidden = true;
+  const nativeImage = w.Image, gates = [];
+  w.Image = class extends nativeImage { decode() { return super.decode().then(() => new Promise(resolve => gates.push(resolve))); } };
   w.__m.seek(30); w.__m.toEnd(120);
   await wait(() => { w.__m.step(2); return w.__kx.rest(); });
   check(w.matchMedia('(hover:hover) and (pointer:fine)').matches, 'desktop fine pointer');
@@ -31,20 +33,76 @@ try {
   const photoOpacity = el => [...el.querySelectorAll('.kx-ch[data-photo]')].map(ch => parseFloat(w.getComputedStyle(ch, '::after').opacity));
   const hasPhoto = el => el.classList.contains('kx-photo-on') && photoOpacity(el).some(alpha => alpha > 0);
 
-  // Decode completes after leaving: the stale completion must not repaint the INDEX.
-  const nativeImage = w.Image, gates = [];
-  w.Image = class extends nativeImage { decode() { return super.decode().then(() => new Promise(resolve => gates.push(resolve))); } };
+  // Four decodes start at INDEX entrance, before the first hover; hold them to simulate a slow connection.
+  await wait(() => gates.length === 4);
+  check(gates.length === 4, 'all four photo decodes preloaded before first hover');
   const noto = word('noto'); pointer(noto, 'pointerover'); w.__m.step(70);
-  await wait(() => gates.length === 2);
-  check(!hasPhoto(noto), 'wait for both photograph decodes');
-  gates.forEach(resolve => resolve()); await flush(); w.__m.step(30);
-  check(!hasPhoto(noto), 'late decode never starts a new fade after motion completion');
-  pointer(noto, 'pointerout');
-  gates.length = 0;
+  check(!hasPhoto(noto), 'full orange hover retained while images are decoding');
   const pending = word('asaichi'); pointer(pending, 'pointerover'); w.__m.step(70);
-  await wait(() => gates.length === 2);
-  pointer(pending, 'pointerout'); gates.forEach(resolve => resolve()); w.Image = nativeImage; await flush(); w.__m.step(30);
+  pointer(pending, 'pointerout'); gates.forEach(resolve => resolve()); w.Image = nativeImage; await flush(); w.__m.step(80); await flush();
+  check(hasPhoto(noto), 'slow decode automatically resumes the retained hover without moving pointer');
   check(!hasPhoto(pending), 'late decode after leave stays blue');
+  pointer(noto, 'pointerout');
+
+  const settle = async () => { await wait(() => { w.__m.step(2); return w.__kx.rest(); }); };
+  const openDetail = async id => { w.__kx.open(id); w.__m.step(180); await flush(); await wait(() => { w.__m.step(2); return w.__kx.current === id && !w.__kx.debug().busy; }); };
+  function inkFits(el, label) {
+    const ctx = d.createElement('canvas').getContext('2d');
+    for (const ch of el.querySelectorAll('.kx-ch')) {
+      const cs = w.getComputedStyle(ch); ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      const m = ctx.measureText(ch.textContent), px = parseFloat(cs.paddingLeft), py = parseFloat(cs.paddingTop);
+      const line = parseFloat(cs.lineHeight), base = py + (line + m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2;
+      const bounds = {left:px-m.actualBoundingBoxLeft,right:px+m.actualBoundingBoxRight,top:base-m.actualBoundingBoxAscent,bottom:base+m.actualBoundingBoxDescent};
+      check(bounds.left >= -1 && bounds.right <= ch.offsetWidth+1 && bounds.top >= -1 && bounds.bottom <= ch.offsetHeight+1, `${label}/${ch.textContent}: complete ink fits the paint box`);
+      check(px > 0 && py > 0 && w.getComputedStyle(ch,'::after').paddingLeft === cs.paddingLeft, `${label}/${ch.textContent}: photo layer shares padded paint coordinates`);
+      const contentWidth = ch.offsetWidth - px * 2;
+      if (m.actualBoundingBoxRight > contentWidth + 1) report(`EVIDENCE ${label}/${ch.textContent}: ink right ${m.actualBoundingBoxRight.toFixed(1)} exceeds old text box ${contentWidth.toFixed(1)}`);
+    }
+  }
+  inkFits(word('asaichi'), 'INDEX asaichi'); inkFits(word('noto'), 'INDEX noto');
+  for (const mode of ['a','b','c','random']) for (const [from,to] of [['asaichi','noto'],['noto','asaichi'],['asaichi','asaichi'],['noto','noto']]) {
+    w.__cur.setMode(mode); await openDetail(from);
+    pointer(word(from),'pointerover'); w.__m.step(24); inkFits(word(from), `detail ${mode}/${from}`);
+    pointer(word(from),'pointerout');
+    w.__kx.close(); w.__m.step(16); await flush();
+    const el = word(to); pointer(el,'pointerover'); w.__m.step(20);
+    check(!w.__kx.rest() && !hasPhoto(el), `${mode}/${from}->${to}: retain hover during return`);
+    w.__m.step(180); await flush(); await settle(); w.__m.step(100); await flush();
+    check(hasPhoto(el), `${mode}/${from}->${to}: resume photo without another pointer event`);
+    inkFits(el, `returned ${mode}/${to}`); pointer(el,'pointerout');
+  }
+  frame.style.width = '1280px';
+  await wait(() => w.innerWidth === 1280 && w.__kx.debug().W === d.querySelector('.kx-sticky').clientWidth); w.__m.step(120); await settle();
+  pointer(word('noto'),'pointerover'); w.__m.step(100); await flush();
+  check(hasPhoto(word('noto')), 'photo hover works after viewport resize'); inkFits(word('noto'),'resized INDEX'); pointer(word('noto'),'pointerout');
+  frame.style.width = '1440px'; await wait(() => w.innerWidth === 1440 && w.__kx.debug().W === d.querySelector('.kx-sticky').clientWidth); w.__m.step(120); await settle();
+
+  await openDetail('asaichi'); w.__kx.close(); w.__m.step(16); await flush();
+  pointer(word('noto'),'pointerover'); w.__m.step(20); pointer(word('noto'),'pointerout');
+  w.__m.step(180); await settle(); w.__m.step(100); await flush();
+  check(!hasPhoto(word('noto')), 'leaving during return cancels the pending hover');
+  await openDetail('noto'); w.__kx.close(); w.__m.step(16); await flush();
+  pointer(word('asaichi'),'pointerover'); w.__m.step(20); word('program').click();
+  w.__m.step(300); await flush(); w.__m.step(180); await flush();
+  await wait(() => { w.__m.step(2); return w.__kx.current === 'program' && !w.__kx.debug().busy; });
+  check(!d.querySelector('.kx-photo-on'), 'clicking another item cancels every pending photo');
+  w.__kx.close(); w.__m.step(180); await flush(); await settle();
+
+  // Fresh realm: fail the first preloaded stone decode, then retry on hover (same URL/browser cache).
+  const retryFrame = d.createElement('iframe'); retryFrame.style.cssText = 'position:absolute;left:-2000px;top:0;width:1280px;height:900px;visibility:hidden';
+  retryFrame.src = '../?manual&cursor=a'; document.body.append(retryFrame);
+  await wait(() => retryFrame.contentWindow.__kx && retryFrame.contentWindow.__m);
+  const rw = retryFrame.contentWindow, rd = rw.document, RetryImage = rw.Image; let decodeAttempts = 0, failedDecodeSettled = false;
+  rw.Image = class extends RetryImage { decode() { const fail = this.src.endsWith('asaichi-stone.jpg') && ++decodeAttempts === 1; return super.decode().then(() => { if (fail) { failedDecodeSettled = true; throw new Error('simulated decode failure'); } }); } };
+  rw.__m.seek(30); rw.__m.toEnd(120);
+  await wait(() => { rw.__m.step(2); return rw.__kx.rest(); }); await flush();
+  await wait(() => failedDecodeSettled); await flush();
+  check(decodeAttempts === 1, 'first photo preload can fail without poisoning the cache');
+  const retryWord = rd.querySelector('.kx-w[data-id=asaichi]'), retryBox = retryWord.getBoundingClientRect();
+  retryWord.dispatchEvent(new rw.PointerEvent('pointerover',{bubbles:true,pointerType:'mouse',clientX:retryBox.x+retryBox.width/2,clientY:retryBox.y+retryBox.height/2}));
+  await wait(() => { rw.__m.step(2); return retryWord.classList.contains('kx-photo-on'); });
+  check(decodeAttempts === 2, 'subsequent hover retries and displays the failed preload');
+  retryFrame.remove();
 
   for (const mode of ['a', 'b', 'c', 'random', 'fill']) {
     w.__cur.setMode(mode);

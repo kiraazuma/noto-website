@@ -406,17 +406,25 @@ export async function mountKinetic(root, hooks = {}) {
   addEventListener('keydown', (e) => { if (e.key === 'Escape' && current) { e.preventDefault(); close(); } });
 
   // ---------------------------------------------------------------- render (called from main.js's loop)
-  let lastP = -1, dirty = true;
+  let lastP = -1, dirty = true, photosStarted = false, wasRest = false;
+  const atRest = () => state === 'index' && !current && !busy && lastP >= 1 && !anyMoving && !Object.keys(tw).length && detail.hidden;
+  function notifyRest() {
+    const ready = atRest();
+    if (ready && !wasRest) document.dispatchEvent(new Event('kx:rest'));
+    wasRest = ready;
+  }
   function frame(dt) {
     const p = hooks.progress ? hooks.progress() : 1;
+    if (p > 0 && !photosStarted) { photosStarted = true; document.dispatchEvent(new Event('kx:prepare-photos')); }
     if (p !== lastP) { lastP = p; dirty = true; }
     tickTimers(dt); tickReveal(dt);
     const tweening = tickTweens(dt);
-    if (!dirty && !tweening && !anyMoving) return;
+    if (!dirty && !tweening && !anyMoving) { notifyRest(); return; }
     dirty = false;
     // the entrance (only while nothing is open and nothing is in a timed move)
     if (state === 'index' && !current && !busy) for (const k in P) if (!tw[k]) P[k].c = p >= 1 ? { ...L.I[k] } : scrubbed(k, p);
     render(dt, p);
+    notifyRest();
   }
   let anyMoving = false;
   function render(dt, p) {
@@ -462,7 +470,7 @@ export async function mountKinetic(root, hooks = {}) {
   return {
     open, close, frame,
     // the INDEX finished and still (no entrance, no open / close, nothing open): when a hover may play its one-shot
-    rest: () => state === 'index' && !current && !busy && lastP >= 1 && !anyMoving && !Object.keys(tw).length && detail.hidden,
+    rest: atRest,
     get current() { return current; },
     debug: () => ({ W, H, phone, state, current, busy: !!busy, anyMoving, moving: Object.keys(P).filter(k => P[k].moving).map(k => k + ':' + P[k].still.toFixed(2) + ':' + P[k].last), tw: Object.keys(tw), dh: detail.hidden, p: lastP, L: L && Object.fromEntries(Object.entries(L.I).map(([k, v]) => [k, [Math.round(v.x), Math.round(v.y), Math.round(v.s)]])) }),
   };

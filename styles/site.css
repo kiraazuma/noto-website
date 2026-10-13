@@ -917,7 +917,8 @@ body.booted #page{animation:none}
 .kx-w{padding:0;border:0;background:none;cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:transparent;
   font-family:var(--jp);font-weight:900;transition:color .28s var(--ease)}
 .kx-in{display:inline-block;pointer-events:none;transform-origin:50% 60%}
-.kx-ch{display:inline-block}
+/* Painting room for glyph ink outside line-height:1 / negative tracking; negative margins keep layout identical. */
+.kx-ch{display:inline-block;padding:.18em .12em;margin:-.18em -.12em;overflow:visible}
 .kx-w:focus-visible,.kx-w[aria-expanded=true]{color:var(--orange)}
 /* (no sticky hover after a tap; with the cursor modes on, the colour comes in as a circle instead) */
 @media (hover:hover){html:not(.cf-mode) .kx-w:hover{color:var(--orange)}}
@@ -1039,8 +1040,9 @@ body.booted #page{animation:none}
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
   .kx-ch[data-photo]{position:relative}
   .kx-ch[data-photo]::after{content:attr(data-glyph);position:absolute;inset:0;pointer-events:none;
+    padding:inherit;box-sizing:border-box;
     color:transparent;-webkit-text-fill-color:transparent;background-image:var(--kx-photo);
-    background-size:cover;background-position:var(--kx-photo-position,50% 50%);background-repeat:no-repeat;
+    background-origin:content-box;background-size:cover;background-position:var(--kx-photo-position,50% 50%);background-repeat:no-repeat;
     -webkit-background-clip:text;background-clip:text;opacity:0;transition:none}
   .kx-photo-on[aria-expanded=false] .kx-ch[data-photo]::after{opacity:1;transition:opacity .15s ease}
   .kx-photo-sync[aria-expanded=false] .kx-ch[data-photo]::after{transition:none}

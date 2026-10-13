@@ -1,0 +1,30 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Live photo hover verification</title>
+<style>body{margin:0;background:#fcfaef;color:#0130e2;font:14px system-ui}#status{padding:12px;white-space:pre-wrap}iframe{display:block;border:0;width:1440px;height:900px}</style>
+<div id="status">Live rendering check. Manual pointer/click input is counted separately from synthetic events.</div>
+<iframe title="Live website under test" src="../?cursor=a#asaichi"></iframe>
+<script type="module">
+const f=document.querySelector('iframe'), status=document.querySelector('#status');
+const wait=async fn=>{const end=performance.now()+30000;while(!fn()){if(performance.now()>end)throw Error('timeout');await new Promise(r=>requestAnimationFrame(r));}};
+const log=[]; const report=s=>{log.push(s);status.textContent=log.join('\n');};
+try{
+  await wait(()=>f.contentWindow.__kx);
+  const w=f.contentWindow,d=w.document; let trustedMoves=0,trustedClicks=0;
+  for(const event of ['pointerover','pointermove','click'])d.addEventListener(event,e=>{if(e.isTrusted){if(event==='click')trustedClicks++;else trustedMoves++;document.documentElement.dataset.trusted=JSON.stringify({trustedMoves,trustedClicks});}});
+  if(new URL(location.href).searchParams.has('auto')){
+    for(const [mode,from,to] of [['a','asaichi','noto'],['b','noto','asaichi'],['c','asaichi','noto'],['random','noto','asaichi']]){
+      w.__cur.setMode(mode); await w.__kx.open(from); await w.__kx.close();
+      await wait(()=>w.__kx.rest());
+      const el=d.querySelector(`.kx-w[data-id="${to}"]`),r=el.getBoundingClientRect();
+      el.dispatchEvent(new w.PointerEvent('pointerover',{bubbles:true,pointerType:'mouse',clientX:r.x+r.width/2,clientY:r.y+r.height/2}));
+      await wait(()=>el.classList.contains('kx-photo-on'));
+      await wait(()=>el.getAnimations({subtree:true}).length===0);
+      report(`PASS live ${mode}/${from}->${to}: real rAF, compositing and photo fade completed`);
+      el.dispatchEvent(new w.PointerEvent('pointerout',{bubbles:true,pointerType:'mouse'}));
+    }
+    report('DONE live-render stress passed. Events were synthetic; this does not certify physical mouse input.');
+    document.documentElement.dataset.result='pass';
+  }
+}catch(e){report('FAIL '+e.message);document.documentElement.dataset.result='fail';console.error(e);}
+</script>

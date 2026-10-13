@@ -61,7 +61,7 @@ export function initCursor() {
       pointerHovered: false, photoShown: false, photoTicket: 0, photoReady: null };
     T.set(el, t); return t;
   }
-  // Only these two kinetic words have photographic glyphs. Preload on pointer entry, not during the Hero.
+  // Preload when the kinetic entrance starts, after Hero/Statement; pointer entry also retries failed decodes.
   const photoWord = t => t.main && ['asaichi', 'noto'].includes(t.el.dataset.id);
   function preparePhotos(t) {
     if (!photoWord(t) || t.photoReady) return;
@@ -70,13 +70,32 @@ export function initCursor() {
       l.style.setProperty('--kx-photo', `url("${new URL(l.dataset.photo, document.baseURI).href}")`);
       const image = new Image(); image.src = l.dataset.photo;
       return image.decode().then(() => true, () => false);
-    })).then(ready => (t.photosDecoded = ready.every(Boolean)));
+    })).then(ready => {
+      t.photosDecoded = ready.every(Boolean);
+      if (!t.photosDecoded) t.photoReady = null; // a future hover can retry; never cache a failed decode forever
+      else attempt(t); // retained hover: start a fresh synchronized shot/fade when its images finally arrive
+      return t.photosDecoded;
+    });
   }
   function hidePhotos(t) {
     t.photoTicket++; t.photoShown = false; t.el.classList.remove('kx-photo-on', 'kx-photo-sync');
   }
   const photoEligible = t => photoWord(t) && !REDUCED && fillOn() && t.pointerHovered && t.phase === 'full'
     && t.el.getAttribute('aria-expanded') !== 'true' && (window.__kx?.rest ? window.__kx.rest() : true);
+  function attempt(t) {
+    if (t.phase !== 'full' || t.fired) return;
+    if (photoWord(t) && t.pointerHovered && !REDUCED) {
+      // Keep the full orange circle and the hover intent while INDEX returns or images are decoding.
+      if (!photoEligible(t) || !t.photosDecoded) return;
+    }
+    t.fired = true;
+    if (!shot(t)) revealPhotos(t);
+  }
+  document.addEventListener('kx:prepare-photos', () => {
+    if (REDUCED || !FINE.matches) return;
+    for (const el of document.querySelectorAll('.kx-w[data-id="asaichi"],.kx-w[data-id="noto"]')) preparePhotos(target(el));
+  });
+  document.addEventListener('kx:rest', () => { for (const t of T.values()) attempt(t); });
   function revealPhotos(t) {
     const eligible = () => photoEligible(t);
     if (!eligible() || !t.photoReady) return;
@@ -117,6 +136,7 @@ export function initCursor() {
     return { x: (cx - r.left) / k, y: (cy - r.top) / k, w: box.offsetWidth, h: box.offsetHeight };
   }
   function begin(t, cx, cy) {
+    t.clientX = cx; t.clientY = cy;
     const L = cx == null ? null : local(t, cx, cy);
     const box = t.main ? t.inner : t.el, w = box.offsetWidth, h = box.offsetHeight;
     // where it starts: the pointer (or the middle, for keyboard focus); a fresh hover always starts from nothing
@@ -166,7 +186,7 @@ export function initCursor() {
       if (t.phase === 'in') {
         t.t += dt; const k = clamp(t.t / Math.max(0.01, CUR.fillIn), 0, 1);
         t.r = t.r0 + (t.R - t.r0) * E_IN(k);
-        if (k >= 1) { t.r = t.R; t.phase = 'full'; if (t.main && !t.fired) { t.fired = true; if (!shot(t)) revealPhotos(t); } }
+        if (k >= 1) { t.r = t.R; t.phase = 'full'; if (t.main) attempt(t); }
         else busy = true;
         draw(t);
       } else if (t.phase === 'out') {
@@ -256,13 +276,18 @@ export function initCursor() {
   // a press: the item's own motion has the word now
   function press(e) {
     const el = isTarget(e.target), t = el && T.get(el);
-    if (t) { t.pointerHovered = false; hidePhotos(t); t.fired = true; stop(t); }
+    if (el?.matches(MAIN)) { for (const u of T.values()) { stop(u); clear(u); u.fired = true; } }
+    else if (t) { t.pointerHovered = false; hidePhotos(t); t.fired = true; stop(t); }
   }
   document.addEventListener('pointerdown', press, true);
   document.addEventListener('click', press, true);  // keyboard activation also clears before the INDEX click listener
   // opened / closed by the INDEX: drop the circle at once (the open word is orange by its own style)
   // (all the INDEX words at once: the others leave the screen with the open motion, with no circle to repaint)
-  new MutationObserver((ms) => { for (const m of ms) { const t = T.get(m.target); if (!t) continue; for (const u of t.main ? [...T.values()].filter(x => x.main) : [t]) { stop(u); clear(u); u.fired = true; } } })
+  new MutationObserver((ms) => { for (const m of ms) { const t = T.get(m.target); if (!t) continue; for (const u of t.main ? [...T.values()].filter(x => x.main) : [t]) {
+    const retain = u.pointerHovered && photoWord(u) && !document.querySelector('.kx-open');
+    stop(u); clear(u); u.fired = true;
+    if (retain) { u.pointerHovered = true; begin(u, u.clientX, u.clientY); }
+  } } })
     .observe(document.body, { subtree: true, attributes: true, attributeFilter: ['aria-expanded'] });
   // keyboard: the focused one fills from its middle (no one-shot)
   document.addEventListener('focusin', (e) => { if (!fillOn()) return; const el = isTarget(e.target); if (el && el.matches(':focus-visible')) { const t = target(el); begin(t); t.fired = true; } });
