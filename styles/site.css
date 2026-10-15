@@ -186,6 +186,7 @@ body.booted #page{animation:none}
 #asaichi .goods li .rl{left:0;top:0}
 #asaichi .goods .g{font:900 calc(30*var(--p))/1.1 var(--jp);letter-spacing:.01em}
 #asaichi .goods .k{font:700 calc(12*var(--t))/1 var(--jp);letter-spacing:.08em;opacity:.7}
+#asaichi .goods-more{border-top:1px solid currentColor;margin:0;padding:calc(16*var(--p)) 0 0;font:900 calc(20*var(--p))/1.1 var(--lat);letter-spacing:.08em;color:var(--cobalt)}
 #asaichi .date{font-size:calc(72*var(--p))}
 /* 02 催し */
 .prog3{display:grid;grid-template-columns:repeat(3,1fr);column-gap:calc(40*var(--p))}
@@ -350,6 +351,7 @@ body.booted #page{animation:none}
   #asaichi .goods li { padding: calc(12 * var(--u)) 0 calc(13 * var(--u)); }
   #asaichi .goods .g { font-size: calc(22 * var(--u)); }
   #asaichi .goods .k { font-size: max(10.5px, calc(11 * var(--u))); }
+  #asaichi .goods-more { padding-top: calc(15 * var(--u)); font-size: max(15px, calc(17 * var(--u))); }
   .prog3 { display: block; }
   .prog3 > div { padding: calc(18 * var(--u)) 0 calc(24 * var(--u)); }
   .prog3 .no { font-size: calc(46 * var(--u)); }
