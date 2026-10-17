@@ -205,9 +205,6 @@ body.booted #page{animation:none}
 .uses .no{font:700 calc(12*var(--t))/1.8 var(--lat);letter-spacing:.06em}
 .uses b{font:900 calc(17*var(--t))/1.6 var(--jp);display:block}
 .uses span{font:500 calc(14*var(--t))/1.7 var(--jp);letter-spacing:.03em}
-/* not a link yet: plain text, no arrow, no pointer (the CAMPFIRE URL is not confirmed) */
-.cta-na{display:flex;gap:calc(12*var(--p));align-items:baseline;margin:calc(24*var(--p)) 0 0;font:700 calc(15*var(--t))/1 var(--jp);opacity:.6;cursor:default}
-.cta-na small{font:700 calc(10*var(--t))/1 var(--lat);letter-spacing:.1em}
 .tiers{display:grid;grid-template-columns:repeat(4,1fr);position:relative;padding-top:calc(16*var(--p))}
 .tiers>.rl{left:0;top:0}
 .tiers div{display:grid;gap:calc(8*var(--p))}
@@ -365,8 +362,6 @@ body.booted #page{animation:none}
   .uses .no { font-size: max(10.5px, calc(11 * var(--u))); }
   .uses b { font-size: max(14px, calc(15.5 * var(--u))); }
   .uses span { font-size: max(13px, calc(13.5 * var(--u))); }
-  .cta-na { font-size: max(13.5px, calc(14 * var(--u))); margin-top: calc(18 * var(--u)); }
-  .cta-na small { font-size: 10px; }
   .tiers { grid-template-columns: 1fr 1fr; row-gap: calc(20 * var(--u)); padding-top: calc(16 * var(--u)); }
   .tiers div { gap: 6px; }
   .tiers .t { font-size: max(10px, calc(10.5 * var(--u))); }
@@ -416,7 +411,7 @@ body.booted #page{animation:none}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
-/* ---------------------------------------------------------------- CAMPFIRE link (ready for when the URL is decided; see LINKS.md) */
+/* ---------------------------------------------------------------- text CTAs */
 .cta-link{display:inline-flex;gap:calc(12*var(--p));align-items:baseline;margin:calc(24*var(--p)) 0 0;font:700 calc(15*var(--t))/1 var(--jp);color:inherit;
   text-decoration:underline;text-decoration-color:transparent;text-underline-offset:.32em;transition:text-decoration-color .45s var(--ease);padding:11px 0;margin-bottom:-11px}
 .cta-link b{color:var(--orange);font-weight:900}

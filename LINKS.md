@@ -29,30 +29,7 @@
 
 | 名前 | URL | 状態 |
 |---|---|---|
-| CAMPFIRE 支援ページ | **URL 未確定** | 押せない文字表示（「URL未設定」と表示）。元サイトでもリンク先は `#` のままでした |
-
-### CAMPFIRE の URL が決まったら（2か所）
-
-1. **04 応援の中**（`index.html` で `cta-na` を検索）
-
-   ```html
-   <p class="cta-na">CAMPFIRE 支援ページ<small>URL未設定</small></p>
-   ```
-   を次に置き換え：
-   ```html
-   <a class="cta-link" href="https://camp-fire.jp/projects/（決まったURL）" target="_blank" rel="noopener noreferrer">CAMPFIRE 支援ページ<b aria-hidden="true">↗</b><span class="sr">（新しいタブで開きます）</span></a>
-   ```
-   見た目（オレンジの矢印・下線のホバー）は `styles/site.css` に `.cta-link` として用意済みです。
-
-2. **フッターの SUPPORT 欄**（`URL未設定` を検索）
-
-   ```html
-   <li><span class="na">クラウドファンディング<small>URL未設定</small></span></li>
-   ```
-   を次に置き換え：
-   ```html
-   <li><a class="ext" href="（決まったURL）" target="_blank" rel="noopener noreferrer">クラウドファンディング<i class="ar" aria-hidden="true">↗</i><span class="sr">（新しいタブで開きます）</span></a></li>
-   ```
+| CAMPFIRE 支援ページ | https://camp-fire.jp/projects/982537/view | 04 応援とフッターの SUPPORT 欄から新しいタブで開く |
 
 ## サイト内リンク（ページ内の移動）
 

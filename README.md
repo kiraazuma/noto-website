@@ -22,7 +22,7 @@ NOTO meets HITOTSUBASHI — 一橋祭で開催する「出張輪島朝市」の�
 - **スマートフォン（縦向き）**：実装済み。Opening から Footer まで縦長画面用に組み直してあります（320×568・375×667・390×548・390×664・390×844・430×932 で確認）
 - **タブレット縦向き（768×1024 付近）**：Statement 以降はスマホ版の構成。Hero は PC 版の構図
 - **スマホ横向き**：PC 版の構図で表示（横スクロールは出ない）
-- **リンク**：内部・外部リンクはすべて動作。**CAMPFIRE（クラウドファンディング）の URL だけ未確定**で、押せない文字表示（→ `LINKS.md`）
+- **リンク**：内部・外部リンクはすべて動作。CAMPFIRE の支援ページは「応援」とフッターから開けます（→ `LINKS.md`）
 - **ブラウザ**：Chrome / Safari の最新版を想定。確認は Chromium で実施。**iPhone Safari 実機での最終確認を推奨**
 
 ## 手元で確認する
@@ -55,7 +55,7 @@ Node.js がない場合：このフォルダで `python3 -m http.server 5173` �
 | Event Summary（タイトル・日付・3企画） | `index.html` | `EDIT: Event Summary` |
 | INDEX 01〜05 の中身 | `index.html` | `EDIT: 01 朝市` 〜 `EDIT: 05 案内（開催情報）` |
 | 外部リンク・SNS | `index.html` | `EDIT: フッター`（一覧は `LINKS.md`） |
-| クラウドファンディング（CAMPFIRE） | `index.html` | `cta-na`（04 応援）と `URL未設定`（フッター）。差し替え方法は `LINKS.md` |
+| クラウドファンディング（CAMPFIRE） | `index.html` | `cta-link`（04 応援）とフッターの SUPPORT 欄。リンク先は `LINKS.md` |
 | Hero のオレンジの日付・タイトル | `scripts/hero.js` | PC：`const REST`、スマホ：`const MOB` の `REST`（`titleA` `titleB` `date`） |
 | 色 | `styles/site.css` | 先頭の `:root`（`--paper` `--cobalt` `--deep` `--orange`）。WebGL 側は `scripts/hero.js` 先頭の `COBALT` `ORANGE` `CREAM` |
 | スマホ版のレイアウト | `styles/site.css` | `PHONE + PORTRAIT TABLET` のブロック（`@media (max-width: 1023px) and (orientation: portrait)`） |
