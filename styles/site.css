@@ -940,18 +940,10 @@ body.booted #page{animation:none}
 @media (hover:hover){html:not(.cf-mode) .kx-w:hover{color:var(--orange)}}
 .kx-w:focus-visible{outline:3px solid var(--orange);outline-offset:6px}
 .kx:not(.kx-ready) .kx-w{pointer-events:none}
-/* the small facts: a block of small type (it moves, it does not scale) */
-.kx-facts{font:700 clamp(16px,1.15vw,18px)/1.48 var(--jp);letter-spacing:.015em;white-space:nowrap}
-.kx-facts ol{margin:0;padding:0;list-style:none}
-.kx-facts li+li{margin-top:.14em}
-.kx-facts i{font:800 .83em/1 var(--lat);letter-spacing:.08em;font-style:normal;display:inline-block;min-width:2.15em;opacity:.8}
-.kx-facts p{margin:.65em 0 0;font-size:.88em}
-.kx-facts b{font-weight:900;margin-right:1.1em}
-.kx-map-link{display:inline-flex;align-items:baseline;gap:.38em;margin-top:.72em;text-decoration:none;color:var(--cobalt);font-weight:900;transition:color .2s ease}
-.kx-map-link span{display:inline-block;transition:transform .2s ease}
-.kx-map-link:hover,.kx-map-link:focus-visible{color:var(--orange)}
-.kx-map-link:hover span,.kx-map-link:focus-visible span{transform:translate(2px,-2px)}
-.kx-map-link:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+/* Platinum credit occupies the former INDEX facts block; the motion engine positions it as one unscaled piece. */
+.kx-partner{width:clamp(220px,23vw,340px);white-space:normal;pointer-events:none}
+.kx-partner-label{display:block;margin-bottom:10px;color:#777773;font:700 clamp(10px,.78vw,12px)/1.2 var(--lat);letter-spacing:.18em}
+.kx-partner img{display:block;width:100%;height:auto;max-width:100%;object-fit:contain}
 /* the detail: the item's own content, in the column the sheet opens for it (left edge from --kx-cx, top from
    --kx-cy, both set by the script), scrolling with the page */
 .kx-detail{position:relative;z-index:2;margin-top:calc(-1*var(--vh));min-height:var(--vh);
@@ -979,10 +971,8 @@ body.booted #page{animation:none}
 /* no script / reduced motion fall back to the same INDEX sheet, placed by the script without motion */
 .kx:not(.kx-ready) .kx-t{visibility:hidden}
 @media (max-width: 1023px) and (orientation: portrait) {
-  .kx-facts{font-size:clamp(12px,3.2vw,15px);line-height:1.42;letter-spacing:0}
-  .kx-facts b{display:block;margin:0}
-  .kx-facts p{margin-top:.45em;font-size:.9em}
-  .kx-map-link{margin-top:.52em}
+  .kx-partner{width:clamp(155px,46vw,220px)}
+  .kx-partner-label{margin-bottom:7px;font-size:9px;letter-spacing:.14em}
 }
 
 /* ACCESS stays in INFO's left margin; the existing detail type and right-hand table keep their positions. */

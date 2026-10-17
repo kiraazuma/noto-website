@@ -69,6 +69,7 @@ export async function mountKinetic(root, hooks = {}) {
 
   try { await Promise.all([document.fonts.load('900 100px "Noto Sans JP"', '出張輪島朝市催し能登応援案内一橋祭'), document.fonts.load('900 100px Archivo', '2026.11.21–23in')]); } catch (e) { /* fonts optional */ }
   await document.fonts.ready;
+  try { await P.facts.n.querySelector('img')?.decode(); } catch (e) { /* image dimensions are also in HTML */ }
 
   // ---------------------------------------------------------------- measuring (once per size: widths and ink scale with the size)
   const cv = document.createElement('canvas').getContext('2d');
@@ -120,7 +121,7 @@ export async function mountKinetic(root, hooks = {}) {
     const I = {}, E1 = {}, E0 = {};
     if (!phone) {
       // ---- I: the INDEX
-      // The middle words share the facts/event edges and the exact viewport centre.
+      // The middle words share the left/event edges and the exact viewport centre.
       const left = m, right = W - m, middle = W / 2;
       const G = Math.min(0.48 * H, 0.29 * W);
       I.noto = at('noto', G, { x: -0.05 * G, inkTop: -0.1 * G });
@@ -147,7 +148,7 @@ export async function mountKinetic(root, hooks = {}) {
       const nBot = ink('name1', I.name1).bot;
       I.in = at('in', 0.6 * N, { right: xR, inkTop: nBot + 0.22 * N });
       I.date = at('date', D, { right: xR, inkTop: ink('in', I.in).bot + 0.3 * N });
-      I.facts = at('facts', 1, { x: left, inkBot: H - m * 0.9 });
+      I.facts = at('facts', 1, { x: left + 0.035 * W, inkBot: H - 0.11 * H });
 
       // ---- E1: the Hero's scale
       const G1 = 1.32 * G;
